@@ -1,6 +1,7 @@
 import logging
 from typing import Any, Dict
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.schemas import DetectionRequest, DetectionResponse
 from backend.app.services.detector import detect
@@ -11,6 +12,20 @@ app = FastAPI(
     title="AI Scam & Phishing Detector API",
     description="Production RESTful cybersecurity API for detecting scams and phishing across emails, SMS text messages, and URLs.",
     version="1.0.0"
+)
+
+# Allowed development origins for React frontend
+ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173"
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=ALLOWED_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
 )
 
 
