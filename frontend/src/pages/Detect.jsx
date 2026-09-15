@@ -53,30 +53,54 @@ export default function Detect() {
   };
 
   const handleAnalyze = async () => {
-    let payload = {};
+    let content = '';
+    let content_type = 'sms';
+
     if (activeTab === 'message') {
       if (!messageText.trim()) return;
-      payload = { type: 'message', text: messageText };
+      content = messageText.trim();
+      content_type = 'sms';
     } else if (activeTab === 'email') {
       if (!emailSubject.trim() && !emailContent.trim()) return;
-      payload = { type: 'email', subject: emailSubject, text: emailContent };
+      if (emailSubject.trim() && emailContent.trim()) {
+        content = `Subject: ${emailSubject.trim()}\n\n${emailContent.trim()}`;
+      } else if (emailSubject.trim()) {
+        content = `Subject: ${emailSubject.trim()}`;
+      } else {
+        content = emailContent.trim();
+      }
+      content_type = 'email';
     } else if (activeTab === 'url') {
       if (!urlInput.trim()) return;
-      payload = { type: 'url', url: urlInput };
+      content = urlInput.trim();
+      content_type = 'url';
     }
 
     setAnalysisStatus('loading');
     setErrorMessage('');
 
     try {
-      const response = await detectScam(payload);
+      const response = await detectScam({
+        content,
+        content_type,
+      });
       setAnalysisResult(response);
       setAnalysisStatus('success');
+      setErrorMessage('');
     } catch (err) {
-      console.warn('Backend API offline or error:', err.message);
-      setErrorMessage(
-        'Unable to analyze this content. The AI backend service is currently offline or unreachable. Please try again later.'
-      );
+      console.warn('Backend API error:', err?.message);
+      let message =
+        'Unable to analyze this content. The AI backend service is currently offline or unreachable. Please try again later.';
+
+      if (typeof err.response?.data?.detail === 'string') {
+        message = err.response.data.detail;
+      } else if (Array.isArray(err.response?.data?.detail) && err.response.data.detail[0]?.msg) {
+        message = err.response.data.detail[0].msg;
+      } else if (err.response?.status === 500) {
+        message = 'Detection service temporarily unavailable. Please try again later.';
+      }
+
+      setErrorMessage(message);
       setAnalysisStatus('error');
     }
   };
