@@ -38,16 +38,23 @@ env/
 htmlcov/
 *.egg-info/
 
-# Machine Learning Datasets
+# Machine Learning & Deep Learning Datasets
 ml/data/raw/*
 !ml/data/raw/.gitkeep
 ml/data/processed/*
 !ml/data/processed/.gitkeep
+dl/data/raw/*
+!dl/data/raw/.gitkeep
+dl/data/processed/*
+!dl/data/processed/.gitkeep
 
 # Trained Models & Binaries
 ml/models/*
 !ml/models/.gitkeep
 !ml/models/*.json
+dl/models/*
+!dl/models/.gitkeep
+!dl/models/*.json
 *.pkl
 *.joblib
 *.h5
