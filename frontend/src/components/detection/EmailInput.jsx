@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, Cpu, Sparkles } from 'lucide-react';
 import Button from '../common/Button';
 
 export default function EmailInput({
@@ -10,6 +10,8 @@ export default function EmailInput({
   onSubmit,
   isLoading = false,
   maxLength = 2000,
+  emailModel = 'ml',
+  onEmailModelChange,
 }) {
   return (
     <form
@@ -26,7 +28,7 @@ export default function EmailInput({
         <input
           type="text"
           value={subject}
-          onChange={(e) => onSubjectChange(e.target.value)}
+          onChange={(e) => onSubjectChange?.(e.target.value)}
           placeholder="e.g. Urgent: Action Required on Your Account"
           className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
         />
@@ -41,13 +43,63 @@ export default function EmailInput({
             rows={5}
             maxLength={maxLength}
             value={content}
-            onChange={(e) => onContentChange(e.target.value)}
+            onChange={(e) => onContentChange?.(e.target.value)}
             placeholder="Type or paste the full email content here..."
             className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 resize-none transition-all"
           />
           <div className="absolute right-4 bottom-3 text-xs font-medium text-slate-400 select-none">
             {content.length}/{maxLength}
           </div>
+        </div>
+      </div>
+
+      {/* Email Model Selector */}
+      <div className="pt-1">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">
+            Detection Model
+          </label>
+          <span className="text-xs text-slate-500">
+            {emailModel === 'dl'
+              ? 'Bi-LSTM — Deep learning email analysis'
+              : 'Traditional ML — Fast text-based analysis'}
+          </span>
+        </div>
+
+        <div
+          role="radiogroup"
+          aria-label="Detection Model"
+          className="inline-flex p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 gap-1 w-full sm:w-auto"
+        >
+          <button
+            type="button"
+            role="radio"
+            aria-checked={emailModel === 'ml'}
+            onClick={() => onEmailModelChange?.('ml')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-500/30 ${
+              emailModel === 'ml'
+                ? 'bg-white text-blue-700 shadow-xs border border-slate-200/80 font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 border border-transparent'
+            }`}
+          >
+            <Cpu className="w-3.5 h-3.5" />
+            <span>Traditional ML</span>
+          </button>
+
+          <button
+            type="button"
+            role="radio"
+            aria-checked={emailModel === 'dl'}
+            onClick={() => onEmailModelChange?.('dl')}
+            className={`flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus:outline-hidden focus:ring-2 focus:ring-blue-500/30 ${
+              emailModel === 'dl'
+                ? 'bg-white text-blue-700 shadow-xs border border-slate-200/80 font-bold'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50 border border-transparent'
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Bi-LSTM</span>
+          </button>
         </div>
       </div>
 
@@ -65,3 +117,4 @@ export default function EmailInput({
     </form>
   );
 }
+
