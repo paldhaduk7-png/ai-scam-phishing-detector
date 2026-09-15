@@ -7,7 +7,7 @@ import UrlInput from '../components/detection/UrlInput';
 import DetectionExamples from '../components/detection/DetectionExamples';
 import DetectionResult from '../components/detection/DetectionResult';
 import Card from '../components/common/Card';
-import { detectScam } from '../services/api';
+import { detectScam, detectEmailDL } from '../services/api';
 import {
   Shield,
   Search,
@@ -26,6 +26,7 @@ export default function Detect() {
   const [emailSubject, setEmailSubject] = useState('');
   const [emailContent, setEmailContent] = useState('');
   const [urlInput, setUrlInput] = useState('');
+  const [emailModel, setEmailModel] = useState('ml');
 
   // Detection states: 'idle' | 'loading' | 'success' | 'error'
   const [analysisStatus, setAnalysisStatus] = useState('idle');
@@ -80,10 +81,15 @@ export default function Detect() {
     setErrorMessage('');
 
     try {
-      const response = await detectScam({
-        content,
-        content_type,
-      });
+      let response;
+      if (activeTab === 'email' && emailModel === 'dl') {
+        response = await detectEmailDL({ content });
+      } else {
+        response = await detectScam({
+          content,
+          content_type,
+        });
+      }
       setAnalysisResult(response);
       setAnalysisStatus('success');
       setErrorMessage('');
@@ -143,6 +149,8 @@ export default function Detect() {
                 onContentChange={setEmailContent}
                 onSubmit={handleAnalyze}
                 isLoading={analysisStatus === 'loading'}
+                emailModel={emailModel}
+                onEmailModelChange={setEmailModel}
               />
             )}
 
