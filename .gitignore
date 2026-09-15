@@ -47,6 +47,7 @@ ml/data/processed/*
 # Trained Models & Binaries
 ml/models/*
 !ml/models/.gitkeep
+!ml/models/*.json
 *.pkl
 *.joblib
 *.h5
