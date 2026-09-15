@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.schemas import DetectionRequest, DetectionResponse
 from backend.app.services.detector import detect
+from backend.app.services.dl_detector import detect_email_dl
 
 logger = logging.getLogger("scamshield.api")
 
@@ -59,4 +60,34 @@ def detect_threat(request: DetectionRequest) -> DetectionResponse:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Prediction service temporarily unavailable."
+        ) from exc
+
+
+@app.post(
+    "/api/v1/detect/dl",
+    response_model=DetectionResponse,
+    tags=["Detection"],
+    summary="Scan email content using Deep Learning Bi-LSTM neural network"
+)
+def detect_threat_dl(request: DetectionRequest) -> DetectionResponse:
+    """
+    Analyzes email body text using the trained Deep Learning Bi-LSTM model.
+    Only supports content_type='email'. Rejects 'sms' and 'url' channels.
+    """
+    if request.content_type.lower() != "email":
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Deep Learning Bi-LSTM model only supports content_type='email'."
+        )
+
+    try:
+        result = detect_email_dl(request.content)
+        return DetectionResponse(**result)
+    except HTTPException:
+        raise
+    except Exception as exc:
+        logger.error("Deep Learning inference failure: %s", exc, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Deep Learning prediction service temporarily unavailable."
         ) from exc
