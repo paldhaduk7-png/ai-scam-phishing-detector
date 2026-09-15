@@ -23,7 +23,7 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Python & Virtual Environments (for future FastAPI backend)
+# Python & Virtual Environments
 __pycache__/
 *.py[cod]
 *$py.class
@@ -37,6 +37,27 @@ env/
 .coverage
 htmlcov/
 *.egg-info/
+
+# Machine Learning Datasets
+ml/data/raw/*
+!ml/data/raw/.gitkeep
+ml/data/processed/*
+!ml/data/processed/.gitkeep
+
+# Trained Models & Binaries
+ml/models/*
+!ml/models/.gitkeep
+*.pkl
+*.joblib
+*.h5
+*.keras
+*.pt
+*.pth
+*.onnx
+
+# Jupyter Notebook Checkpoints
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
 
 # IDE & OS files
 .vscode/*
