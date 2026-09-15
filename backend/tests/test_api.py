@@ -8,7 +8,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from backend.app.main import app
+from app.main import app
 
 client = TestClient(app)
 
@@ -229,7 +229,7 @@ def test_detect_ml_inference_error_is_sanitized():
     """
     sensitive_error_msg = "Critical internal fault in /home/user/secret_models/pipeline.py: CUDA out of memory"
     
-    with patch("backend.app.main.detect_unified", side_effect=RuntimeError(sensitive_error_msg)):
+    with patch("app.main.detect_unified", side_effect=RuntimeError(sensitive_error_msg)):
         response = client.post(
             "/api/v1/detect",
             json={"content": "test email content", "content_type": "email"}
@@ -250,7 +250,7 @@ def test_detect_dl_inference_error_is_sanitized():
     """
     sensitive_error_msg = "TensorFlow Graph execution failed at C:\\internal\\deep_learning\\model.keras"
     
-    with patch("backend.app.main.detect_email_dl", side_effect=RuntimeError(sensitive_error_msg)):
+    with patch("app.main.detect_email_dl", side_effect=RuntimeError(sensitive_error_msg)):
         response = client.post(
             "/api/v1/detect/dl",
             json={"content": "test email content", "content_type": "email"}
