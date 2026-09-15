@@ -6,7 +6,7 @@ while preserving the separate Deep Learning Bi-LSTM service.
 """
 
 from typing import Any, Dict
-from backend.app.services.detector import detect
+from app.services.detector import detect
 
 SUPPORTED_CHANNELS = {"email", "sms", "url"}
 

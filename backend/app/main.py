@@ -1,13 +1,16 @@
 import logging
 from typing import Any, Dict
-from fastapi import Body, FastAPI, HTTPException, Request, status
+from fastapi import Body, Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from sqlalchemy.orm import Session
 
-from backend.app.config import settings
-from backend.app.schemas import DetectionRequest, DetectionResponse
-from backend.app.services.unified_detector import detect_unified
-from backend.app.services.dl_detector import detect_email_dl
+from app.config import settings
+from app.database import get_db
+from app.models import Detection
+from app.schemas import DetectionRequest, DetectionResponse
+from app.services.unified_detector import detect_unified
+from app.services.dl_detector import detect_email_dl
 
 # Configure standard Python logging
 logging.basicConfig(
@@ -172,7 +175,8 @@ def detect_threat(
     request: DetectionRequest = Body(
         ...,
         openapi_examples=DETECT_REQUEST_EXAMPLES
-    )
+    ),
+    db: Session = Depends(get_db)
 ) -> DetectionResponse:
     """
     ### Standard Unified Threat Detection
@@ -191,6 +195,31 @@ def detect_threat(
     """
     try:
         result = detect_unified(request.content, request.content_type)
+
+        try:
+            record = Detection(
+                input_type=request.content_type,
+                input_text=request.content,
+                predicted_label=result.get("predicted_label"),
+                classification=result.get("classification"),
+                score=result.get("score"),
+                score_type=result.get("score_type"),
+                risk_percentage=result.get("risk_percentage"),
+                is_phishing=result.get("is_phishing"),
+                is_spam=result.get("is_spam"),
+                model_used="ML",
+            )
+            db.add(record)
+            db.commit()
+            db.refresh(record)
+        except Exception as db_err:
+            db.rollback()
+            logger.error("Database persistence failure for detect: %s", db_err, exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Detection service temporarily unavailable."
+            ) from None
+
         return DetectionResponse(**result)
     except HTTPException:
         raise
@@ -269,7 +298,8 @@ def detect_threat_dl(
     request: DetectionRequest = Body(
         ...,
         openapi_examples=DETECT_DL_REQUEST_EXAMPLES
-    )
+    ),
+    db: Session = Depends(get_db)
 ) -> DetectionResponse:
     """
     ### Deep Learning Bi-LSTM Email Detection
@@ -295,6 +325,31 @@ def detect_threat_dl(
 
     try:
         result = detect_email_dl(request.content)
+
+        try:
+            record = Detection(
+                input_type=request.content_type,
+                input_text=request.content,
+                predicted_label=result.get("predicted_label"),
+                classification=result.get("classification"),
+                score=result.get("score"),
+                score_type=result.get("score_type"),
+                risk_percentage=result.get("risk_percentage"),
+                is_phishing=result.get("is_phishing"),
+                is_spam=result.get("is_spam"),
+                model_used="Bi-LSTM",
+            )
+            db.add(record)
+            db.commit()
+            db.refresh(record)
+        except Exception as db_err:
+            db.rollback()
+            logger.error("Database persistence failure for detect/dl: %s", db_err, exc_info=True)
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Detection service temporarily unavailable."
+            ) from None
+
         return DetectionResponse(**result)
     except HTTPException:
         raise
