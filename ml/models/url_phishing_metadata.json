@@ -1,0 +1,82 @@
+{
+  "model_name": "XGBoost Classifier (XGBClassifier)",
+  "pipeline_steps": [
+    "feature_extractor",
+    "classifier"
+  ],
+  "task": "binary_url_phishing_classification",
+  "input_type": "raw_url_string",
+  "target_labels": {
+    "0": "Safe / Legitimate URL",
+    "1": "Phishing / Scam URL"
+  },
+  "positive_label": 1,
+  "negative_label": 0,
+  "feature_engineering": {
+    "feature_count": 23,
+    "feature_names": [
+      "url_len",
+      "hostname_len",
+      "path_len",
+      "query_len",
+      "dot_count",
+      "hyphen_count",
+      "underscore_count",
+      "slash_count",
+      "question_count",
+      "equal_count",
+      "ampersand_count",
+      "at_count",
+      "digit_count",
+      "letter_count",
+      "special_count",
+      "digit_ratio",
+      "special_ratio",
+      "no_of_subdomains",
+      "is_ip",
+      "is_https",
+      "is_shortener",
+      "keyword_count",
+      "tld_len"
+    ],
+    "type": "lexical_and_structural_offline_extraction",
+    "network_requests": false
+  },
+  "model_parameters": {
+    "n_estimators": 150,
+    "max_depth": 8,
+    "learning_rate": 0.1,
+    "random_state": 42,
+    "eval_metric": "logloss"
+  },
+  "dataset_summary": {
+    "dataset_name": "PhiUSIIL_Phishing_URL_Dataset",
+    "cleaned_samples": 235370,
+    "train_samples": 188296,
+    "test_samples": 47074,
+    "stratified": true,
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "class_distribution": {
+    "safe_samples": 134850,
+    "phishing_samples": 100520,
+    "safe_percentage": 57.29,
+    "phishing_percentage": 42.71
+  },
+  "evaluation_metrics": {
+    "accuracy": 0.9959,
+    "precision": 0.999098,
+    "recall": 0.991295,
+    "f1_score": 0.995181,
+    "roc_auc": 0.997914
+  },
+  "confusion_matrix": {
+    "true_negatives": 26952,
+    "false_positives": 18,
+    "false_negatives": 175,
+    "true_positives": 19929,
+    "false_positive_rate": 0.000667,
+    "false_negative_rate": 0.008705
+  }
+}
