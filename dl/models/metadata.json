@@ -1,0 +1,26 @@
+{
+  "model_type": "Bi-LSTM Text Classifier",
+  "framework": "TensorFlow / Keras",
+  "tf_version": "2.21.0",
+  "max_sequence_length": 200,
+  "vocabulary_size": 20000,
+  "embedding_dimension": 64,
+  "lstm_units": 64,
+  "dense_units": 64,
+  "dropout_rate": 0.3,
+  "classification_threshold": 0.5,
+  "label_mapping": {
+    "0": "Safe",
+    "1": "Scam/Phishing"
+  },
+  "split_sizes": {
+    "training_samples": 57453,
+    "validation_samples": 12312,
+    "test_samples": 12312
+  },
+  "artifacts": {
+    "model_file": "best_model.keras",
+    "tokenizer_file": "tokenizer.pkl",
+    "metadata_file": "metadata.json"
+  }
+}
