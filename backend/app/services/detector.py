@@ -3,7 +3,15 @@ Detection Service Module for AI Scam & Phishing Detector.
 Encapsulates inference execution by connecting to the existing ML prediction pipelines.
 """
 
+import sys
+from pathlib import Path
 from typing import Any, Dict
+
+# Ensure project root is available on sys.path so 'ml' can be imported when running from backend
+PROJECT_ROOT = str(Path(__file__).resolve().parents[3])
+if PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, PROJECT_ROOT)
+
 from ml.src.predict import predict
 
 
