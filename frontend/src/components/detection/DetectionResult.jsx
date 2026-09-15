@@ -61,24 +61,82 @@ export default function DetectionResult({
 
   // Success state: display real response received from backend
   if (status === 'success' && result) {
-    const classification = result.classification || result.result || 'Analysis Complete';
-    const threatLevel = result.threat_level || result.threatLevel || classification;
-    const confidence = result.confidence !== undefined ? `${result.confidence}%` : null;
-    const riskScore = result.risk_score || result.riskScore || confidence;
-    const inputAnalyzed = result.input_analyzed || result.inputAnalyzed || result.input;
-    const indicators = result.indicators || [];
-    const explanation = result.explanation;
-    const recommendations = result.recommendations || [];
+    const classification = result.classification || 'Analysis Complete';
+    const isPhishing = Boolean(result.is_phishing);
+    const isSuspicious = !isPhishing && typeof result.risk_percentage === 'number' && result.risk_percentage >= 40;
+    const isSafe = !isPhishing && !isSuspicious;
 
-    const isPhishing =
-      String(threatLevel).toLowerCase().includes('phishing') ||
-      String(classification).toLowerCase().includes('phishing');
-    const isSuspicious =
-      String(threatLevel).toLowerCase().includes('suspicious') ||
-      String(classification).toLowerCase().includes('suspicious');
-    const isSafe =
-      String(threatLevel).toLowerCase().includes('safe') ||
-      String(classification).toLowerCase().includes('safe');
+    let formattedRiskScore = null;
+    if (typeof result.risk_percentage === 'number' && !isNaN(result.risk_percentage)) {
+      formattedRiskScore = `${result.risk_percentage.toFixed(1)}%`;
+    }
+
+    const inputAnalyzed = result.input_analyzed || result.inputAnalyzed || result.input;
+
+    let explanation = result.error || result.explanation;
+    if (!explanation) {
+      if (isPhishing) {
+        explanation = result.is_spam
+          ? 'This message exhibits characteristic indicators of an unsolicited smishing or scam attempt.'
+          : 'Our AI model detected significant deceptive or credential-harvesting phishing patterns in this content.';
+      } else {
+        explanation = 'No deceptive phishing or scam patterns were detected. This content appears safe and legitimate.';
+      }
+    }
+
+    // Build analysis details from actual backend response fields
+    const indicators = [...(result.indicators || [])];
+    if (indicators.length === 0) {
+      if (result.score_type) {
+        const scoreStr = typeof result.score === 'number' && !isNaN(result.score)
+          ? ` (Raw Score: ${result.score.toFixed(4)})`
+          : '';
+        indicators.push({
+          title: 'Scoring Model',
+          description: `${result.score_type}${scoreStr}`,
+        });
+      }
+
+      if (result.is_spam !== null && result.is_spam !== undefined) {
+        indicators.push({
+          title: 'SMS Spam Filter',
+          description: result.is_spam
+            ? 'Flagged as potential spam or smishing message.'
+            : 'Passed spam filter (classified as legitimate/ham).',
+        });
+      }
+
+      if (result.predicted_label !== null && result.predicted_label !== undefined) {
+        indicators.push({
+          title: 'Model Classification Outcome',
+          description: result.predicted_label === 1
+            ? 'Positive match for malicious / phishing threat (Class 1).'
+            : 'Negative match for threats — classified as benign (Class 0).',
+        });
+      }
+
+      if (result.error) {
+        indicators.push({
+          title: 'Detection Notice',
+          description: String(result.error),
+        });
+      }
+    }
+
+    // Recommended actions based on risk
+    const recommendations = result.recommendations && result.recommendations.length > 0
+      ? result.recommendations
+      : isPhishing
+        ? [
+            'Do not click any embedded links or download unexpected attachments.',
+            'Never reveal sensitive passwords, banking credentials, or one-time passcodes.',
+            'Verify the sender by contacting the organization directly through official channels.',
+            'Mark this communication as junk/phishing and delete or block the sender.',
+          ]
+        : [
+            'The content does not trigger standard phishing or scam heuristic rules.',
+            'Always verify the destination domain before entering credentials online.',
+          ];
 
     let bannerBg = 'bg-slate-50 border-slate-200 text-slate-900';
     let icon = <HelpCircle className="w-8 h-8 text-slate-500" />;
@@ -116,7 +174,7 @@ export default function DetectionResult({
             </div>
           </div>
 
-          {riskScore && (
+          {formattedRiskScore && (
             <div className="flex sm:flex-col items-center sm:items-end justify-between gap-1 shrink-0">
               <span className="text-xs uppercase tracking-wider font-bold opacity-70">
                 Risk Score
@@ -124,7 +182,7 @@ export default function DetectionResult({
               <div
                 className={`px-3.5 py-1.5 rounded-xl font-extrabold text-base ${scoreBadgeClass}`}
               >
-                {riskScore}
+                {formattedRiskScore}
               </div>
             </div>
           )}
