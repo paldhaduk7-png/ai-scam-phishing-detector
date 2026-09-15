@@ -29,6 +29,21 @@ export const detectScam = async ({ content, content_type }) => {
 };
 
 /**
+ * Scan email content for phishing threats using the trained Deep Learning Bi-LSTM neural network.
+ * Note: Exclusively supports email content channel.
+ * @param {Object} payload
+ * @param {string} payload.content - Email subject and body content to analyze
+ * @returns {Promise<Object>} DetectionResponse
+ */
+export const detectEmailDL = async ({ content }) => {
+  const response = await api.post('/detect/dl', {
+    content,
+    content_type: 'email',
+  });
+  return response.data;
+};
+
+/**
  * Fetch dashboard overview statistics
  */
 export const getDashboardStats = async () => {
