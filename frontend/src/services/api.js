@@ -3,10 +3,10 @@ import axios from 'axios';
 /**
  * ScamShield API Client
  * Configured using VITE_API_BASE_URL environment variable.
- * Fallback to http://localhost:8000/api if not specified.
+ * Fallback to http://localhost:8000/api/v1 if not specified.
  */
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api',
+  baseURL: import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
@@ -14,11 +14,17 @@ const api = axios.create({
 });
 
 /**
- * Scan content for scam / phishing indicators
- * @param {Object} payload - { type: 'message'|'email'|'url', text, subject, url }
+ * Scan content for scam / phishing indicators using the unified ML detection pipeline.
+ * @param {Object} payload
+ * @param {string} payload.content - Text message, email body, or URL to analyze
+ * @param {'email'|'sms'|'url'} payload.content_type - Content classification channel
+ * @returns {Promise<Object>} DetectionResponse
  */
-export const detectScam = async (payload) => {
-  const response = await api.post('/detect', payload);
+export const detectScam = async ({ content, content_type }) => {
+  const response = await api.post('/detect', {
+    content,
+    content_type,
+  });
   return response.data;
 };
 
