@@ -261,3 +261,59 @@ def test_detect_dl_inference_error_is_sanitized():
         assert "TensorFlow" not in response.text
         assert "internal" not in response.text
         assert "Traceback" not in response.text
+
+
+# ==============================================================================
+# 6. Centralized Configuration & CORS Tests
+# ==============================================================================
+
+def test_cors_allows_localhost_5173():
+    """Verify CORS headers are returned for allowed development origin http://localhost:5173."""
+    response = client.options(
+        "/health",
+        headers={
+            "Origin": "http://localhost:5173",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == "http://localhost:5173"
+
+
+def test_cors_allows_127_0_0_1_5173():
+    """Verify CORS headers are returned for allowed development origin http://127.0.0.1:5173."""
+    response = client.options(
+        "/health",
+        headers={
+            "Origin": "http://127.0.0.1:5173",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert response.status_code == 200
+    assert response.headers.get("access-control-allow-origin") == "http://127.0.0.1:5173"
+
+
+def test_cors_rejects_arbitrary_origin():
+    """Verify arbitrary origins do not receive access-control-allow-origin header."""
+    response = client.options(
+        "/health",
+        headers={
+            "Origin": "http://malicious-website.com",
+            "Access-Control-Request-Method": "GET"
+        }
+    )
+    assert response.headers.get("access-control-allow-origin") is None
+
+
+def test_docs_and_openapi_endpoints_return_200():
+    """Verify OpenAPI documentation and schema endpoints are operational."""
+    resp_docs = client.get("/docs")
+    assert resp_docs.status_code == 200
+
+    resp_openapi = client.get("/openapi.json")
+    assert resp_openapi.status_code == 200
+    openapi_doc = resp_openapi.json()
+    assert openapi_doc["info"]["title"] == "AI Scam & Phishing Detector API"
+    assert "/health" in openapi_doc["paths"]
+    assert "/api/v1/detect" in openapi_doc["paths"]
+    assert "/api/v1/detect/dl" in openapi_doc["paths"]

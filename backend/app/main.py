@@ -4,6 +4,7 @@ from fastapi import Body, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+from backend.app.config import settings
 from backend.app.schemas import DetectionRequest, DetectionResponse
 from backend.app.services.unified_detector import detect_unified
 from backend.app.services.dl_detector import detect_email_dl
@@ -14,31 +15,6 @@ logging.basicConfig(
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s"
 )
 logger = logging.getLogger("scamshield.api")
-
-API_DESCRIPTION = """
-## Overview
-The **AI Scam & Phishing Detector API** is a production-ready RESTful cybersecurity service designed to detect and analyze deceptive online threats in real time. Powered by trained machine learning and deep learning models, the service identifies potential phishing, fraud, and scam content across three primary digital communication channels:
-
-- **Email**: Analyzes email subject lines and body text to identify phishing lures, spoofed sender notices, fake security alerts, and credential harvesting schemes.
-- **SMS / Text Messages**: Identifies mobile smishing attacks, urgent payment demands, lottery/prize scams, and fake delivery notifications.
-- **URLs**: Inspects web addresses and hyperlinks for suspicious lexical patterns, typosquatting domains, deceptive login pages, and malicious redirectors.
-
----
-
-## Detection Endpoints & Model Architectures
-
-The API provides two dedicated detection endpoints tailored for distinct modeling techniques:
-
-1. **Standard Unified Detection (`POST /api/v1/detect`)**
-   - **Supported Channels**: `email`, `sms`, and `url`
-   - **Model Architecture**: Multi-channel machine learning pipelines combining TF-IDF n-gram vectorization, structural/lexical URL feature extraction, and optimized scikit-learn / XGBoost classifiers.
-   - **Use Case**: General multi-vector threat detection with low inference latency and balanced precision.
-
-2. **Deep Learning Bi-LSTM Detection (`POST /api/v1/detect/dl`)**
-   - **Supported Channels**: `email` only (*rejects `sms` and `url` with HTTP 400 Bad Request*)
-   - **Model Architecture**: 128-unit Bidirectional Long Short-Term Memory (Bi-LSTM) recurrent neural network with word tokenization, dense embeddings, and dropout regularization.
-   - **Use Case**: In-depth sequential semantic analysis of long-form email phishing lures.
-"""
 
 TAGS_METADATA = [
     {
@@ -56,21 +32,15 @@ TAGS_METADATA = [
 ]
 
 app = FastAPI(
-    title="AI Scam & Phishing Detector API",
-    description=API_DESCRIPTION,
-    version="1.0.0",
+    title=settings.api_title,
+    description=settings.api_description,
+    version=settings.api_version,
     openapi_tags=TAGS_METADATA
 )
 
-# Allowed development origins for React frontend
-ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "http://127.0.0.1:5173"
-]
-
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=ALLOWED_ORIGINS,
+    allow_origins=settings.allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
@@ -120,7 +90,7 @@ def health_check() -> Dict[str, str]:
     """
     return {
         "status": "ok",
-        "service": "AI Scam & Phishing Detector API"
+        "service": settings.api_title
     }
 
 
