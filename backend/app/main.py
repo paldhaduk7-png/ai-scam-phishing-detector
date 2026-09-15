@@ -4,7 +4,7 @@ from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 
 from backend.app.schemas import DetectionRequest, DetectionResponse
-from backend.app.services.detector import detect
+from backend.app.services.unified_detector import detect_unified
 from backend.app.services.dl_detector import detect_email_dl
 
 logger = logging.getLogger("scamshield.api")
@@ -53,7 +53,7 @@ def detect_threat(request: DetectionRequest) -> DetectionResponse:
     detection pipelines and returns threat classifications, risk percentages, and indicators.
     """
     try:
-        result = detect(request.content, request.content_type)
+        result = detect_unified(request.content, request.content_type)
         return DetectionResponse(**result)
     except Exception as exc:
         logger.error("Inference failure for type %s: %s", request.content_type, exc, exc_info=True)
