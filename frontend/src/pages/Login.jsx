@@ -21,7 +21,6 @@ import {
 import { toast } from 'sonner';
 import {
   LoginShieldIllustration,
-  HandwrittenAccent,
 } from '../components/auth/AuthIllustrations';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
@@ -188,7 +187,7 @@ export default function Login() {
     <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Branding Navigation Header - Full width white bar (height ~54px) */}
       <header className="w-full h-14 bg-white dark:bg-[#0b101b] border-b border-slate-200/80 dark:border-slate-800 shrink-0 flex items-center">
-        <div className="w-full max-w-[1500px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
             <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
               <Shield className="w-4.5 h-4.5 fill-white stroke-blue-600 stroke-[1.5]" />
@@ -235,8 +234,8 @@ export default function Login() {
         </div>
       </header>
 
-      {/* Main Content Starts Immediately Below Header with Compact ~16-20px Gap */}
-      <main className="w-full max-w-[1500px] mx-auto px-6 lg:px-12 pt-4 sm:pt-5 pb-8 flex-1">
+      {/* Main Content Shifted Left with Small Outer Margin */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 pt-4 sm:pt-5 pb-8 flex-1">
         <div className="w-full flex flex-col lg:flex-row items-start justify-between gap-6 xl:gap-10">
           {/* LEFT SECTION (~500px wide): Security Proposition & 3 WIDE Feature Cards */}
           <div className="w-full lg:w-[480px] xl:w-[500px] space-y-5 text-left shrink-0">
@@ -472,11 +471,6 @@ export default function Login() {
                   </Link>
                 </p>
               </div>
-            </div>
-
-            {/* Handwritten Accent Text on the Far Right */}
-            <div className="absolute -right-24 xl:-right-28 top-1/2 -translate-y-1/2 hidden xl:flex">
-              <HandwrittenAccent type="login" />
             </div>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Mail, Link2, Check, Lock } from 'lucide-react';
 /**
  * 3D-styled Glossy Blue Shield SVG
  */
-function GlossyShield({ size = 180, icon: IconComponent = Lock, checkmark = false }) {
+function GlossyShield({ size = 180, icon: _icon = Lock, checkmark = false }) {
   return (
     <div className="relative flex items-center justify-center" style={{ width: size, height: size * 1.15 }}>
       {/* Outer ambient glow */}

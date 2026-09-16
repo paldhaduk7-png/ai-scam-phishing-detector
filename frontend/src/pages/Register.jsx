@@ -208,9 +208,9 @@ export default function Register() {
 
   return (
     <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      {/* 1. Full-Width White Header (compact height ~54px) */}
+      {/* 1. Full-Width White Header with clean left/right margins */}
       <header className="w-full h-14 bg-white dark:bg-[#0b101b] border-b border-slate-200/80 dark:border-slate-800 shrink-0 flex items-center">
-        <div className="w-full max-w-[1500px] mx-auto px-6 lg:px-12 flex items-center justify-between">
+        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
             <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
               <Shield className="w-4.5 h-4.5 fill-white stroke-blue-600 stroke-[1.5]" />
@@ -257,11 +257,11 @@ export default function Register() {
         </div>
       </header>
 
-      {/* 2. Main Content Starts Immediately Below Header with Compact ~16-20px Gap */}
-      <main className="w-full max-w-[1500px] mx-auto px-6 lg:px-12 pt-4 sm:pt-5 pb-8 flex-1">
-        <div className="w-full flex flex-col lg:flex-row items-start justify-between gap-6 xl:gap-10">
-          {/* LEFT COLUMN: ~500px wide */}
-          <div className="w-full lg:w-[480px] xl:w-[500px] space-y-4 text-left shrink-0">
+      {/* 2. Main Content Shifted Left with Small Outer Margin */}
+      <main className="w-full px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 pb-8 flex-1">
+        <div className="w-full flex flex-col lg:flex-row items-start justify-between gap-6 xl:gap-8 2xl:gap-10">
+          {/* LEFT COLUMN: Large Left Content Area */}
+          <div className="w-full lg:w-[440px] xl:w-[490px] 2xl:w-[520px] space-y-4 text-left shrink-0">
             {/* Personal Security Suite Green Badge */}
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
@@ -327,13 +327,13 @@ export default function Register() {
             </div>
           </div>
 
-          {/* CENTER COLUMN: Large Profile/Account + Blue Shield Illustration (320–350px) */}
-          <div className="hidden lg:flex items-center justify-center shrink-0 w-[300px] xl:w-[350px] pt-2">
+          {/* CENTER COLUMN: Large Profile/Account + Blue Shield Illustration */}
+          <div className="hidden lg:flex flex-1 items-center justify-center shrink-0 min-w-[260px] max-w-[360px] pt-2">
             <RegisterProfileIllustration />
           </div>
 
-          {/* RIGHT COLUMN: Wide (520–540px) & Vertically Compact Registration Card */}
-          <div className="w-full max-w-[540px] lg:w-[520px] xl:w-[540px] shrink-0">
+          {/* RIGHT COLUMN: Wide & Vertically Compact Registration Card */}
+          <div className="w-full max-w-[540px] lg:w-[480px] xl:w-[510px] 2xl:w-[540px] shrink-0">
             <div className="w-full bg-white dark:bg-[#0f172a] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 px-7 sm:px-8 py-5 sm:py-6">
               {/* 1. Blue Account Icon */}
               <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-1.5">
