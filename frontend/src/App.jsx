@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
+import { Toaster } from 'sonner';
 import { checkAuth } from './store/slices/authSlice';
+import { ThemeProvider } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
+import GuestRoute from './components/common/GuestRoute';
 import Home from './pages/Home';
 import Detect from './pages/Detect';
 import Dashboard from './pages/Dashboard';
@@ -19,14 +22,23 @@ const router = createBrowserRouter([
     path: '/',
     element: <Home />,
   },
-  // Public Auth Pages
+  // Public Auth Pages (Guarded by GuestRoute: logged-in users redirected to /dashboard)
   {
-    path: '/login',
-    element: <Login />,
-  },
-  {
-    path: '/register',
-    element: <Register />,
+    element: <GuestRoute />,
+    children: [
+      {
+        path: '/login',
+        element: <Login />,
+      },
+      {
+        path: '/register',
+        element: <Register />,
+      },
+      {
+        path: '/signup',
+        element: <Register />,
+      },
+    ],
   },
   // Main Application Layout
   {
@@ -41,7 +53,7 @@ const router = createBrowserRouter([
         path: 'about',
         element: <About />,
       },
-      // Protected Pages (Authentication required)
+      // Protected Pages (Authentication strictly required)
       {
         element: <ProtectedRoute />,
         children: [
@@ -76,5 +88,17 @@ export default function App() {
     dispatch(checkAuth());
   }, [dispatch]);
 
-  return <RouterProvider router={router} />;
+  return (
+    <ThemeProvider>
+      <Toaster
+        richColors
+        position="top-right"
+        closeButton
+        toastOptions={{
+          className: 'shadow-2xl border',
+        }}
+      />
+      <RouterProvider router={router} />
+    </ThemeProvider>
+  );
 }
