@@ -1,11 +1,20 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Shield, Menu, X } from 'lucide-react';
+import { useDispatch, useSelector } from 'react-redux';
+import { Shield, Menu, X, LogOut, LayoutDashboard } from 'lucide-react';
 import Button from '../common/Button';
+import { logoutUser } from '../../store/slices/authSlice';
 
 export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-slate-200/80 transition-all">
@@ -28,38 +37,94 @@ export default function PublicNavbar() {
           >
             Home
           </Link>
-          <a
-            href="#features"
-            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-          >
-            Features
-          </a>
           <Link
-            to="/about"
-            className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+            to="/detect"
+            className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
           >
-            About
+            Detect
           </Link>
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/dashboard"
+                className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/history"
+                className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+              >
+                History
+              </Link>
+              <Link
+                to="/profile"
+                className="text-sm font-medium text-slate-700 hover:text-blue-600 transition-colors"
+              >
+                Profile
+              </Link>
+            </>
+          ) : (
+            <>
+              <a
+                href="#features"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+              >
+                Features
+              </a>
+              <Link
+                to="/about"
+                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
+              >
+                About
+              </Link>
+            </>
+          )}
         </nav>
 
         {/* Right CTA / Action Buttons */}
         <div className="hidden md:flex items-center gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/dashboard')}
-            className="text-slate-600 hover:text-slate-900 font-medium"
-          >
-            Login
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => navigate('/detect')}
-            className="rounded-full px-5 py-2 text-sm shadow-md shadow-blue-500/25"
-          >
-            Get Started
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/dashboard')}
+                className="text-slate-700 font-medium inline-flex items-center gap-1.5"
+              >
+                <LayoutDashboard className="w-4 h-4 text-blue-600" />
+                <span>Dashboard</span>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className="text-slate-500 hover:text-red-600 font-medium inline-flex items-center gap-1.5"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sign Out</span>
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="text-slate-600 hover:text-slate-900 font-medium"
+              >
+                Login
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/detect')}
+                className="rounded-full px-5 py-2 text-sm shadow-md shadow-blue-500/25"
+              >
+                Try Free Scan
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile menu toggle */}
@@ -82,42 +147,83 @@ export default function PublicNavbar() {
           >
             Home
           </Link>
-          <a
-            href="#features"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-50"
-          >
-            Features
-          </a>
           <Link
-            to="/about"
+            to="/detect"
             onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-50"
+            className="block px-3 py-2 rounded-lg text-base font-medium text-slate-800 hover:bg-slate-50"
           >
-            About
+            Detect
           </Link>
-          <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                navigate('/dashboard');
-              }}
-              className="w-full justify-center"
-            >
-              Login
-            </Button>
-            <Button
-              variant="primary"
-              onClick={() => {
-                setMobileMenuOpen(false);
-                navigate('/detect');
-              }}
-              className="w-full justify-center"
-            >
-              Get Started
-            </Button>
-          </div>
+
+          {isAuthenticated ? (
+            <>
+              <Link
+                to="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-slate-800 hover:bg-slate-50"
+              >
+                Dashboard
+              </Link>
+              <Link
+                to="/history"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-slate-800 hover:bg-slate-50"
+              >
+                History
+              </Link>
+              <Link
+                to="/profile"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-slate-800 hover:bg-slate-50"
+              >
+                Profile
+              </Link>
+              <div className="pt-3 border-t border-slate-100">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    handleLogout();
+                  }}
+                  className="w-full justify-center text-red-600"
+                >
+                  Sign Out ({user?.name || 'Account'})
+                </Button>
+              </div>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-3 py-2 rounded-lg text-base font-medium text-slate-600 hover:bg-slate-50"
+              >
+                About
+              </Link>
+              <div className="pt-3 border-t border-slate-100 flex flex-col gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate('/login');
+                  }}
+                  className="w-full justify-center"
+                >
+                  Login
+                </Button>
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    navigate('/detect');
+                  }}
+                  className="w-full justify-center"
+                >
+                  Try Free Scan
+                </Button>
+              </div>
+            </>
+          )}
         </div>
       )}
     </header>
