@@ -132,3 +132,100 @@ class DetectionResponse(BaseModel):
             ]
         }
     )
+
+
+# ==============================================================================
+# Authentication & User Schemas
+# ==============================================================================
+
+class UserRegisterRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="User full name")
+    email: str = Field(..., description="Valid email address")
+    password: str = Field(..., min_length=6, max_length=128, description="Password (at least 6 characters)")
+    confirm_password: Optional[str] = Field(default=None, description="Password confirmation")
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("Name cannot be empty.")
+        return s
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        s = v.strip().lower()
+        if "@" not in s or "." not in s.split("@")[-1]:
+            raise ValueError("Please provide a valid email address.")
+        return s
+
+    @field_validator("confirm_password")
+    @classmethod
+    def validate_confirm_password(cls, v: Optional[str], info) -> Optional[str]:
+        if v is not None:
+            pwd = info.data.get("password")
+            if pwd and v != pwd:
+                raise ValueError("Passwords do not match.")
+        return v
+
+
+class UserLoginRequest(BaseModel):
+    email: str = Field(..., description="Registered account email")
+    password: str = Field(..., description="Account password")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        return v.strip().lower()
+
+
+class UserProfileUpdateRequest(BaseModel):
+    name: str = Field(..., min_length=2, max_length=100, description="Updated full name")
+
+    @field_validator("name")
+    @classmethod
+    def validate_name(cls, v: str) -> str:
+        s = v.strip()
+        if not s:
+            raise ValueError("Name cannot be empty.")
+        return s
+
+
+class UserResponse(BaseModel):
+    id: int
+    name: str
+    email: str
+    profile_photo: Optional[str] = None
+    created_at: str
+    updated_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DetectionHistoryItem(BaseModel):
+    id: int
+    input_type: str
+    input_text: str
+    classification: str
+    risk_percentage: float
+    is_phishing: bool
+    is_spam: Optional[bool] = None
+    model_used: str
+    created_at: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class DetectionHistoryResponse(BaseModel):
+    items: list[DetectionHistoryItem]
+    total: int
+    page: int
+    totalPages: int
+
+
+class DashboardStatsResponse(BaseModel):
+    totalScans: int
+    safeResults: int
+    suspicious: int
+    phishing: int
