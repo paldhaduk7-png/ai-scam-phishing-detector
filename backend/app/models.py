@@ -1,16 +1,46 @@
 from datetime import datetime, timezone
-from typing import Optional
+from typing import List, Optional
 
-from sqlalchemy import Boolean, DateTime, Float, Integer, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    email: Mapped[str] = mapped_column(String(255), unique=True, index=True, nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    profile_photo: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    profile_photo_public_id: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    detections: Mapped[List["Detection"]] = relationship("Detection", back_populates="user")
 
 
 class Detection(Base):
     __tablename__ = "detections"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[Optional[int]] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
+    )
     input_type: Mapped[str] = mapped_column(String, nullable=False)
     input_text: Mapped[str] = mapped_column(Text, nullable=False)
     predicted_label: Mapped[Optional[int]] = mapped_column(Integer, nullable=True)
@@ -26,3 +56,5 @@ class Detection(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
+
+    user: Mapped[Optional["User"]] = relationship("User", back_populates="detections")
