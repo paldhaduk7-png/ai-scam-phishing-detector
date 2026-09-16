@@ -5,7 +5,7 @@ Handles registration, login, logout, current user profile, and Cloudinary avatar
 
 import logging
 from typing import Dict
-from fastapi import APIRouter, Depends, File, HTTPException, Response, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -49,26 +49,68 @@ def _format_user(user: User) -> UserResponse:
     status_code=status.HTTP_201_CREATED,
     summary="Register a new user account",
 )
-def register_user(
-    request: UserRegisterRequest,
+async def register_user(
+    request: Request,
     db: Session = Depends(get_db),
 ) -> UserResponse:
     """
-    Creates a new user account with hashed password in PostgreSQL.
+    Creates a new user account in PostgreSQL.
+    Supports both multipart/form-data (with optional profile photo upload) and application/json.
     Rejects duplicate email with HTTP 409 Conflict.
-    Profile photo is optional and not required during registration.
     """
-    existing = db.query(User).filter(User.email == request.email).first()
+    content_type = request.headers.get("content-type", "")
+    photo_file = None
+
+    if "multipart/form-data" in content_type:
+        form = await request.form()
+        name = (form.get("name") or "").strip()
+        email = (form.get("email") or "").strip().lower()
+        password = form.get("password") or ""
+        confirm_password = form.get("confirm_password") or None
+        photo_file = form.get("profile_photo") or form.get("file") or form.get("photo")
+    else:
+        body = await request.json()
+        req = UserRegisterRequest(**body)
+        name = req.name.strip()
+        email = req.email.strip().lower()
+        password = req.password
+        confirm_password = req.confirm_password
+
+    if not name or len(name) < 2:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Full name must be at least 2 characters.",
+        )
+
+    if not email or "@" not in email or "." not in email.split("@")[-1]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide a valid email address.",
+        )
+
+    if not password or len(password) < 6:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Password must be at least 6 characters long.",
+        )
+
+    if confirm_password and password != confirm_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Passwords do not match.",
+        )
+
+    existing = db.query(User).filter(User.email == email).first()
     if existing:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="An account with this email address already exists.",
         )
 
-    pwd_hash = hash_password(request.password)
+    pwd_hash = hash_password(password)
     user = User(
-        name=request.name,
-        email=request.email,
+        name=name,
+        email=email,
         password_hash=pwd_hash,
         profile_photo=None,
         profile_photo_public_id=None,
@@ -76,6 +118,20 @@ def register_user(
     db.add(user)
     db.commit()
     db.refresh(user)
+
+    # If an avatar photo file was uploaded in registration form, upload it to Cloudinary
+    if photo_file and hasattr(photo_file, "filename") and photo_file.filename:
+        try:
+            upload_result = upload_profile_photo(photo_file, user.id)
+            user.profile_photo = upload_result.get("url")
+            user.profile_photo_public_id = upload_result.get("public_id")
+            db.commit()
+            db.refresh(user)
+            logger.info("Uploaded avatar for new user id=%s: %s", user.id, user.profile_photo)
+        except HTTPException:
+            raise
+        except Exception as exc:
+            logger.warning("Cloudinary upload failed during registration for user %s: %s", user.id, exc)
 
     logger.info("Registered new user with id=%s email=%s", user.id, user.email)
     return _format_user(user)

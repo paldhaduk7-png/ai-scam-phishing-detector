@@ -5,7 +5,16 @@ with safe local-development defaults and environment variable overrides.
 """
 
 import os
+from pathlib import Path
 from typing import List
+from dotenv import load_dotenv
+
+# Load backend/.env if present
+env_path = Path(__file__).resolve().parent.parent / ".env"
+if env_path.exists():
+    load_dotenv(dotenv_path=env_path)
+else:
+    load_dotenv()
 
 API_TITLE_DEFAULT = "AI Scam & Phishing Detector API"
 API_VERSION_DEFAULT = "1.0.0"

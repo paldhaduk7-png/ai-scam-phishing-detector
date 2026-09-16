@@ -58,36 +58,48 @@ def validate_image_file(file: UploadFile) -> None:
 def upload_profile_photo(file: UploadFile, user_id: int) -> Dict[str, str]:
     """
     Uploads user avatar image to Cloudinary and returns the secure URL and public ID.
+    If Cloudinary fails or credentials are unavailable, falls back to a base64 Data URL
+    to guarantee that photo upload always succeeds.
     """
-    validate_image_file(file)
-    _init_cloudinary()
+    import base64
 
-    try:
-        folder_path = "scamshield/avatars"
-        result = cloudinary.uploader.upload(
-            file.file,
-            folder=folder_path,
-            public_id=f"user_{user_id}",
-            overwrite=True,
-            resource_type="image",
-            transformation=[
-                {"width": 300, "height": 300, "crop": "fill", "gravity": "face"},
-                {"quality": "auto"},
-                {"fetch_format": "auto"}
-            ]
-        )
-        return {
-            "url": result.get("secure_url", ""),
-            "public_id": result.get("public_id", ""),
-        }
-    except HTTPException:
-        raise
-    except Exception as exc:
-        logger.error("Cloudinary upload failed for user %s: %s", user_id, exc, exc_info=True)
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to upload image. Please try again later.",
-        ) from None
+    validate_image_file(file)
+    file.file.seek(0)
+    file_bytes = file.file.read()
+    file.file.seek(0)
+
+    # Attempt Cloudinary upload if configured
+    if settings.cloudinary_cloud_name and settings.cloudinary_api_key:
+        try:
+            _init_cloudinary()
+            folder_path = "scamshield/avatars"
+            result = cloudinary.uploader.upload(
+                file.file,
+                folder=folder_path,
+                public_id=f"user_{user_id}",
+                overwrite=True,
+                resource_type="image",
+                transformation=[
+                    {"width": 300, "height": 300, "crop": "fill", "gravity": "face"},
+                    {"quality": "auto"},
+                    {"fetch_format": "auto"}
+                ]
+            )
+            return {
+                "url": result.get("secure_url", ""),
+                "public_id": result.get("public_id", ""),
+            }
+        except Exception as exc:
+            logger.warning("Cloudinary upload failed for user %s: %s. Using safe Data URL fallback.", user_id, exc)
+
+    # Base64 fallback (supports immediate display without external service dependencies)
+    content_type = file.content_type or "image/png"
+    b64_str = base64.b64encode(file_bytes).decode("utf-8")
+    data_url = f"data:{content_type};base64,{b64_str}"
+    return {
+        "url": data_url,
+        "public_id": f"data_user_{user_id}",
+    }
 
 
 def delete_profile_photo(public_id: str) -> bool:
