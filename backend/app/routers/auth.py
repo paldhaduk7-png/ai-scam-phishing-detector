@@ -7,11 +7,15 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import logging
 import secrets
-from typing import Dict
+from typing import Dict, Optional
+from urllib.parse import quote_plus
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.exceptions import RequestValidationError
+from fastapi.responses import RedirectResponse
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
+
+from app.config import settings
 
 from app.database import get_db
 from app.models import PasswordResetOTP, User
@@ -37,6 +41,11 @@ from app.services.auth_service import (
 )
 from app.services.cloudinary_service import delete_profile_photo, upload_profile_photo
 from app.services.email_service import send_password_reset_otp_email
+from app.services.google_auth_service import (
+    exchange_code_for_tokens,
+    get_google_authorization_url,
+    get_google_user_info,
+)
 
 logger = logging.getLogger("scamshield.auth_router")
 
@@ -467,3 +476,158 @@ def reset_password(
     return ResetPasswordResponse(
         message="Your password has been successfully reset. You can now log in with your new password."
     )
+
+
+@router.get(
+    "/google/login",
+    summary="Initiate Google OAuth 2.0 flow",
+)
+def google_login() -> RedirectResponse:
+    """
+    Generates a cryptographically secure state token, sets a temporary HTTP-only
+    cookie for CSRF validation, and redirects the browser to Google's OAuth consent screen.
+    """
+    if not settings.google_client_id or not settings.google_client_secret:
+        logger.error("Google OAuth is not configured in backend environment")
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Google Sign-In is not configured on the server.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    state = secrets.token_urlsafe(32)
+    auth_url = get_google_authorization_url(state)
+
+    response = RedirectResponse(url=auth_url, status_code=status.HTTP_303_SEE_OTHER)
+    response.set_cookie(
+        key="oauth_state",
+        value=state,
+        max_age=300,  # 5 minutes
+        httponly=True,
+        secure=settings.cookie_secure,
+        samesite="lax",
+        path="/",
+    )
+    return response
+
+
+@router.get(
+    "/google/callback",
+    summary="Google OAuth 2.0 callback endpoint",
+)
+async def google_callback(
+    request: Request,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    error: Optional[str] = None,
+    db: Session = Depends(get_db),
+) -> RedirectResponse:
+    """
+    Handles Google OAuth redirect:
+    1. Validates CSRF state against HTTP-only cookie.
+    2. Exchanges authorization code for tokens.
+    3. Fetches verified OpenID profile data from Google.
+    4. Finds or creates the user in PostgreSQL without modifying existing passwords.
+    5. Issues standard ScamShield JWT and sets the HTTP-only auth cookie.
+    6. Redirects user to the React frontend.
+    """
+    # 1. Handle user cancellation or provider error
+    if error:
+        logger.warning("Google OAuth error: %s", error)
+        error_msg = (
+            "Google sign-in was cancelled."
+            if "access_denied" in str(error).lower()
+            else f"Google sign-in failed: {error}"
+        )
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus(error_msg)}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # 2. Verify state token against cookie
+    cookie_state = request.cookies.get("oauth_state")
+    if not state or not cookie_state or not secrets.compare_digest(state, cookie_state):
+        logger.warning("Google OAuth state validation failed: state=%s cookie_state=%s", state, cookie_state)
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Invalid or expired sign-in session. Please try again.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # 3. Check for authorization code
+    if not code:
+        logger.warning("Google OAuth callback missing authorization code")
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Missing authorization code from Google.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # 4. Exchange code for Google tokens
+    try:
+        tokens = await exchange_code_for_tokens(code)
+        access_token = tokens.get("access_token")
+        if not access_token:
+            raise ValueError("No access_token found in Google token response")
+    except Exception as exc:
+        logger.error("Error exchanging code for Google tokens: %s", exc)
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Failed to complete Google authentication. Please try again.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # 5. Fetch verified user info
+    try:
+        user_info = await get_google_user_info(access_token)
+    except Exception as exc:
+        logger.error("Error fetching Google userinfo: %s", exc)
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Failed to fetch user profile from Google.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    email = (user_info.get("email") or "").strip().lower()
+    email_verified = user_info.get("email_verified", False)
+
+    if not email or not email_verified:
+        logger.warning("Google account unverified email: email=%s verified=%s", email, email_verified)
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Google account email is not verified.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    google_name = (user_info.get("name") or email.split("@")[0]).strip()
+    google_picture = user_info.get("picture")
+
+    # 6. Find or create user
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        # Create a new user with high-entropy random password hash
+        random_pwd = secrets.token_urlsafe(32)
+        user = User(
+            name=google_name,
+            email=email,
+            password_hash=hash_password(random_pwd),
+            profile_photo=google_picture,
+        )
+        db.add(user)
+        db.commit()
+        db.refresh(user)
+        logger.info("Registered new user via Google OAuth id=%s email=%s", user.id, user.email)
+    else:
+        # Existing user - preserve password, optionally update avatar if missing
+        if not user.profile_photo and google_picture:
+            user.profile_photo = google_picture
+            db.commit()
+            db.refresh(user)
+        logger.info("Authenticated existing user via Google OAuth id=%s email=%s", user.id, user.email)
+
+    # 7. Issue ScamShield JWT token
+    token = create_access_token(user.id)
+
+    # 8. Redirect to frontend and set HTTP-only cookie
+    redirect_url = f"{settings.frontend_url}/login?google_auth=success"
+    response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+    # Clear CSRF state cookie
+    response.delete_cookie(key="oauth_state", path="/")
+    # Set ScamShield authentication cookie
+    set_auth_cookie(response, token)
+    return response
+

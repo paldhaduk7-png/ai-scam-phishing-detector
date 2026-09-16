@@ -104,6 +104,14 @@ class Settings:
         self.mail_port: int = int(os.getenv("MAIL_PORT", "587"))
         self.frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
+        # Google OAuth 2.0 Settings
+        self.google_client_id: str = os.getenv("GOOGLE_CLIENT_ID", "")
+        self.google_client_secret: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
+        self.google_redirect_uri: str = os.getenv(
+            "GOOGLE_REDIRECT_URI",
+            "http://localhost:8000/api/v1/auth/google/callback",
+        )
+
 
 # Singleton application settings instance
 settings = Settings()

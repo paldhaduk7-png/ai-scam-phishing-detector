@@ -534,3 +534,107 @@ def test_reset_password_mismatched_confirm_password():
         "confirm_password": "PasswordXYZ999",
     })
     assert response.status_code == 422
+
+
+def test_google_login_redirect():
+    """24. Test GET /api/v1/auth/google/login sets oauth_state cookie and redirects to Google."""
+    with patch("app.routers.auth.settings.google_client_id", "mock-client-id"), \
+         patch("app.routers.auth.settings.google_client_secret", "mock-client-secret"):
+        response = client.get("/api/v1/auth/google/login", follow_redirects=False)
+        assert response.status_code == 303
+        assert "accounts.google.com" in response.headers["location"]
+        assert "client_id=mock-client-id" in response.headers["location"]
+        assert "response_type=code" in response.headers["location"]
+        assert "oauth_state" in response.cookies
+
+
+def test_google_callback_cancellation():
+    """25. Test GET /api/v1/auth/google/callback with error returns error redirect to frontend."""
+    response = client.get("/api/v1/auth/google/callback?error=access_denied", follow_redirects=False)
+    assert response.status_code == 303
+    assert "error=" in response.headers["location"]
+    assert "cancelled" in response.headers["location"].lower()
+
+
+def test_google_callback_state_mismatch():
+    """26. Test GET /api/v1/auth/google/callback with altered state is rejected with CSRF error."""
+    client.cookies.set("oauth_state", "correct_state_token")
+    response = client.get("/api/v1/auth/google/callback?code=mock_code&state=wrong_state", follow_redirects=False)
+    assert response.status_code == 303
+    assert "error=" in response.headers["location"]
+    assert "invalid" in response.headers["location"].lower() or "expired" in response.headers["location"].lower()
+
+
+def test_google_callback_new_user_creation(db_session):
+    """27. Test Google callback creates new user, sets auth cookie, and redirects to frontend with success."""
+    state = "secure_random_state_123"
+    client.cookies.set("oauth_state", state)
+
+    mock_tokens = {"access_token": "mock_google_access_token", "id_token": "mock_id_token"}
+    mock_userinfo = {
+        "sub": "google-user-123456",
+        "email": "test_google_new@example.com",
+        "email_verified": True,
+        "name": "Google Newbie",
+        "picture": "https://example.com/photo.jpg",
+    }
+
+    with patch("app.routers.auth.exchange_code_for_tokens", return_value=mock_tokens), \
+         patch("app.routers.auth.get_google_user_info", return_value=mock_userinfo):
+        response = client.get(
+            f"/api/v1/auth/google/callback?code=auth_code_123&state={state}",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303
+        assert "google_auth=success" in response.headers["location"]
+        assert "access_token" in response.cookies
+
+        # Verify new user was created in PostgreSQL
+        user = db_session.query(User).filter(User.email == "test_google_new@example.com").first()
+        assert user is not None
+        assert user.name == "Google Newbie"
+        assert user.profile_photo == "https://example.com/photo.jpg"
+        assert user.password_hash is not None
+
+
+def test_google_callback_existing_user_preserves_password(db_session):
+    """28. Test Google callback authenticates existing user without altering existing password hash."""
+    email = "test_google_existing@example.com"
+    original_pwd_hash = hash_password("OriginalSecretPassword123")
+    user = User(
+        name="Existing Account Holder",
+        email=email,
+        password_hash=original_pwd_hash,
+    )
+    db_session.add(user)
+    db_session.commit()
+
+    state = "secure_random_state_456"
+    client.cookies.set("oauth_state", state)
+
+    mock_tokens = {"access_token": "mock_google_access_token"}
+    mock_userinfo = {
+        "sub": "google-user-789012",
+        "email": email,
+        "email_verified": True,
+        "name": "Existing Account Holder",
+        "picture": "https://example.com/existing.jpg",
+    }
+
+    with patch("app.routers.auth.exchange_code_for_tokens", return_value=mock_tokens), \
+         patch("app.routers.auth.get_google_user_info", return_value=mock_userinfo):
+        response = client.get(
+            f"/api/v1/auth/google/callback?code=auth_code_456&state={state}",
+            follow_redirects=False,
+        )
+
+        assert response.status_code == 303
+        assert "google_auth=success" in response.headers["location"]
+        assert "access_token" in response.cookies
+
+        # Verify original password hash was untouched
+        db_session.refresh(user)
+        assert user.password_hash == original_pwd_hash
+        assert user.profile_photo == "https://example.com/existing.jpg"
+

@@ -26,10 +26,37 @@ import { toast } from 'sonner';
 
 const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
+function GoogleIcon({ className = 'w-4 h-4' }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
+      <path
+        fill="#4285F4"
+        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.31 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.97 0 12s.46 3.84 1.26 5.42l4.02-3.15z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+      />
+    </svg>
+  );
+}
+
 export default function Register() {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
   const { isDark, toggleTheme } = useTheme();
+
+  const handleGoogleLogin = () => {
+    window.location.href = `${API_BASE_URL}/auth/google/login`;
+  };
 
   // Form State
   const [name, setName] = useState('');
@@ -322,6 +349,31 @@ export default function Register() {
                 <span>{successMsg}</span>
               </div>
             )}
+
+            {/* Continue with Google Button */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold shadow-2xs py-2.5 cursor-pointer transition-all"
+            >
+              <GoogleIcon className="w-4 h-4 shrink-0" />
+              <span>Continue with Google</span>
+            </Button>
+
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-[11px] uppercase">
+                <span className="bg-white dark:bg-[#0f172a] px-3 text-slate-400 dark:text-slate-500 font-medium tracking-wider">
+                  Or continue with email
+                </span>
+              </div>
+            </div>
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
