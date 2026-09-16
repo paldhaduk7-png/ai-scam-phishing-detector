@@ -17,11 +17,11 @@ export default function UrlInput({
       className="space-y-4"
     >
       <div>
-        <label className="block text-sm font-semibold text-slate-800 mb-2">
+        <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
           Suspicious URL
         </label>
         <div className="relative">
-          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+          <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
             <LinkIcon className="w-4 h-4" />
           </div>
           <input
@@ -29,7 +29,7 @@ export default function UrlInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Enter suspicious URL (e.g. https://scam-security-check.com)..."
-            className="w-full pl-10 pr-4 py-3 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-3 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-slate-700/80 rounded-xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
           />
         </div>
       </div>

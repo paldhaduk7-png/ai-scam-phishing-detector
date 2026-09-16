@@ -206,13 +206,13 @@ export default function ProfileForm() {
           </button>
         </div>
 
-        <h3 className="text-lg font-bold text-slate-900">{user?.name || 'User'}</h3>
-        <p className="text-xs text-slate-500 mt-1 flex items-center gap-1.5">
-          <Mail className="w-3.5 h-3.5 text-slate-400" />
+        <h3 className="text-lg font-bold text-slate-900 dark:text-white">{user?.name || 'User'}</h3>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-1.5">
+          <Mail className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           <span>{user?.email || 'email@example.com'}</span>
         </p>
-        <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
-          <Calendar className="w-3.5 h-3.5 text-slate-400" />
+        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1 flex items-center gap-1.5">
+          <Calendar className="w-3.5 h-3.5 text-slate-400 dark:text-slate-500" />
           <span>Member since {formatDate(user?.created_at)}</span>
         </p>
 
@@ -222,17 +222,17 @@ export default function ProfileForm() {
             type="button"
             onClick={() => setShowDeletePhotoModal(true)}
             disabled={photoLoading || deletingPhoto}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer disabled:opacity-50"
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 cursor-pointer disabled:opacity-50"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Remove Photo</span>
           </button>
         )}
 
-        <div className="w-full mt-6 pt-5 border-t border-slate-100 space-y-3">
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-left">
-            <ShieldCheck className="w-4 h-4 text-blue-600 shrink-0" />
-            <p className="text-[11px] text-blue-900 leading-snug">
+        <div className="w-full mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-3">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-left">
+            <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+            <p className="text-[11px] text-blue-900 dark:text-blue-200 leading-snug">
               Protected session active with secure HTTP-only cookies and Cloudinary storage.
             </p>
           </div>
@@ -242,7 +242,7 @@ export default function ProfileForm() {
             variant="outline"
             size="sm"
             onClick={() => setShowLogoutModal(true)}
-            className="w-full justify-center text-xs font-semibold text-slate-700 hover:text-red-600 hover:border-red-200"
+            className="w-full justify-center text-xs font-semibold text-slate-700 dark:text-slate-300 hover:text-red-600 dark:hover:text-red-400 hover:border-red-200 dark:hover:border-red-900/50"
           >
             <LogOut className="w-3.5 h-3.5 mr-1.5" />
             Sign Out
@@ -253,15 +253,15 @@ export default function ProfileForm() {
       {/* Right Column: Profile Edit Form */}
       <Card className="lg:col-span-2 p-8">
         {successMsg && (
-          <div className="mb-6 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="mb-6 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs font-medium flex items-center gap-2">
+            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>{successMsg}</span>
           </div>
         )}
 
         {errorMsg && (
-          <div className="mb-6 p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+          <div className="mb-6 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-200 text-xs font-medium flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
@@ -269,11 +269,11 @@ export default function ProfileForm() {
         <form onSubmit={handleProfileSubmit} className="space-y-6">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
               Full Name
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <User className="w-4 h-4" />
               </div>
               <input
@@ -281,42 +281,42 @@ export default function ProfileForm() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Enter your full name"
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 dark:bg-[#0b1120] border border-slate-200 dark:border-slate-700 rounded-xl text-sm text-slate-800 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:bg-white dark:focus:bg-[#0b1120] focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
               />
             </div>
           </div>
 
           {/* Email (Read Only) */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+            <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider mb-2">
               Email Address (Account Identifier)
             </label>
             <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400 dark:text-slate-500">
                 <Mail className="w-4 h-4" />
               </div>
               <input
                 type="email"
                 value={user?.email || ''}
                 disabled
-                className="w-full pl-10 pr-4 py-2.5 bg-slate-100 border border-slate-200 rounded-xl text-sm text-slate-500 cursor-not-allowed"
+                className="w-full pl-10 pr-4 py-2.5 bg-slate-100 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-500 dark:text-slate-400 cursor-not-allowed"
               />
             </div>
-            <p className="text-[11px] text-slate-400 mt-1.5">
+            <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
               Email address is permanently linked to your detection records and cannot be changed directly.
             </p>
           </div>
 
           {/* Cloudinary Info Badge */}
-          <div className="p-4 rounded-xl bg-slate-50 border border-slate-200/80 space-y-1">
-            <h4 className="text-xs font-bold text-slate-700">Cloudinary Avatar Storage</h4>
-            <p className="text-xs text-slate-500 leading-relaxed">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1">
+            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">Cloudinary Avatar Storage</h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
               Profile images are safely processed, cropped, and served securely via Cloudinary CDN. Photos can be removed or replaced at any time.
             </p>
           </div>
 
           {/* Submit Actions */}
-          <div className="pt-4 border-t border-slate-100 flex justify-end">
+          <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end">
             <Button
               type="submit"
               variant="primary"

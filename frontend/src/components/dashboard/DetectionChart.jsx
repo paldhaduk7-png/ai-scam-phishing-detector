@@ -9,16 +9,16 @@ export default function DetectionChart({ data = null }) {
   return (
     <Card className="flex flex-col h-full">
       {/* Chart Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h2 className="text-base font-bold text-slate-900">Detection Overview</h2>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Detection Overview</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Total scans and results over the last 7 days
           </p>
         </div>
 
         {/* Legend matching screenshot */}
-        <div className="flex items-center gap-4 text-xs font-medium text-slate-600">
+        <div className="flex items-center gap-4 text-xs font-medium text-slate-600 dark:text-slate-300">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500" />
             <span>Safe</span>

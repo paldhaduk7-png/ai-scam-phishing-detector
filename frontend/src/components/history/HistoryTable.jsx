@@ -44,7 +44,7 @@ export default function HistoryTable({
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200/80 bg-slate-50/70 text-xs font-semibold text-slate-500">
+                <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/80 text-xs font-semibold text-slate-500 dark:text-slate-400">
                   <th className="py-3.5 px-4">#</th>
                   <th className="py-3.5 px-4">Type</th>
                   <th className="py-3.5 px-4">Input (Preview)</th>
@@ -54,31 +54,31 @@ export default function HistoryTable({
                   <th className="py-3.5 px-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {items.map((item, index) => (
                   <tr
                     key={item.id || index}
-                    className="hover:bg-slate-50/60 transition-colors text-xs text-slate-700"
+                    className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors text-xs text-slate-700 dark:text-slate-300"
                   >
-                    <td className="py-3.5 px-4 font-medium text-slate-400">
+                    <td className="py-3.5 px-4 font-medium text-slate-400 dark:text-slate-500">
                       {index + 1}
                     </td>
                     <td className="py-3.5 px-4">
-                      <div className="inline-flex items-center gap-2 font-medium text-blue-600 bg-blue-50/60 px-2.5 py-1 rounded-lg">
+                      <div className="inline-flex items-center gap-2 font-medium text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg">
                         {getTypeIcon(item.type)}
                         <span className="capitalize">{item.type}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600 max-w-xs truncate">
+                    <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate">
                       {item.preview || item.input}
                     </td>
                     <td className="py-3.5 px-4">
                       <Badge status={item.result}>{item.result}</Badge>
                     </td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600">
+                    <td className="py-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">
                       {item.confidence ? `${item.confidence}%` : '--'}
                     </td>
-                    <td className="py-3.5 px-4 text-slate-500">
+                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
                       {item.date_time || item.createdAt}
                     </td>
                     <td className="py-3.5 px-4 text-right">
@@ -86,7 +86,7 @@ export default function HistoryTable({
                         <button
                           type="button"
                           onClick={() => onView?.(item)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
                           title="View Detection Details"
                         >
                           <Eye className="w-4 h-4" />
@@ -94,7 +94,7 @@ export default function HistoryTable({
                         <button
                           type="button"
                           onClick={() => onDelete?.(item)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer"
                           title="Delete Record"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -108,11 +108,11 @@ export default function HistoryTable({
           </div>
 
           {/* Pagination */}
-          <div className="flex items-center justify-center gap-1.5 p-4 border-t border-slate-100">
+          <div className="flex items-center justify-center gap-1.5 p-4 border-t border-slate-100 dark:border-slate-800">
             <button
               disabled={currentPage <= 1}
               onClick={() => onPageChange?.(currentPage - 1)}
-              className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <ChevronLeft className="w-4 h-4" />
             </button>
@@ -122,7 +122,7 @@ export default function HistoryTable({
             <button
               disabled={currentPage >= totalPages}
               onClick={() => onPageChange?.(currentPage + 1)}
-              className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed"
+              className="p-2 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
             >
               <ChevronRight className="w-4 h-4" />
             </button>

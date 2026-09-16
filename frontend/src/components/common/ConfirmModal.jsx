@@ -41,7 +41,7 @@ export default function ConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
-        className="relative z-10 w-full max-w-md bg-[#11192e] border border-slate-700/80 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden"
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden"
       >
         {/* Subtle decorative glow */}
         <div className="absolute -top-12 -left-12 w-36 h-36 bg-red-600/15 rounded-full blur-2xl pointer-events-none" />
@@ -51,7 +51,7 @@ export default function ConfirmModal({
           type="button"
           onClick={onClose}
           disabled={loading}
-          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer disabled:opacity-50"
+          className="absolute top-4 right-4 p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer disabled:opacity-50"
           aria-label="Close dialog"
         >
           <X className="w-5 h-5" />
@@ -62,8 +62,8 @@ export default function ConfirmModal({
           <div
             className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
               variant === 'danger'
-                ? 'bg-red-500/15 text-red-400 border border-red-500/30 shadow-red-500/10'
-                : 'bg-amber-500/15 text-amber-400 border border-amber-500/30 shadow-amber-500/10'
+                ? 'bg-red-500/15 text-red-500 dark:text-red-400 border border-red-500/30 shadow-red-500/10'
+                : 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30 shadow-amber-500/10'
             }`}
           >
             <Icon className="w-6 h-6" />
@@ -72,23 +72,23 @@ export default function ConfirmModal({
           <div className="space-y-1.5 pr-4">
             <h3
               id="confirm-modal-title"
-              className="text-lg font-bold text-white tracking-tight"
+              className="text-lg font-bold text-slate-900 dark:text-white tracking-tight"
             >
               {title}
             </h3>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
               {message}
             </p>
           </div>
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-7 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 border-t border-slate-800/80 pt-5">
+        <div className="mt-7 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 border-t border-slate-200 dark:border-slate-800/80 pt-5">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800/80 border border-slate-700/80 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-700/80 transition-colors cursor-pointer disabled:opacity-50"
           >
             {cancelText}
           </button>

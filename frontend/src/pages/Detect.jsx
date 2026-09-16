@@ -121,28 +121,28 @@ export default function Detect() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
             Detect Scams &amp; Phishing
           </h1>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
             Analyze messages, emails or URLs using advanced AI to stay safe online.
           </p>
         </div>
 
         {/* User Session Info Badge */}
         {isAuthenticated ? (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-medium self-start sm:self-auto shadow-xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-xs font-medium self-start sm:self-auto shadow-xs">
+            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>
               Signed in as <strong>{user?.name || 'User'}</strong> — scans saved to history
             </span>
           </div>
         ) : (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 border border-blue-200 text-blue-800 text-xs font-medium self-start sm:self-auto shadow-xs">
-            <Sparkles className="w-4 h-4 text-blue-600 shrink-0" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-medium self-start sm:self-auto shadow-xs">
+            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
             <span>
               Guest Mode — No login required.{' '}
-              <Link to="/login" className="underline font-semibold hover:text-blue-950">
+              <Link to="/login" className="underline font-semibold hover:text-blue-950 dark:hover:text-blue-100">
                 Sign in
               </Link>{' '}
               to save scans.
@@ -196,13 +196,13 @@ export default function Detect() {
           </Card>
 
           {/* Privacy Note Card matching Screenshot 2 & 3 */}
-          <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-100 flex items-center gap-3.5">
+          <div className="p-4 rounded-2xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/50 flex items-center gap-3.5">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <Shield className="w-4 h-4" />
             </div>
             <div>
-              <p className="text-xs font-bold text-blue-950">Your privacy matters</p>
-              <p className="text-xs text-blue-800/80">
+              <p className="text-xs font-bold text-blue-950 dark:text-blue-100">Your privacy matters</p>
+              <p className="text-xs text-blue-800/80 dark:text-blue-300/80">
                 We do not store your input data for guest users. All analysis is evaluated in ephemeral memory.
               </p>
             </div>
@@ -220,11 +220,11 @@ export default function Detect() {
         {/* Right Column: Info / Assistant Card matching Screenshot 2 (col-span-4) */}
         <div className="lg:col-span-4 space-y-6">
           {/* Card 1: Detect. Prevent. Stay Safe. */}
-          <Card className="p-6 bg-gradient-to-b from-white to-blue-50/30 border-blue-100">
+          <Card className="p-6 bg-gradient-to-b from-white to-blue-50/30 dark:from-[#11192e] dark:to-blue-950/20 border-blue-100 dark:border-slate-800">
             {/* Cybersecurity graphic illustration */}
             <div className="w-full py-4 flex items-center justify-center">
               <div className="relative">
-                <div className="w-20 h-20 rounded-2xl bg-blue-100/70 flex items-center justify-center text-blue-600 shadow-inner">
+                <div className="w-20 h-20 rounded-2xl bg-blue-100/70 dark:bg-blue-950 flex items-center justify-center text-blue-600 dark:text-blue-400 shadow-inner">
                   <Search className="w-10 h-10 stroke-[2.2]" />
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-8 h-8 rounded-lg bg-emerald-500 text-white flex items-center justify-center shadow-md">
@@ -234,10 +234,10 @@ export default function Detect() {
             </div>
 
             <div className="text-center mt-2">
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white">
                 Detect. Prevent. Stay Safe.
               </h3>
-              <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-2 leading-relaxed">
                 Our AI analyzes your input and provides an instant risk assessment to help you avoid scams and phishing attacks.
               </p>
             </div>
@@ -245,37 +245,37 @@ export default function Detect() {
 
           {/* Card 2: Supported Input Types */}
           <Card className="p-6">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+            <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-4">
               Supported Input Types
             </h4>
             <div className="space-y-4">
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                   <MessageSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold text-slate-800">Text Messages</h5>
-                  <p className="text-xs text-slate-500">SMS, WhatsApp, and chat messages</p>
+                  <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200">Text Messages</h5>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">SMS, WhatsApp, and chat messages</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold text-slate-800">Emails</h5>
-                  <p className="text-xs text-slate-500">Full email body, subjects &amp; headers</p>
+                  <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200">Emails</h5>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Full email body, subjects &amp; headers</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <LinkIcon className="w-4 h-4" />
                 </div>
                 <div>
-                  <h5 className="text-xs font-bold text-slate-800">URLs</h5>
-                  <p className="text-xs text-slate-500">Check suspicious links &amp; web domains</p>
+                  <h5 className="text-xs font-bold text-slate-800 dark:text-slate-200">URLs</h5>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">Check suspicious links &amp; web domains</p>
                 </div>
               </div>
             </div>

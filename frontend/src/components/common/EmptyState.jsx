@@ -17,11 +17,11 @@ export default function EmptyState({
         compact ? 'py-6 px-4' : 'py-12 px-6'
       } ${className}`}
     >
-      <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600 mb-3 shadow-xs">
+      <div className="w-14 h-14 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 shadow-xs">
         <Icon className="w-7 h-7" />
       </div>
-      <h3 className="text-base font-semibold text-slate-800 mb-1">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-sm mb-4">{description}</p>
+      <h3 className="text-base font-semibold text-slate-800 dark:text-white mb-1">{title}</h3>
+      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">{description}</p>
       {actionText && onAction && (
         <Button variant="primary" size="sm" onClick={onAction}>
           {actionText}

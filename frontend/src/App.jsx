@@ -92,7 +92,7 @@ export default function App() {
     <ThemeProvider>
       <Toaster
         richColors
-        position="top-right"
+        position="top-center"
         closeButton
         toastOptions={{
           className: 'shadow-2xl border',

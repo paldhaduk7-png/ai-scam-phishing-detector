@@ -59,10 +59,10 @@ export default function History() {
     <div className="space-y-6 animate-fadeIn">
       {/* Page Header matching Screenshot 1 */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
           Detection History
         </h1>
-        <p className="text-sm text-slate-500 mt-1">
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
           View and manage your past detections.
         </p>
       </div>

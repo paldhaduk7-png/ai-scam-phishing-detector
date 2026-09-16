@@ -18,7 +18,7 @@ export default function MessageInput({
       className="space-y-4"
     >
       <div>
-        <label className="block text-sm font-semibold text-slate-800 mb-2">
+        <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
           Enter Message Text
         </label>
         <div className="relative">
@@ -28,9 +28,9 @@ export default function MessageInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Type or paste the message here..."
-            className="w-full p-4 bg-white border border-slate-200 rounded-2xl text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 resize-none transition-all"
+            className="w-full p-4 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-slate-700/80 rounded-2xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 resize-none transition-all"
           />
-          <div className="absolute right-4 bottom-3 text-xs font-medium text-slate-400 select-none">
+          <div className="absolute right-4 bottom-3 text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
             {value.length}/{maxLength}
           </div>
         </div>

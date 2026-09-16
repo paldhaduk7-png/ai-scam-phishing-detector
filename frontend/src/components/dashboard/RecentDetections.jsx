@@ -24,14 +24,14 @@ export default function RecentDetections({ detections = [] }) {
   return (
     <Card className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
-          <h2 className="text-base font-bold text-slate-900">Recent Detections</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Latest scans analyzed by ScamShield</p>
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">Recent Detections</h2>
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Latest scans analyzed by ScamShield</p>
         </div>
         <Link
           to="/history"
-          className="text-xs font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
         >
           View All
         </Link>
@@ -43,27 +43,27 @@ export default function RecentDetections({ detections = [] }) {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-100 text-xs font-semibold text-slate-400">
+                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-400 dark:text-slate-500">
                   <th className="py-3 px-2">Type</th>
                   <th className="py-3 px-2">Input (Preview)</th>
                   <th className="py-3 px-2">Result</th>
                   <th className="py-3 px-2">Date & Time</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {detections.map((item, index) => (
-                  <tr key={item.id || index} className="hover:bg-slate-50/70 transition-colors">
-                    <td className="py-3 px-2 flex items-center gap-2 font-medium text-slate-700">
+                  <tr key={item.id || index} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                    <td className="py-3 px-2 flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
                       {getTypeIcon(item.type)}
                       <span className="capitalize">{item.type}</span>
                     </td>
-                    <td className="py-3 px-2 text-slate-600 max-w-[200px] truncate">
+                    <td className="py-3 px-2 text-slate-600 dark:text-slate-300 max-w-[200px] truncate">
                       {item.preview || item.input}
                     </td>
                     <td className="py-3 px-2">
                       <Badge status={item.result}>{item.result}</Badge>
                     </td>
-                    <td className="py-3 px-2 text-xs text-slate-400">
+                    <td className="py-3 px-2 text-xs text-slate-400 dark:text-slate-500">
                       {item.timestamp || item.dateTime}
                     </td>
                   </tr>

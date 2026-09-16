@@ -138,22 +138,22 @@ export default function DetectionResult({
             'Always verify the destination domain before entering credentials online.',
           ];
 
-    let bannerBg = 'bg-slate-50 border-slate-200 text-slate-900';
-    let icon = <HelpCircle className="w-8 h-8 text-slate-500" />;
-    let scoreBadgeClass = 'bg-slate-200 text-slate-800';
+    let bannerBg = 'bg-slate-50 dark:bg-slate-900/80 border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white';
+    let icon = <HelpCircle className="w-8 h-8 text-slate-500 dark:text-slate-400" />;
+    let scoreBadgeClass = 'bg-slate-200 dark:bg-slate-800 text-slate-800 dark:text-slate-200';
 
     if (isPhishing) {
-      bannerBg = 'bg-red-50/90 border-red-200 text-red-900';
-      icon = <AlertTriangle className="w-8 h-8 text-red-600" />;
-      scoreBadgeClass = 'bg-red-100 text-red-700 border border-red-200';
+      bannerBg = 'bg-red-50/90 dark:bg-red-950/40 border-red-200 dark:border-red-900/50 text-red-900 dark:text-red-200';
+      icon = <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />;
+      scoreBadgeClass = 'bg-red-100 dark:bg-red-900/50 text-red-700 dark:text-red-200 border border-red-200 dark:border-red-800';
     } else if (isSuspicious) {
-      bannerBg = 'bg-amber-50/90 border-amber-200 text-amber-900';
-      icon = <AlertCircle className="w-8 h-8 text-amber-600" />;
-      scoreBadgeClass = 'bg-amber-100 text-amber-700 border border-amber-200';
+      bannerBg = 'bg-amber-50/90 dark:bg-amber-950/40 border-amber-200 dark:border-amber-900/50 text-amber-900 dark:text-amber-200';
+      icon = <AlertCircle className="w-8 h-8 text-amber-600 dark:text-amber-400" />;
+      scoreBadgeClass = 'bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-200 border border-amber-200 dark:border-amber-800';
     } else if (isSafe) {
-      bannerBg = 'bg-emerald-50/90 border-emerald-200 text-emerald-900';
-      icon = <ShieldCheck className="w-8 h-8 text-emerald-600" />;
-      scoreBadgeClass = 'bg-emerald-100 text-emerald-700 border border-emerald-200';
+      bannerBg = 'bg-emerald-50/90 dark:bg-emerald-950/40 border-emerald-200 dark:border-emerald-900/50 text-emerald-900 dark:text-emerald-200';
+      icon = <ShieldCheck className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />;
+      scoreBadgeClass = 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-200 border border-emerald-200 dark:border-emerald-800';
     }
 
     return (
@@ -163,7 +163,7 @@ export default function DetectionResult({
           className={`p-6 rounded-2xl border ${bannerBg} flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs`}
         >
           <div className="flex items-start gap-4">
-            <div className="p-2 rounded-xl bg-white/80 shadow-xs shrink-0">
+            <div className="p-2 rounded-xl bg-white/80 dark:bg-slate-900/80 shadow-xs shrink-0">
               {icon}
             </div>
             <div>
@@ -191,10 +191,10 @@ export default function DetectionResult({
         {/* Input Analyzed */}
         {inputAnalyzed && (
           <Card>
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <h4 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">
               Input Analyzed
             </h4>
-            <div className="p-3.5 bg-slate-50 border border-slate-200/80 rounded-xl text-sm text-slate-800 font-mono break-all leading-relaxed">
+            <div className="p-3.5 bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800 rounded-xl text-sm text-slate-800 dark:text-slate-200 font-mono break-all leading-relaxed">
               {inputAnalyzed}
             </div>
           </Card>
@@ -203,20 +203,20 @@ export default function DetectionResult({
         {/* Analysis Details / Threat Indicators */}
         {indicators.length > 0 && (
           <Card>
-            <h4 className="text-sm font-bold text-slate-900 mb-3">Analysis Details</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-3">Analysis Details</h4>
             <div className="space-y-3">
               {indicators.map((indicator, index) => (
                 <div
                   key={index}
-                  className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 border border-slate-100"
+                  className="flex items-start gap-3 p-3 rounded-xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-100 dark:border-slate-800"
                 >
                   <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-semibold text-slate-800">
+                    <p className="text-xs font-semibold text-slate-800 dark:text-slate-200">
                       {indicator.title || indicator.name || indicator}
                     </p>
                     {indicator.description && (
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                         {indicator.description}
                       </p>
                     )}
@@ -230,10 +230,10 @@ export default function DetectionResult({
         {/* Recommendations */}
         {recommendations.length > 0 && (
           <Card>
-            <h4 className="text-sm font-bold text-slate-900 mb-2">Recommendations</h4>
+            <h4 className="text-sm font-bold text-slate-900 dark:text-white mb-2">Recommendations</h4>
             <ul className="space-y-1.5">
               {recommendations.map((rec, index) => (
-                <li key={index} className="flex items-center gap-2 text-xs text-slate-600">
+                <li key={index} className="flex items-center gap-2 text-xs text-slate-600 dark:text-slate-300">
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   <span>{rec}</span>
                 </li>
@@ -243,14 +243,14 @@ export default function DetectionResult({
         )}
 
         {/* Guest Save CTA Card matching Screenshot 3 */}
-        <Card className="bg-blue-50/60 border-blue-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+        <Card className="bg-blue-50/60 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
               <Lock className="w-4 h-4" />
             </div>
             <div>
-              <h5 className="text-sm font-bold text-slate-900">Want to save this result?</h5>
-              <p className="text-xs text-slate-600 mt-0.5">
+              <h5 className="text-sm font-bold text-slate-900 dark:text-white">Want to save this result?</h5>
+              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
                 Create an account to keep your detection history and access it anytime.
               </p>
             </div>
@@ -261,7 +261,7 @@ export default function DetectionResult({
               variant="outline"
               size="sm"
               onClick={() => navigate('/dashboard')}
-              className="bg-white hover:bg-slate-50 border-slate-200 text-xs"
+              className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs"
             >
               Login
             </Button>
