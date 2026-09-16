@@ -15,12 +15,14 @@ import {
   Loader2,
   ShieldCheck,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import {
   uploadAvatar,
   deleteAvatar,
   updateProfileDetails,
   logoutUser,
 } from '../../store/slices/authSlice';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function ProfileForm() {
   const { user } = useSelector((state) => state.auth);
@@ -34,6 +36,12 @@ export default function ProfileForm() {
   const [profileLoading, setProfileLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Modals state
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+  const [showDeletePhotoModal, setShowDeletePhotoModal] = useState(false);
+  const [deletingPhoto, setDeletingPhoto] = useState(false);
 
   // Compute initials for fallback avatar
   const getInitials = (fullName) => {
@@ -65,12 +73,14 @@ export default function ProfileForm() {
     const validTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!validTypes.includes(file.type)) {
       setErrorMsg('Please select a valid image file (JPEG, PNG, or WEBP).');
+      toast.error('Please select a valid image file (JPEG, PNG, or WEBP).');
       return;
     }
 
     // Validate size (5MB)
     if (file.size > 5 * 1024 * 1024) {
       setErrorMsg('Image size exceeds 5MB limit.');
+      toast.error('Image size exceeds 5MB limit.');
       return;
     }
 
@@ -84,29 +94,34 @@ export default function ProfileForm() {
       const res = await dispatch(uploadAvatar(formData)).unwrap();
       if (res) {
         setSuccessMsg('Profile photo updated successfully!');
+        toast.success('Profile photo updated successfully!');
       }
     } catch (err) {
-      setErrorMsg(typeof err === 'string' ? err : 'Failed to upload profile photo.');
+      const msg = typeof err === 'string' ? err : 'Failed to upload profile photo.';
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setPhotoLoading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
     }
   };
 
-  const handleDeletePhoto = async () => {
-    if (!window.confirm('Are you sure you want to remove your profile photo?')) return;
-
+  const handleConfirmDeletePhoto = async () => {
     setErrorMsg('');
     setSuccessMsg('');
-    setPhotoLoading(true);
+    setDeletingPhoto(true);
 
     try {
       await dispatch(deleteAvatar()).unwrap();
       setSuccessMsg('Profile photo removed.');
+      toast.success('Profile photo removed successfully.');
+      setShowDeletePhotoModal(false);
     } catch (err) {
-      setErrorMsg(typeof err === 'string' ? err : 'Failed to remove profile photo.');
+      const msg = typeof err === 'string' ? err : 'Failed to remove profile photo.';
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
-      setPhotoLoading(false);
+      setDeletingPhoto(false);
     }
   };
 
@@ -114,6 +129,7 @@ export default function ProfileForm() {
     e.preventDefault();
     if (!name.trim()) {
       setErrorMsg('Full name cannot be empty.');
+      toast.error('Full name cannot be empty.');
       return;
     }
 
@@ -124,16 +140,28 @@ export default function ProfileForm() {
     try {
       await dispatch(updateProfileDetails({ name: name.trim() })).unwrap();
       setSuccessMsg('Profile details updated successfully!');
+      toast.success('Profile details updated successfully!');
     } catch (err) {
-      setErrorMsg(typeof err === 'string' ? err : 'Failed to update profile.');
+      const msg = typeof err === 'string' ? err : 'Failed to update profile.';
+      setErrorMsg(msg);
+      toast.error(msg);
     } finally {
       setProfileLoading(false);
     }
   };
 
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    navigate('/login');
+  const handleConfirmLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await dispatch(logoutUser());
+      toast.success('Signed out successfully.');
+      setShowLogoutModal(false);
+      navigate('/login');
+    } catch {
+      toast.error('Sign out failed. Please try again.');
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -192,9 +220,9 @@ export default function ProfileForm() {
         {user?.profile_photo && (
           <button
             type="button"
-            onClick={handleDeletePhoto}
-            disabled={photoLoading}
-            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer"
+            onClick={() => setShowDeletePhotoModal(true)}
+            disabled={photoLoading || deletingPhoto}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-red-600 hover:text-red-700 cursor-pointer disabled:opacity-50"
           >
             <Trash2 className="w-3.5 h-3.5" />
             <span>Remove Photo</span>
@@ -213,7 +241,7 @@ export default function ProfileForm() {
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleLogout}
+            onClick={() => setShowLogoutModal(true)}
             className="w-full justify-center text-xs font-semibold text-slate-700 hover:text-red-600 hover:border-red-200"
           >
             <LogOut className="w-3.5 h-3.5 mr-1.5" />
@@ -301,6 +329,31 @@ export default function ProfileForm() {
           </div>
         </form>
       </Card>
+
+      {/* Sign Out Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => !loggingOut && setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+        loading={loggingOut}
+        title="Sign Out Confirmation"
+        message="Are you sure you want to sign out of ScamShield? You will need to log back in to access your personal dashboard."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+      />
+
+      {/* Delete Photo Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showDeletePhotoModal}
+        onClose={() => !deletingPhoto && setShowDeletePhotoModal(false)}
+        onConfirm={handleConfirmDeletePhoto}
+        loading={deletingPhoto}
+        title="Remove Profile Photo"
+        message="Are you sure you want to remove your profile photo? Your avatar will reset to your initials."
+        confirmText="Remove Photo"
+        cancelText="Cancel"
+        variant="danger"
+      />
     </div>
   );
 }
