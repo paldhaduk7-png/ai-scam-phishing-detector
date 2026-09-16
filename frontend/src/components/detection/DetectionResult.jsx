@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import LoadingState from '../common/LoadingState';
@@ -12,6 +13,7 @@ import {
   Search,
   CheckCircle2,
   HelpCircle,
+  Clock,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,6 +24,7 @@ export default function DetectionResult({
   onRetry,
 }) {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   if (status === 'idle') {
     return (
@@ -242,42 +245,69 @@ export default function DetectionResult({
           </Card>
         )}
 
-        {/* Guest Save CTA Card matching Screenshot 3 */}
-        <Card className="bg-blue-50/60 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
-          <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-              <Lock className="w-4 h-4" />
+        {/* Save CTA Card */}
+        {isAuthenticated ? (
+          <Card className="bg-emerald-50/60 dark:bg-emerald-950/30 border-emerald-100 dark:border-emerald-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <div>
+                <h5 className="text-sm font-bold text-slate-900 dark:text-white">Scan Logged to Account</h5>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                  This analysis has been securely recorded to your personal detection history.
+                </p>
+              </div>
             </div>
-            <div>
-              <h5 className="text-sm font-bold text-slate-900 dark:text-white">Want to save this result?</h5>
-              <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
-                Create an account to keep your detection history and access it anytime.
-              </p>
-            </div>
-          </div>
 
-          <div className="flex items-center gap-2 shrink-0">
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs"
+              onClick={() => navigate('/history')}
+              className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs shrink-0 inline-flex items-center gap-1.5"
             >
-              Login
+              <Clock className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+              <span>View History</span>
             </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => navigate('/dashboard')}
-              className="text-xs"
-            >
-              Create Account
-            </Button>
-          </div>
-        </Card>
+          </Card>
+        ) : (
+          <Card className="bg-blue-50/60 dark:bg-blue-950/40 border-blue-100 dark:border-blue-900/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Lock className="w-4 h-4" />
+              </div>
+              <div>
+                <h5 className="text-sm font-bold text-slate-900 dark:text-white">Want to save this result?</h5>
+                <p className="text-xs text-slate-600 dark:text-slate-300 mt-0.5">
+                  Create an account to keep your detection history and access it anytime.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/login')}
+                className="bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs"
+              >
+                Login
+              </Button>
+              <Button
+                variant="primary"
+                size="sm"
+                onClick={() => navigate('/register')}
+                className="text-xs"
+              >
+                Create Account
+              </Button>
+            </div>
+          </Card>
+        )}
       </div>
     );
   }
 
   return null;
 }
+

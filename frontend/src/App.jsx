@@ -80,6 +80,21 @@ const router = createBrowserRouter([
   },
 ]);
 
+function AppToaster() {
+  const { theme } = useTheme();
+  return (
+    <Toaster
+      theme={theme}
+      richColors
+      position="top-center"
+      closeButton
+      toastOptions={{
+        className: 'shadow-2xl border font-sans',
+      }}
+    />
+  );
+}
+
 export default function App() {
   const dispatch = useDispatch();
 
@@ -90,15 +105,9 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <Toaster
-        richColors
-        position="top-center"
-        closeButton
-        toastOptions={{
-          className: 'shadow-2xl border',
-        }}
-      />
+      <AppToaster />
       <RouterProvider router={router} />
     </ThemeProvider>
   );
 }
+

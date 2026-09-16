@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Badge from '../common/Badge';
 import EmptyState from '../common/EmptyState';
@@ -11,7 +12,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
-  ShieldCheck
+  ShieldCheck,
 } from 'lucide-react';
 
 export default function HistoryTable({
@@ -22,7 +23,9 @@ export default function HistoryTable({
   totalPages = 1,
   onPageChange,
 }) {
+  const navigate = useNavigate();
   const hasItems = Array.isArray(items) && items.length > 0;
+
 
   const getTypeIcon = (type) => {
     switch (type?.toLowerCase()) {
@@ -69,7 +72,10 @@ export default function HistoryTable({
                         <span className="capitalize">{item.type}</span>
                       </div>
                     </td>
-                    <td className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate">
+                    <td
+                      className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate cursor-help"
+                      title={typeof (item.preview || item.input) === 'string' ? (item.preview || item.input) : ''}
+                    >
                       {item.preview || item.input}
                     </td>
                     <td className="py-3.5 px-4">
@@ -135,10 +141,11 @@ export default function HistoryTable({
             title="No detection history yet."
             description="Your past scam and phishing analysis records will be organized and preserved here once you begin scanning."
             actionText="Start New Scan"
-            onAction={() => window.location.assign('/detect')}
+            onAction={() => navigate('/detect')}
           />
         </div>
       )}
     </Card>
   );
 }
+
