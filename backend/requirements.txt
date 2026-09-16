@@ -12,3 +12,7 @@ httpx>=0.27.0
 SQLAlchemy
 psycopg2-binary
 python-dotenv
+bcrypt>=4.2.0
+pyjwt>=2.9.0
+python-multipart>=0.0.12
+cloudinary>=1.41.0
