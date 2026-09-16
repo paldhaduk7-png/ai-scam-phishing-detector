@@ -56,45 +56,70 @@ export default function Dashboard() {
       {/* Top Welcome Banner & Quote Row matching Screenshot 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Welcome Banner Card (col-span-8) */}
-        <Card className="lg:col-span-8 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white border-blue-100 p-6 flex flex-col justify-between">
+        <Card className="lg:col-span-8 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-[#11192e] border-blue-100 dark:border-blue-900/40 p-6 flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="space-y-1.5 max-w-md">
-              <h1 className="text-2xl sm:text-3xl font-bold text-slate-950 tracking-tight">
-                Welcome Back, {user?.name ? user.name.split(' ')[0] : 'User'}!
-              </h1>
-              <p className="text-sm font-semibold text-blue-700">
-                Stay Safe. Think Before You Click.
-              </p>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed pt-1">
-                Detect suspicious messages, emails and URLs using AI and machine learning.
-              </p>
+            <div className="flex items-center gap-4">
+              {user?.profile_photo ? (
+                <div className="relative shrink-0">
+                  <img
+                    src={user.profile_photo}
+                    alt={user.name || 'User'}
+                    className="w-16 h-16 rounded-full object-cover ring-4 ring-blue-500/20 shadow-md"
+                  />
+                  <span
+                    className="absolute bottom-0.5 right-0.5 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs"
+                    title="Active User Session"
+                  />
+                </div>
+              ) : (
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xl shadow-md ring-4 ring-blue-500/20 shrink-0">
+                  {user?.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
+                </div>
+              )}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h1 className="text-xl sm:text-2xl font-bold text-slate-950 dark:text-white tracking-tight">
+                    Welcome Back, {user?.name || 'User'}!
+                  </h1>
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-100/80 dark:bg-emerald-950/50 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Active Account
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">
+                  {user?.email || 'Logged in user'}
+                </p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pt-0.5">
+                  Stay Safe. Think Before You Click. AI Scam & Phishing Protection active.
+                </p>
+              </div>
             </div>
 
             {/* Laptop Security Illustration matching screenshot */}
             <div className="hidden sm:flex flex-col items-center justify-center p-3 text-center shrink-0">
-              <div className="w-16 h-16 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <Shield className="w-8 h-8 fill-white/20 stroke-white" />
+              <div className="w-14 h-14 rounded-2xl bg-blue-600 text-white flex items-center justify-center shadow-lg shadow-blue-500/30">
+                <Shield className="w-7 h-7 fill-white/20 stroke-white" />
               </div>
-              <span className="text-[11px] font-bold text-slate-700 mt-2">
-                A Safer Internet<br />for Everyone
+              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-300 mt-1.5">
+                Protected by<br />ScamShield
               </span>
             </div>
           </div>
         </Card>
 
         {/* Security Quote Card (col-span-4) matching screenshot */}
-        <Card className="lg:col-span-4 bg-gradient-to-br from-white to-blue-50/50 border-blue-100 p-6 flex flex-col justify-center relative overflow-hidden">
+        <Card className="lg:col-span-4 bg-gradient-to-br from-white to-blue-50/50 dark:from-[#11192e] dark:to-blue-950/30 border-blue-100 dark:border-blue-900/40 p-6 flex flex-col justify-center relative overflow-hidden">
           <div className="space-y-2 z-10">
             <span className="text-2xl text-blue-500 font-serif leading-none">“</span>
-            <p className="text-sm font-bold text-slate-900 leading-snug">
+            <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">
               Small Clicks Can Make a Big Difference
             </p>
-            <p className="text-xs font-semibold text-slate-500">
+            <p className="text-xs font-semibold text-slate-500 dark:text-slate-400">
               Be Aware. Be Safe.
             </p>
           </div>
 
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-blue-100/50 flex items-center justify-center text-blue-600 pointer-events-none">
+          <div className="absolute -bottom-4 -right-4 w-20 h-20 rounded-full bg-blue-100/50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 pointer-events-none">
             <Shield className="w-10 h-10 opacity-30" />
           </div>
         </Card>

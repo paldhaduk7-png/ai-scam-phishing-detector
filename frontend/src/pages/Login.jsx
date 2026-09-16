@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { loginUser, clearAuthError } from '../store/slices/authSlice';
+import axios from 'axios';
+import { setCredentials } from '../store/slices/authSlice';
 import Button from '../components/common/Button';
 import {
   Shield,
@@ -11,42 +12,103 @@ import {
   EyeOff,
   ArrowRight,
   AlertCircle,
+  CheckCircle2,
   Sparkles,
 } from 'lucide-react';
+import { toast } from 'sonner';
+
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { isAuthenticated, loading, error } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
+  // Read any state passed from Register.jsx (e.g. registeredEmail, success message)
+  const initialEmail = location.state?.registeredEmail || '';
+  const initialSuccessMessage = location.state?.message || '';
   const fromPath = location.state?.from?.pathname || '/dashboard';
 
-  useEffect(() => {
-    dispatch(clearAuthError());
-  }, [dispatch]);
+  // Form State
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
+  // UI Feedback State
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState(initialSuccessMessage);
+
+  // If navigated from registration with a message, toast it once
+  useEffect(() => {
+    if (initialSuccessMessage) {
+      toast.success(initialSuccessMessage);
+    }
+  }, [initialSuccessMessage]);
+
+  // If already authenticated, redirect to dashboard
   useEffect(() => {
     if (isAuthenticated) {
-      navigate(fromPath, { replace: true });
+      navigate('/dashboard', { replace: true });
     }
-  }, [isAuthenticated, navigate, fromPath]);
+  }, [isAuthenticated, navigate]);
 
+  // Form Submission with Axios directly
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!email.trim() || !password) return;
+    setError('');
 
-    dispatch(
-      loginUser({
-        email: email.trim(),
-        password,
-      })
-    );
+    if (!email.trim() || !password) {
+      const msg = 'Please enter both your email address and password.';
+      setError(msg);
+      toast.error(msg);
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      // Direct axios call to backend login endpoint with HTTP-only cookie support
+      const response = await axios.post(
+        `${API_BASE_URL}/auth/login`,
+        {
+          email: email.trim().toLowerCase(),
+          password,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          withCredentials: true,
+        }
+      );
+
+      // Successfully authenticated
+      if (response.data) {
+        const userData = response.data;
+
+        // Toast welcome message
+        toast.success(`Welcome back, ${userData.name || 'User'}!`);
+
+        // Store particular user profile in Redux store
+        dispatch(setCredentials(userData));
+
+        // Navigate to the user's personal dashboard
+        navigate(fromPath, { replace: true });
+      }
+    } catch (err) {
+      const detail = err.response?.data?.detail;
+      const message =
+        typeof detail === 'string'
+          ? detail
+          : (Array.isArray(detail) ? detail[0]?.msg : 'Invalid email or password. Please try again.');
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -69,15 +131,27 @@ export default function Login() {
           Welcome back
         </h2>
         <p className="mt-2 text-sm text-slate-400">
-          Sign in to access your dashboard, saved scan history, and account settings.
+          Sign in to access your personal dashboard, scan metrics, and history.
         </p>
       </div>
 
       {/* Main Card */}
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md z-10 px-4 sm:px-0">
         <div className="bg-[#11192e]/90 backdrop-blur-md py-8 px-6 sm:px-10 shadow-2xl rounded-2xl border border-slate-800/80">
+          
+          {/* Registration Success Message */}
+          {successMsg && (
+            <div className="mb-6 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-start gap-3 animate-fadeIn">
+              <CheckCircle2 className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+              <div className="text-xs text-emerald-200 leading-relaxed font-medium">
+                {successMsg}
+              </div>
+            </div>
+          )}
+
+          {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3">
+            <div className="mb-6 p-3.5 rounded-xl bg-red-500/10 border border-red-500/30 flex items-start gap-3 animate-fadeIn">
               <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
               <div className="text-xs text-red-200 leading-relaxed font-medium">
                 {error}
@@ -99,7 +173,10 @@ export default function Login() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError('');
+                  }}
                   placeholder="name@example.com"
                   className="w-full pl-10 pr-4 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all"
                 />
@@ -119,7 +196,10 @@ export default function Login() {
                   type={showPassword ? 'text' : 'password'}
                   required
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError('');
+                  }}
                   placeholder="••••••••••••"
                   className="w-full pl-10 pr-10 py-2.5 bg-slate-900/80 border border-slate-700/80 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500 transition-all"
                 />
@@ -151,7 +231,10 @@ export default function Login() {
           {/* Switch to Register */}
           <div className="mt-6 text-center text-xs text-slate-400">
             Don't have an account yet?{' '}
-            <Link to="/register" className="font-semibold text-blue-400 hover:text-blue-300 underline underline-offset-4">
+            <Link
+              to="/register"
+              className="font-semibold text-blue-400 hover:text-blue-300 underline underline-offset-4"
+            >
               Create an account
             </Link>
           </div>
