@@ -61,11 +61,29 @@ class Settings:
         self.api_version: str = os.getenv("API_VERSION", API_VERSION_DEFAULT)
         self.api_description: str = os.getenv("API_DESCRIPTION", API_DESCRIPTION_DEFAULT)
         
-        raw_origins = os.getenv("ALLOWED_ORIGINS")
+        # CORS origins (supports CORS_ORIGINS or ALLOWED_ORIGINS)
+        raw_origins = os.getenv("CORS_ORIGINS") or os.getenv("ALLOWED_ORIGINS")
         self.allowed_origins: List[str] = (
             _parse_cors_origins(raw_origins) if raw_origins else list(DEFAULT_ALLOWED_ORIGINS)
         )
 
+        # JWT Settings
+        self.jwt_secret_key: str = os.getenv("JWT_SECRET_KEY", "fallback-secret-key-for-dev-change-in-env")
+        self.jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
+        self.access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
+
+        # Cookie Settings
+        cookie_sec_raw = os.getenv("COOKIE_SECURE", "False").lower()
+        self.cookie_secure: bool = cookie_sec_raw in ("true", "1", "yes")
+        self.cookie_samesite: str = os.getenv("COOKIE_SAMESITE", "lax").lower()
+        self.cookie_name: str = "access_token"
+
+        # Cloudinary Settings
+        self.cloudinary_cloud_name: str = os.getenv("CLOUDINARY_CLOUD_NAME", "")
+        self.cloudinary_api_key: str = os.getenv("CLOUDINARY_API_KEY", "")
+        self.cloudinary_api_secret: str = os.getenv("CLOUDINARY_API_SECRET", "")
+
 
 # Singleton application settings instance
 settings = Settings()
+
