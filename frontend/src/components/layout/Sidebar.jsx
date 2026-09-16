@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   LayoutDashboard,
   Search,
@@ -7,20 +8,37 @@ import {
   User,
   Info,
   LogOut,
+  LogIn,
   Shield,
-  X
+  X,
 } from 'lucide-react';
+import { logoutUser } from '../../store/slices/authSlice';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
 
+  // Dynamic nav items depending on auth state
   const navItems = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    ...(isAuthenticated
+      ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }]
+      : []),
     { name: 'Detect', path: '/detect', icon: Search },
-    { name: 'History', path: '/history', icon: Clock },
-    { name: 'Profile', path: '/profile', icon: User },
+    ...(isAuthenticated
+      ? [
+          { name: 'History', path: '/history', icon: Clock },
+          { name: 'Profile', path: '/profile', icon: User },
+        ]
+      : []),
     { name: 'About', path: '/about', icon: Info },
   ];
+
+  const handleLogout = async () => {
+    await dispatch(logoutUser());
+    onClose?.();
+    navigate('/login');
+  };
 
   return (
     <>
@@ -95,21 +113,30 @@ export default function Sidebar({ isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Bottom Logout Button (Visual UI Only) */}
+        {/* Bottom Auth Action Button */}
         <div className="p-4 border-t border-slate-800/80">
-          <button
-            type="button"
-            onClick={() => {
-              // Visual only placeholder as instructed
-              navigate('/');
-              onClose?.();
-            }}
-            className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer"
-            title="Logout (Visual placeholder - auth not yet implemented)"
-          >
-            <LogOut className="w-5 h-5" />
-            <span>Logout</span>
-          </button>
+          {isAuthenticated ? (
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-slate-800/60 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Log Out ({user?.name ? user.name.split(' ')[0] : 'User'})</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                onClose?.();
+                navigate('/login');
+              }}
+              className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-blue-400 hover:text-blue-300 hover:bg-blue-950/40 transition-colors cursor-pointer"
+            >
+              <LogIn className="w-5 h-5" />
+              <span>Sign In / Register</span>
+            </button>
+          )}
         </div>
       </aside>
     </>
