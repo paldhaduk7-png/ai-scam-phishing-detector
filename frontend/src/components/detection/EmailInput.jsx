@@ -6,6 +6,10 @@ import Button from '../common/Button';
  * EmailInput component with dual-engine model selection (Traditional ML vs. Bi-LSTM),
  * subject line input, email body textarea, and character limits.
  */
+const isDLDisabled =
+  import.meta.env.VITE_DISABLE_DL === 'true' ||
+  (import.meta.env.PROD && import.meta.env.VITE_DISABLE_DL !== 'false');
+
 export default function EmailInput({
   subject = '',
   content = '',
@@ -72,54 +76,68 @@ export default function EmailInput({
       </div>
 
       {/* Email Model Selection Segmented Controls */}
-      <div className="p-3 rounded-2xl bg-slate-100/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 space-y-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-            AI Classification Engine
-          </span>
-          <span className="text-[11px] text-slate-500 dark:text-slate-400">
-            {emailModel === 'dl'
-              ? 'Deep Learning — Recurrent neural sequence analysis'
-              : 'Traditional ML — Fast TF-IDF + LinearSVC classification'}
-          </span>
-        </div>
+      {!isDLDisabled ? (
+        <div className="p-3 rounded-2xl bg-slate-100/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 space-y-2">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              AI Classification Engine
+            </span>
+            <span className="text-[11px] text-slate-500 dark:text-slate-400">
+              {emailModel === 'dl'
+                ? 'Deep Learning — Recurrent neural sequence analysis'
+                : 'Traditional ML — Fast TF-IDF + LinearSVC classification'}
+            </span>
+          </div>
 
-        <div
-          role="radiogroup"
-          aria-label="Detection Model"
-          className="grid grid-cols-2 gap-2"
-        >
-          <button
-            type="button"
-            role="radio"
-            aria-checked={emailModel === 'ml'}
-            onClick={() => onEmailModelChange?.('ml')}
-            className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
-              emailModel === 'ml'
-                ? 'bg-white dark:bg-[#1e293b] text-blue-700 dark:text-blue-300 shadow-xs border border-blue-200/80 dark:border-blue-800/80 font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
-            }`}
+          <div
+            role="radiogroup"
+            aria-label="Detection Model"
+            className="grid grid-cols-2 gap-2"
           >
+            <button
+              type="button"
+              role="radio"
+              aria-checked={emailModel === 'ml'}
+              onClick={() => onEmailModelChange?.('ml')}
+              className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
+                emailModel === 'ml'
+                  ? 'bg-white dark:bg-[#1e293b] text-blue-700 dark:text-blue-300 shadow-xs border border-blue-200/80 dark:border-blue-800/80 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
+              }`}
+            >
+              <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
+              <span>Traditional ML</span>
+            </button>
+
+            <button
+              type="button"
+              role="radio"
+              aria-checked={emailModel === 'dl'}
+              onClick={() => onEmailModelChange?.('dl')}
+              className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
+                emailModel === 'dl'
+                  ? 'bg-white dark:bg-[#1e293b] text-indigo-700 dark:text-indigo-300 shadow-xs border border-indigo-200/80 dark:border-indigo-800/80 font-bold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
+              }`}
+            >
+              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
+              <span>Bi-LSTM Neural Net</span>
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-3 rounded-2xl bg-slate-100/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-2">
             <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span>Traditional ML</span>
-          </button>
-
-          <button
-            type="button"
-            role="radio"
-            aria-checked={emailModel === 'dl'}
-            onClick={() => onEmailModelChange?.('dl')}
-            className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
-              emailModel === 'dl'
-                ? 'bg-white dark:bg-[#1e293b] text-indigo-700 dark:text-indigo-300 shadow-xs border border-indigo-200/80 dark:border-indigo-800/80 font-bold'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
-            }`}
-          >
-            <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-            <span>Bi-LSTM Neural Net</span>
-          </button>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+              AI Classification Engine
+            </span>
+          </div>
+          <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
+            Traditional ML (TF-IDF + LinearSVC)
+          </span>
         </div>
-      </div>
+      )}
 
       {/* Action Row */}
       <div className="flex items-center justify-between pt-1">

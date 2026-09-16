@@ -17,6 +17,10 @@ import {
   Lock,
 } from 'lucide-react';
 
+const isDLDisabled =
+  import.meta.env.VITE_DISABLE_DL === 'true' ||
+  (import.meta.env.PROD && import.meta.env.VITE_DISABLE_DL !== 'false');
+
 export default function Detect() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -82,7 +86,7 @@ export default function Detect() {
 
     try {
       let response;
-      if (activeTab === 'email' && emailModel === 'dl') {
+      if (activeTab === 'email' && emailModel === 'dl' && !isDLDisabled) {
         response = await detectEmailDL({ content });
       } else {
         response = await detectScam({
@@ -222,10 +226,12 @@ export default function Detect() {
                 </div>
                 <div>
                   <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    Emails (Dual-Engine)
+                    {isDLDisabled ? 'Emails (ML Engine)' : 'Emails (Dual-Engine)'}
                   </h4>
                   <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Choose LinearSVC ML or 128-unit Bi-LSTM sequence neural net.
+                    {isDLDisabled
+                      ? 'Trained LinearSVC ML with TF-IDF n-gram vectorization.'
+                      : 'Choose LinearSVC ML or 128-unit Bi-LSTM sequence neural net.'}
                   </p>
                 </div>
               </div>
@@ -279,10 +285,12 @@ export default function Detect() {
                 <span>Email ML:</span>
                 <span className="font-mono text-slate-800 dark:text-slate-200">LinearSVC + TF-IDF</span>
               </li>
-              <li className="flex items-center justify-between">
-                <span>Email DL:</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200">Bi-LSTM (Keras)</span>
-              </li>
+              {!isDLDisabled && (
+                <li className="flex items-center justify-between">
+                  <span>Email DL:</span>
+                  <span className="font-mono text-slate-800 dark:text-slate-200">Bi-LSTM (Keras)</span>
+                </li>
+              )}
               <li className="flex items-center justify-between">
                 <span>SMS Spam:</span>
                 <span className="font-mono text-slate-800 dark:text-slate-200">LinearSVC Pipeline</span>
