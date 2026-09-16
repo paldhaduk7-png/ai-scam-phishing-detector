@@ -23,7 +23,8 @@ import {
   LoginShieldIllustration,
 } from '../components/auth/AuthIllustrations';
 
-const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const RAW_API_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
 
 function GoogleIcon({ className = 'w-4 h-4' }) {
   return (
@@ -174,7 +175,7 @@ export default function Login() {
           : Array.isArray(detail)
           ? detail[0]?.msg
           : err.message === 'Network Error'
-          ? 'Cannot connect to backend server. Please verify backend is running on port 8000.'
+          ? 'Cannot connect to backend server. Please verify backend is accessible.'
           : 'Invalid email or password. Please verify your credentials.';
       setError(message);
       toast.error(message);

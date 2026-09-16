@@ -49,19 +49,18 @@ dl/data/processed/*
 !dl/data/processed/.gitkeep
 
 # Trained Models & Binaries
-ml/models/*
-!ml/models/.gitkeep
-!ml/models/*.json
-dl/models/*
-!dl/models/.gitkeep
-!dl/models/*.json
-*.pkl
-*.joblib
+# Ignore temporary training checkpoints and raw weights
 *.h5
-*.keras
 *.pt
 *.pth
 *.onnx
+
+# Explicitly track production model artifacts required by the backend
+!ml/models/*.joblib
+!ml/models/*.json
+!dl/models/*.keras
+!dl/models/*.pkl
+!dl/models/*.json
 
 # Jupyter Notebook Checkpoints
 .ipynb_checkpoints/

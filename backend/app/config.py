@@ -45,24 +45,29 @@ The API provides two dedicated detection endpoints tailored for distinct modelin
 """.strip()
 
 DEFAULT_ALLOWED_ORIGINS: List[str] = [
+    "https://ai-scam-phishing-detector.vercel.app",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
     "http://localhost:5175",
-    "http://127.0.0.1:5175"
+    "http://127.0.0.1:5175",
 ]
 
 
 def _parse_cors_origins(raw_origins: str) -> List[str]:
     """
     Parses a comma-delimited origins string into a sanitized list of origin URLs.
-    Falls back to DEFAULT_ALLOWED_ORIGINS if empty or whitespace.
+    Normalizes by stripping whitespace and trailing slashes.
+    Always includes default development and production Vercel origins.
     """
-    if not raw_origins:
-        return DEFAULT_ALLOWED_ORIGINS
-    origins = [orig.strip() for orig in raw_origins.split(",") if orig.strip()]
-    return origins if origins else DEFAULT_ALLOWED_ORIGINS
+    origins_set = {orig.rstrip("/") for orig in DEFAULT_ALLOWED_ORIGINS}
+    if raw_origins:
+        for orig in raw_origins.split(","):
+            cleaned = orig.strip().rstrip("/")
+            if cleaned:
+                origins_set.add(cleaned)
+    return list(origins_set)
 
 
 class Settings:

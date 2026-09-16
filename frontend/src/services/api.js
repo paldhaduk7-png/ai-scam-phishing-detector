@@ -4,13 +4,16 @@ import axios from 'axios';
  * ScamShield API Client
  * Configured with VITE_API_BASE_URL and withCredentials=true for HTTP-only cookie JWTs.
  */
+const rawBaseURL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
+const cleanBaseURL = rawBaseURL.replace(/\/+$/, '');
+
 const api = axios.create({
-  baseURL: import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
+  baseURL: cleanBaseURL,
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
-  timeout: 15000,
+  timeout: 45000,
 });
 
 // ==============================================================================

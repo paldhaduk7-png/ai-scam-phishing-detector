@@ -82,7 +82,8 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
     # CSRF Check: if mutating authenticated request with cookie, verify Origin
     if method in ("POST", "PUT", "DELETE", "PATCH") and settings.cookie_name in request.cookies:
         origin = request.headers.get("origin")
-        if origin and origin not in settings.allowed_origins:
+        allowed_normalized = [o.rstrip("/") for o in settings.allowed_origins]
+        if origin and origin.rstrip("/") not in allowed_normalized:
             logger.warning("CSRF origin validation failed for origin: %s on path: %s", origin, path)
             return JSONResponse(
                 status_code=status.HTTP_403_FORBIDDEN,
