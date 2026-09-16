@@ -25,7 +25,7 @@ export default function AppLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
       {/* Sidebar */}
       <Sidebar
         isOpen={isSidebarOpen}

@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
+import { toast } from 'sonner';
 import {
   LayoutDashboard,
   Search,
@@ -11,13 +12,21 @@ import {
   LogIn,
   Shield,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react';
 import { logoutUser } from '../../store/slices/authSlice';
+import { useTheme } from '../../context/ThemeContext';
+import ConfirmModal from '../common/ConfirmModal';
 
 export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { theme, isDark, toggleTheme } = useTheme();
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // Dynamic nav items depending on auth state
   const navItems = [
@@ -34,10 +43,19 @@ export default function Sidebar({ isOpen, onClose }) {
     { name: 'About', path: '/about', icon: Info },
   ];
 
-  const handleLogout = async () => {
-    await dispatch(logoutUser());
-    onClose?.();
-    navigate('/login');
+  const handleConfirmLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await dispatch(logoutUser());
+      toast.success('Signed out successfully.');
+      setShowLogoutModal(false);
+      onClose?.();
+      navigate('/login');
+    } catch {
+      toast.error('Sign out failed. Please try again.');
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -113,15 +131,37 @@ export default function Sidebar({ isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Bottom Auth Action Button */}
-        <div className="p-4 border-t border-slate-800/80">
+        {/* Bottom Theme & Auth Section */}
+        <div className="p-4 border-t border-slate-800/80 space-y-2">
+          {/* Theme Toggle Button */}
+          <button
+            type="button"
+            onClick={() => {
+              toggleTheme();
+              toast.info(`Switched to ${isDark ? 'Light' : 'Dark'} Mode`);
+            }}
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors cursor-pointer"
+          >
+            <span className="flex items-center gap-3">
+              {isDark ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-blue-400" />
+              )}
+              <span>{isDark ? 'Dark Theme' : 'Light Theme'}</span>
+            </span>
+            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+              Toggle
+            </span>
+          </button>
+
           {isAuthenticated ? (
             <button
               type="button"
-              onClick={handleLogout}
-              className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-slate-400 hover:text-red-400 hover:bg-slate-800/60 transition-colors cursor-pointer"
+              onClick={() => setShowLogoutModal(true)}
+              className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-400 hover:text-red-400 hover:bg-slate-800/60 transition-colors cursor-pointer"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
               <span>Log Out ({user?.name ? user.name.split(' ')[0] : 'User'})</span>
             </button>
           ) : (
@@ -139,6 +179,18 @@ export default function Sidebar({ isOpen, onClose }) {
           )}
         </div>
       </aside>
+
+      {/* Sign Out Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => !loggingOut && setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+        loading={loggingOut}
+        title="Sign Out Confirmation"
+        message="Are you sure you want to sign out? You will need to sign back in to access your personal dashboard and saved history."
+        confirmText="Sign Out"
+        cancelText="Cancel"
+      />
     </>
   );
 }
