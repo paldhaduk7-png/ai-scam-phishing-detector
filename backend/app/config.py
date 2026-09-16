@@ -117,6 +117,10 @@ class Settings:
             "http://localhost:8000/api/v1/auth/google/callback",
         )
 
+        # Deep Learning Model Control (set DISABLE_DL=true on memory-constrained platforms like Render Free tier)
+        disable_dl_raw = os.getenv("DISABLE_DL", "false").strip().lower()
+        self.disable_dl: bool = disable_dl_raw in ("true", "1", "yes")
+
 
 # Singleton application settings instance
 settings = Settings()

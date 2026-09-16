@@ -167,6 +167,39 @@ def test_detect_dl_rejects_url():
     assert "email" in data.get("detail", "").lower()
 
 
+def test_detect_dl_disabled_returns_503(monkeypatch):
+    """Verify POST /api/v1/detect/dl returns HTTP 503 when DISABLE_DL=True."""
+    from app.config import settings
+    monkeypatch.setattr(settings, "disable_dl", True)
+
+    payload = {
+        "content": "Subject: Account Alert\nYour PayPal account has been locked. Verify immediately.",
+        "content_type": "email"
+    }
+    response = client.post("/api/v1/detect/dl", json=payload)
+    assert response.status_code == 503
+    data = response.json()
+    assert data.get("detail") == "Deep Learning detection is unavailable in the production deployment."
+
+
+def test_ml_endpoints_work_when_dl_disabled(monkeypatch):
+    """Verify standard ML detection (/api/v1/detect) works normally even when DISABLE_DL=True."""
+    from app.config import settings
+    monkeypatch.setattr(settings, "disable_dl", True)
+
+    channels = [
+        ("email", "Subject: Notice\nYour monthly statement is ready."),
+        ("sms", "Your verification code is 492019. Valid for 5 minutes."),
+        ("url", "https://google.com/search")
+    ]
+    for c_type, content in channels:
+        res = client.post("/api/v1/detect", json={"content": content, "content_type": c_type})
+        assert res.status_code == 200
+        data = res.json()
+        assert "is_phishing" in data
+        assert "risk_percentage" in data
+
+
 # ==============================================================================
 # 4. Request Validation Tests (HTTP 422)
 # ==============================================================================

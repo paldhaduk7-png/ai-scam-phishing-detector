@@ -357,6 +357,14 @@ DETECT_DL_REQUEST_EXAMPLES = {
                     "example": {"detail": "Detection service temporarily unavailable."}
                 }
             }
+        },
+        503: {
+            "description": "Service Unavailable — Deep Learning detection is disabled in this deployment environment (DISABLE_DL=true).",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Deep Learning detection is unavailable in the production deployment."}
+                }
+            }
         }
     }
 )
@@ -384,6 +392,12 @@ def detect_threat_dl(
     - **Email Only**: Does not support SMS or URL channels.
     - **Model**: Uses a deep sequential neural network (Bi-LSTM with Keras tokenization) rather than TF-IDF classical ML.
     """
+    if settings.disable_dl:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Deep Learning detection is unavailable in the production deployment."
+        )
+
     if request.content_type.lower() != "email":
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

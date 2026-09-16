@@ -10,6 +10,8 @@ import pickle
 import re
 from typing import Any, Dict, Optional
 
+from app.config import settings
+
 logger = logging.getLogger("scamshield.dl_detector")
 
 # Relative paths resolving from repository root
@@ -31,6 +33,8 @@ class DLModelManager:
 
     @classmethod
     def get_model(cls) -> Any:
+        if getattr(settings, "disable_dl", False):
+            raise RuntimeError("Deep Learning model loading is disabled in this environment (DISABLE_DL=true).")
         if cls._model is None:
             if not MODEL_PATH.exists():
                 raise FileNotFoundError(f"Trained Bi-LSTM model not found at {MODEL_PATH}")
@@ -88,13 +92,16 @@ def detect_email_dl(text: str) -> Dict[str, Any]:
     Performs forward-pass inference on raw email text using the trained Bi-LSTM network.
     Returns a structured prediction dictionary.
     """
+    if getattr(settings, "disable_dl", False):
+        raise RuntimeError("Deep Learning detection is disabled in this environment (DISABLE_DL=true).")
+
     cleaned = clean_email_text(text)
     if not cleaned:
         return {
             "predicted_label": None,
             "classification": "Unknown",
             "score": None,
-            "score_type": "probability (Bi-LSTM)",
+            "score_type": "probability (Bi-LSTM)", 
             "risk_percentage": 0.0,
             "is_phishing": False,
             "is_spam": None,
