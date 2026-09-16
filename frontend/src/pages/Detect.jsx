@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useSearchParams } from 'react-router-dom';
 import DetectionTabs from '../components/detection/DetectionTabs';
 import MessageInput from '../components/detection/MessageInput';
 import EmailInput from '../components/detection/EmailInput';
@@ -16,12 +15,9 @@ import {
   Mail,
   Link as LinkIcon,
   FileCheck,
-  Sparkles,
-  ShieldCheck,
 } from 'lucide-react';
 
 export default function Detect() {
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const [searchParams, setSearchParams] = useSearchParams();
 
   const rawTab = searchParams.get('tab');
@@ -119,36 +115,13 @@ export default function Detect() {
   return (
     <div className="space-y-8 animate-fadeIn">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-            Detect Scams &amp; Phishing
-          </h1>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Analyze messages, emails or URLs using advanced AI to stay safe online.
-          </p>
-        </div>
-
-        {/* User Session Info Badge */}
-        {isAuthenticated ? (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-300 text-xs font-medium self-start sm:self-auto shadow-xs">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>
-              Signed in as <strong>{user?.name || 'User'}</strong> — scans saved to history
-            </span>
-          </div>
-        ) : (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900/50 text-blue-800 dark:text-blue-300 text-xs font-medium self-start sm:self-auto shadow-xs">
-            <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span>
-              Guest Mode — No login required.{' '}
-              <Link to="/login" className="underline font-semibold hover:text-blue-950 dark:hover:text-blue-100">
-                Sign in
-              </Link>{' '}
-              to save scans.
-            </span>
-          </div>
-        )}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
+          Detect Scams &amp; Phishing
+        </h1>
+        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
+          Analyze messages, emails or URLs using advanced AI to stay safe online.
+        </p>
       </div>
 
       {/* Main Detect Form & Right Side Cards */}

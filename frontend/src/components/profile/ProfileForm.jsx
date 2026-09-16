@@ -9,11 +9,9 @@ import {
   Camera,
   Calendar,
   Trash2,
-  Check,
   AlertCircle,
   LogOut,
   Loader2,
-  ShieldCheck,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -34,7 +32,6 @@ export default function ProfileForm() {
   const [name, setName] = useState(user?.name || '');
   const [photoLoading, setPhotoLoading] = useState(false);
   const [profileLoading, setProfileLoading] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
 
   // Modals state
@@ -85,7 +82,6 @@ export default function ProfileForm() {
     }
 
     setErrorMsg('');
-    setSuccessMsg('');
     setPhotoLoading(true);
 
     try {
@@ -93,7 +89,6 @@ export default function ProfileForm() {
       formData.append('file', file);
       const res = await dispatch(uploadAvatar(formData)).unwrap();
       if (res) {
-        setSuccessMsg('Profile photo updated successfully!');
         toast.success('Profile photo updated successfully!');
       }
     } catch (err) {
@@ -108,12 +103,10 @@ export default function ProfileForm() {
 
   const handleConfirmDeletePhoto = async () => {
     setErrorMsg('');
-    setSuccessMsg('');
     setDeletingPhoto(true);
 
     try {
       await dispatch(deleteAvatar()).unwrap();
-      setSuccessMsg('Profile photo removed.');
       toast.success('Profile photo removed successfully.');
       setShowDeletePhotoModal(false);
     } catch (err) {
@@ -134,12 +127,10 @@ export default function ProfileForm() {
     }
 
     setErrorMsg('');
-    setSuccessMsg('');
     setProfileLoading(true);
 
     try {
       await dispatch(updateProfileDetails({ name: name.trim() })).unwrap();
-      setSuccessMsg('Profile details updated successfully!');
       toast.success('Profile details updated successfully!');
     } catch (err) {
       const msg = typeof err === 'string' ? err : 'Failed to update profile.';
@@ -229,14 +220,7 @@ export default function ProfileForm() {
           </button>
         )}
 
-        <div className="w-full mt-6 pt-5 border-t border-slate-100 dark:border-slate-800 space-y-3">
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-100 dark:border-blue-900/40 text-left">
-            <ShieldCheck className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-            <p className="text-[11px] text-blue-900 dark:text-blue-200 leading-snug">
-              Protected session active with secure HTTP-only cookies and Cloudinary storage.
-            </p>
-          </div>
-
+        <div className="w-full mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
           <Button
             type="button"
             variant="outline"
@@ -252,13 +236,6 @@ export default function ProfileForm() {
 
       {/* Right Column: Profile Edit Form */}
       <Card className="lg:col-span-2 p-8">
-        {successMsg && (
-          <div className="mb-6 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/50 text-emerald-800 dark:text-emerald-200 text-xs font-medium flex items-center gap-2">
-            <Check className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
-            <span>{successMsg}</span>
-          </div>
-        )}
-
         {errorMsg && (
           <div className="mb-6 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/50 text-red-800 dark:text-red-200 text-xs font-medium flex items-center gap-2">
             <AlertCircle className="w-4 h-4 text-red-600 dark:text-red-400 shrink-0" />
@@ -304,14 +281,6 @@ export default function ProfileForm() {
             </div>
             <p className="text-[11px] text-slate-400 dark:text-slate-500 mt-1.5">
               Email address is permanently linked to your detection records and cannot be changed directly.
-            </p>
-          </div>
-
-          {/* Cloudinary Info Badge */}
-          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-1">
-            <h4 className="text-xs font-bold text-slate-700 dark:text-slate-200">Cloudinary Avatar Storage</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-              Profile images are safely processed, cropped, and served securely via Cloudinary CDN. Photos can be removed or replaced at any time.
             </p>
           </div>
 
