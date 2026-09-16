@@ -6,6 +6,8 @@ Handles registration, login, logout, current user profile, and Cloudinary avatar
 import logging
 from typing import Dict
 from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
+from fastapi.exceptions import RequestValidationError
+from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -70,7 +72,10 @@ async def register_user(
         photo_file = form.get("profile_photo") or form.get("file") or form.get("photo")
     else:
         body = await request.json()
-        req = UserRegisterRequest(**body)
+        try:
+            req = UserRegisterRequest(**body)
+        except ValidationError as val_err:
+            raise RequestValidationError(val_err.errors()) from val_err
         name = req.name.strip()
         email = req.email.strip().lower()
         password = req.password
