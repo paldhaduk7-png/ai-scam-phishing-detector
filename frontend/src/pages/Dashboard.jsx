@@ -6,7 +6,12 @@ import RecentDetections from '../components/dashboard/RecentDetections';
 import QuickActions from '../components/dashboard/QuickActions';
 import SafetyTips from '../components/dashboard/SafetyTips';
 import Card from '../components/common/Card';
-import { getDashboardStats, getRecentDetections, getDashboardChart } from '../services/api';
+import {
+  getDashboardStats,
+  getRecentDetections,
+  getDashboardChart,
+  getDetectionHistory,
+} from '../services/api';
 import {
   FileText,
   ShieldCheck,
@@ -37,22 +42,43 @@ export default function Dashboard() {
         // Backend not yet running; keep clean honest initial state '--'
       }
 
+      let recentItems = [];
       try {
         const recentData = await getRecentDetections();
         if (Array.isArray(recentData)) {
           setRecentScans(recentData);
+          recentItems = recentData;
         }
       } catch {
         // Backend not yet running; keep clean honest empty state []
       }
 
+      let chartFilled = false;
       try {
         const chart = await getDashboardChart();
-        if (Array.isArray(chart)) {
+        if (Array.isArray(chart) && chart.some((d) => (d.total || 0) > 0)) {
           setChartData(chart);
+          chartFilled = true;
         }
       } catch {
-        // Backend not yet running; keep clean honest empty state []
+        // dedicated endpoint not reached
+      }
+
+      if (!chartFilled) {
+        try {
+          const hist = await getDetectionHistory({ limit: 50 });
+          const items = Array.isArray(hist?.items) ? hist.items : Array.isArray(hist) ? hist : [];
+          if (items.length > 0) {
+            setChartData(items);
+            chartFilled = true;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (!chartFilled && recentItems.length > 0) {
+        setChartData(recentItems);
       }
     };
 

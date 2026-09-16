@@ -3,8 +3,73 @@ import Card from '../common/Card';
 import EmptyState from '../common/EmptyState';
 import { LineChart as ChartIcon } from 'lucide-react';
 
+function aggregate7Days(items = []) {
+  const days = [];
+  const now = new Date();
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0];
+    const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+    days.push({
+      date: dateStr,
+      day: dayName,
+      safe: 0,
+      suspicious: 0,
+      phishing: 0,
+      total: 0,
+    });
+  }
+
+  const daysMap = new Map(days.map((item) => [item.date, item]));
+
+  items.forEach((item) => {
+    const raw = item.created_at || item.createdAt || item.date_time || item.timestamp;
+    if (!raw) return;
+    try {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        const dateStr = d.toISOString().split('T')[0];
+        const entry = daysMap.get(dateStr);
+        if (entry) {
+          entry.total += 1;
+          const isPhish =
+            item.is_phishing === true ||
+            String(item.result || item.classification).toLowerCase().includes('phish');
+          const risk =
+            item.confidence != null
+              ? item.confidence
+              : item.risk_percentage != null
+              ? item.risk_percentage
+              : 0;
+          if (isPhish) {
+            entry.phishing += 1;
+          } else if (risk < 40) {
+            entry.safe += 1;
+          } else {
+            entry.suspicious += 1;
+          }
+        }
+      }
+    } catch {
+      // ignore parsing error
+    }
+  });
+
+  return days;
+}
+
 export default function DetectionChart({ data = null }) {
-  const points = Array.isArray(data) ? data : [];
+  let points = [];
+  if (Array.isArray(data) && data.length > 0) {
+    if (data[0] && typeof data[0].day === 'string' && ('safe' in data[0] || 'total' in data[0])) {
+      points = data;
+    } else {
+      points = aggregate7Days(data);
+    }
+  }
+
   const totalScans = points.reduce((acc, d) => acc + (d.total || 0), 0);
   const hasActivity = totalScans > 0;
 
