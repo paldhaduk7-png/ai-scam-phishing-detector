@@ -1,14 +1,19 @@
 import logging
-from typing import Any, Dict
-from fastapi import Body, Depends, FastAPI, HTTPException, Request, status
+import time
+from collections import defaultdict
+from typing import Any, Dict, Optional
+from fastapi import Body, Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import get_db
-from app.models import Detection
+from app.models import Detection, User
+from app.routers import auth as auth_router
+from app.routers import detections as detections_router
 from app.schemas import DetectionRequest, DetectionResponse
+from app.services.auth_service import get_optional_current_user
 from app.services.unified_detector import detect_unified
 from app.services.dl_detector import detect_email_dl
 
@@ -19,10 +24,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger("scamshield.api")
 
+# In-memory IP-based rate limiter for public detection endpoints
+# Allows 60 detection requests per minute per IP to prevent automated abuse
+_RATE_LIMIT_BUCKET = defaultdict(list)
+_RATE_LIMIT_MAX_REQUESTS = 60
+_RATE_LIMIT_WINDOW_SECONDS = 60
+
 TAGS_METADATA = [
     {
         "name": "Health",
         "description": "System health checks and operational status monitoring.",
+    },
+    {
+        "name": "Authentication",
+        "description": "User registration, session login (HTTP-only JWT cookie), logout, and Cloudinary profile management.",
     },
     {
         "name": "Detection",
@@ -31,6 +46,10 @@ TAGS_METADATA = [
             "- **`/api/v1/detect`**: Standard unified Machine Learning detection for Email, SMS, and URL channels.\n"
             "- **`/api/v1/detect/dl`**: Specialized Deep Learning Bi-LSTM neural network detection for Email only."
         ),
+    },
+    {
+        "name": "Detection History & Dashboard",
+        "description": "Authenticated user scan history and personal analytics dashboard.",
     },
 ]
 
@@ -41,6 +60,7 @@ app = FastAPI(
     openapi_tags=TAGS_METADATA
 )
 
+# CORS Middleware with credentials enabled and explicit origins
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.allowed_origins,
@@ -48,6 +68,47 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"]
 )
+
+
+@app.middleware("http")
+async def security_and_rate_limit_middleware(request: Request, call_next):
+    """
+    1. Origin/CSRF verification for authenticated mutating requests with credentials.
+    2. IP rate-limiting for public detection endpoints to mitigate scraping/abuse.
+    """
+    path = request.url.path
+    method = request.method
+
+    # CSRF Check: if mutating authenticated request with cookie, verify Origin
+    if method in ("POST", "PUT", "DELETE", "PATCH") and settings.cookie_name in request.cookies:
+        origin = request.headers.get("origin")
+        if origin and origin not in settings.allowed_origins:
+            logger.warning("CSRF origin validation failed for origin: %s on path: %s", origin, path)
+            return JSONResponse(
+                status_code=status.HTTP_403_FORBIDDEN,
+                content={"detail": "Cross-site request blocked."}
+            )
+
+    # Rate limiting on public detection endpoints
+    if path in ("/api/v1/detect", "/api/v1/detect/dl") and method == "POST":
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        timestamps = [t for t in _RATE_LIMIT_BUCKET[client_ip] if now - t < _RATE_LIMIT_WINDOW_SECONDS]
+        if len(timestamps) >= _RATE_LIMIT_MAX_REQUESTS:
+            logger.warning("Rate limit exceeded for IP: %s on %s", client_ip, path)
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Too many requests. Please slow down and try again shortly."}
+            )
+        timestamps.append(now)
+        _RATE_LIMIT_BUCKET[client_ip] = timestamps
+
+    return await call_next(request)
+
+
+# Include modular routers
+app.include_router(auth_router.router)
+app.include_router(detections_router.router)
 
 
 @app.exception_handler(Exception)
@@ -176,7 +237,8 @@ def detect_threat(
         ...,
         openapi_examples=DETECT_REQUEST_EXAMPLES
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
 ) -> DetectionResponse:
     """
     ### Standard Unified Threat Detection
@@ -198,6 +260,7 @@ def detect_threat(
 
         try:
             record = Detection(
+                user_id=current_user.id if current_user else None,
                 input_type=request.content_type,
                 input_text=request.content,
                 predicted_label=result.get("predicted_label"),
@@ -212,6 +275,7 @@ def detect_threat(
             db.add(record)
             db.commit()
             db.refresh(record)
+
         except Exception as db_err:
             db.rollback()
             logger.error("Database persistence failure for detect: %s", db_err, exc_info=True)
@@ -299,7 +363,8 @@ def detect_threat_dl(
         ...,
         openapi_examples=DETECT_DL_REQUEST_EXAMPLES
     ),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user),
 ) -> DetectionResponse:
     """
     ### Deep Learning Bi-LSTM Email Detection
@@ -328,6 +393,7 @@ def detect_threat_dl(
 
         try:
             record = Detection(
+                user_id=current_user.id if current_user else None,
                 input_type=request.content_type,
                 input_text=request.content,
                 predicted_label=result.get("predicted_label"),
@@ -342,6 +408,7 @@ def detect_threat_dl(
             db.add(record)
             db.commit()
             db.refresh(record)
+
         except Exception as db_err:
             db.rollback()
             logger.error("Database persistence failure for detect/dl: %s", db_err, exc_info=True)
