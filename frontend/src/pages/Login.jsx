@@ -311,31 +311,6 @@ export default function Login() {
               </div>
             )}
 
-            {/* Continue with Google Button */}
-            <Button
-              type="button"
-              variant="secondary"
-              size="md"
-              onClick={handleGoogleLogin}
-              disabled={loading}
-              className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold shadow-2xs py-2.5 cursor-pointer transition-all"
-            >
-              <GoogleIcon className="w-4 h-4 shrink-0" />
-              <span>Continue with Google</span>
-            </Button>
-
-            {/* Divider */}
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
-              </div>
-              <div className="relative flex justify-center text-[11px] uppercase">
-                <span className="bg-white dark:bg-[#0f172a] px-3 text-slate-400 dark:text-slate-500 font-medium tracking-wider">
-                  Or continue with email
-                </span>
-              </div>
-            </div>
-
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
@@ -426,6 +401,31 @@ export default function Login() {
                 Sign In to Account
               </Button>
             </form>
+
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+              </div>
+              <div className="relative flex justify-center text-[11px] uppercase">
+                <span className="bg-white dark:bg-[#0f172a] px-3 text-slate-400 dark:text-slate-500 font-medium tracking-wider">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
+            {/* Continue with Google Button */}
+            <Button
+              type="button"
+              variant="secondary"
+              size="md"
+              onClick={handleGoogleLogin}
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2.5 rounded-xl border border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-900 text-slate-700 dark:text-slate-200 font-semibold shadow-2xs py-2.5 cursor-pointer transition-all"
+            >
+              <GoogleIcon className="w-4 h-4 shrink-0" />
+              <span>Continue with Google</span>
+            </Button>
 
             <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center space-y-2">
               <p className="text-xs text-slate-500 dark:text-slate-400">
