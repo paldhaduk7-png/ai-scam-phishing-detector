@@ -10,16 +10,50 @@ export default function RecentDetections({ detections = [] }) {
   const hasRecords = Array.isArray(detections) && detections.length > 0;
 
   const getTypeIcon = (type) => {
-    switch (type?.toLowerCase()) {
+    const t = type?.toLowerCase();
+    switch (t) {
       case 'message':
+      case 'sms':
         return <MessageSquare className="w-4 h-4 text-blue-500" />;
       case 'email':
-        return <Mail className="w-4 h-4 text-blue-500" />;
+        return <Mail className="w-4 h-4 text-indigo-500" />;
       case 'url':
-        return <LinkIcon className="w-4 h-4 text-blue-500" />;
+        return <LinkIcon className="w-4 h-4 text-sky-500" />;
       default:
         return <ShieldCheck className="w-4 h-4 text-blue-500" />;
     }
+  };
+
+  const getTypeLabel = (type) => {
+    const t = type?.toLowerCase();
+    if (t === 'sms') return 'SMS';
+    if (t === 'message') return 'Message';
+    if (t === 'email') return 'Email';
+    if (t === 'url') return 'URL';
+    return type || 'Scan';
+  };
+
+  const formatDateTime = (item) => {
+    if (item.date_time) return item.date_time;
+    if (item.timestamp) return item.timestamp;
+    const raw = item.created_at || item.createdAt || item.dateTime;
+    if (!raw) return '--';
+    try {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+      }
+    } catch {
+      // fallback
+    }
+    return raw;
   };
 
   return (
@@ -52,26 +86,33 @@ export default function RecentDetections({ detections = [] }) {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {detections.map((item, index) => (
-                  <tr key={item.id || index} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                    <td className="py-3 px-2 flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
-                      {getTypeIcon(item.type)}
-                      <span className="capitalize">{item.type}</span>
-                    </td>
-                    <td className="py-3 px-2 text-slate-600 dark:text-slate-300 max-w-[200px] truncate">
-                      {item.preview || item.input}
-                    </td>
-                    <td className="py-3 px-2">
-                      <Badge status={item.result}>{item.result}</Badge>
-                    </td>
-                    <td className="py-3 px-2 text-xs text-slate-400 dark:text-slate-500">
-                      {item.timestamp || item.dateTime}
-                    </td>
-                  </tr>
-                ))}
+                {detections.map((item, index) => {
+                  const type = item.type || item.input_type || '';
+                  const preview = item.preview || item.input || item.input_text || '';
+                  const result = item.result || (item.is_phishing ? 'Phishing' : (item.risk_percentage >= 40 ? 'Suspicious' : 'Safe')) || item.classification || 'Unknown';
+
+                  return (
+                    <tr key={item.id || index} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
+                      <td className="py-3 px-2 flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
+                        {getTypeIcon(type)}
+                        <span className="capitalize">{getTypeLabel(type)}</span>
+                      </td>
+                      <td className="py-3 px-2 text-slate-600 dark:text-slate-300 max-w-[200px] truncate" title={typeof preview === 'string' ? preview : ''}>
+                        {preview}
+                      </td>
+                      <td className="py-3 px-2">
+                        <Badge status={result}>{result}</Badge>
+                      </td>
+                      <td className="py-3 px-2 text-xs text-slate-400 dark:text-slate-500">
+                        {formatDateTime(item)}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
         ) : (
           <div className="py-6">
             <EmptyState

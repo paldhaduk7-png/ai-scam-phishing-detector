@@ -4,7 +4,11 @@ import EmptyState from '../common/EmptyState';
 import { LineChart as ChartIcon } from 'lucide-react';
 
 export default function DetectionChart({ data = null }) {
-  const hasData = Array.isArray(data) && data.length > 0;
+  const points = Array.isArray(data) ? data : [];
+  const totalScans = points.reduce((acc, d) => acc + (d.total || 0), 0);
+  const hasActivity = totalScans > 0;
+
+  const maxTotal = Math.max(...points.map((d) => d.total || 0), 1);
 
   return (
     <Card className="flex flex-col">
@@ -36,10 +40,76 @@ export default function DetectionChart({ data = null }) {
 
       {/* Chart Body */}
       <div className="flex-1 flex items-center justify-center min-h-[220px] pt-4">
-        {hasData ? (
-          // Future data render area
-          <div className="w-full h-full flex items-center justify-center text-xs text-slate-400">
-            Real chart data available
+        {hasActivity ? (
+          <div className="w-full flex flex-col justify-between h-[200px] pt-2">
+            <div className="flex-1 flex items-end justify-between gap-2 sm:gap-4 px-2 pb-2">
+              {points.map((pt, idx) => {
+                const total = pt.total || 0;
+                const safe = pt.safe || 0;
+                const susp = pt.suspicious || 0;
+                const phish = pt.phishing || 0;
+
+                const heightPercent = total > 0 ? Math.max((total / maxTotal) * 100, 15) : 4;
+                const safePct = total > 0 ? (safe / total) * 100 : 0;
+                const suspPct = total > 0 ? (susp / total) * 100 : 0;
+                const phishPct = total > 0 ? (phish / total) * 100 : 0;
+
+                return (
+                  <div
+                    key={pt.date || idx}
+                    className="flex-1 flex flex-col items-center gap-2 group relative"
+                  >
+                    {/* Tooltip on hover */}
+                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20 bg-slate-900 text-white text-[11px] px-2.5 py-1 rounded-lg shadow-lg whitespace-nowrap">
+                      <p className="font-bold">{pt.day} ({pt.date})</p>
+                      <p className="text-[10px] text-slate-300">
+                        {total} scans: {safe} safe, {susp} susp, {phish} phish
+                      </p>
+                    </div>
+
+                    {/* Total label above bar */}
+                    <span className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 h-4 flex items-center">
+                      {total > 0 ? total : ''}
+                    </span>
+
+                    {/* Stacked Bar */}
+                    <div className="w-full max-w-[36px] bg-slate-100 dark:bg-slate-800 rounded-t-lg overflow-hidden flex flex-col justify-end h-[120px]">
+                      <div
+                        style={{ height: `${heightPercent}%` }}
+                        className="w-full flex flex-col justify-end transition-all duration-500 rounded-t-lg overflow-hidden"
+                      >
+                        {phish > 0 && (
+                          <div
+                            style={{ height: `${phishPct}%` }}
+                            className="w-full bg-red-500 transition-all"
+                            title={`Phishing: ${phish}`}
+                          />
+                        )}
+                        {susp > 0 && (
+                          <div
+                            style={{ height: `${suspPct}%` }}
+                            className="w-full bg-amber-500 transition-all"
+                            title={`Suspicious: ${susp}`}
+                          />
+                        )}
+                        {safe > 0 && (
+                          <div
+                            style={{ height: `${safePct}%` }}
+                            className="w-full bg-emerald-500 transition-all"
+                            title={`Safe: ${safe}`}
+                          />
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Day label */}
+                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                      {pt.day}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         ) : (
           <EmptyState
@@ -53,3 +123,4 @@ export default function DetectionChart({ data = null }) {
     </Card>
   );
 }
+

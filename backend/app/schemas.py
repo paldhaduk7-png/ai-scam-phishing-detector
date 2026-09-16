@@ -206,13 +206,20 @@ class UserResponse(BaseModel):
 class DetectionHistoryItem(BaseModel):
     id: int
     input_type: str
+    type: str
     input_text: str
+    preview: str
+    input: str
     classification: str
+    result: str
     risk_percentage: float
+    confidence: float
     is_phishing: bool
     is_spam: Optional[bool] = None
     model_used: str
     created_at: str
+    date_time: str
+    timestamp: str
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -229,3 +236,12 @@ class DashboardStatsResponse(BaseModel):
     safeResults: int
     suspicious: int
     phishing: int
+
+
+class ChartDayStats(BaseModel):
+    date: str
+    day: str
+    safe: int
+    suspicious: int
+    phishing: int
+    total: int

@@ -4,16 +4,17 @@ Provides authenticated endpoints for retrieving and managing the current user's 
 All queries are strictly isolated to `Detection.user_id == current_user.id`.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import desc
+from sqlalchemy import Date, cast, desc
 from sqlalchemy.orm import Session
 
 from app.database import get_db
 from app.models import Detection, User
 from app.schemas import (
+    ChartDayStats,
     DashboardStatsResponse,
     DetectionHistoryItem,
     DetectionHistoryResponse,
@@ -26,16 +27,39 @@ router = APIRouter(prefix="/api/v1", tags=["Detection History & Dashboard"])
 
 
 def _format_detection(d: Detection) -> DetectionHistoryItem:
+    # Determine user-friendly result verdict
+    if d.is_phishing:
+        result_verdict = "Phishing"
+    elif d.risk_percentage >= 40.0:
+        result_verdict = "Suspicious"
+    else:
+        result_verdict = "Safe"
+
+    # Formatted display string e.g. "Sep 16, 2026, 01:43 PM"
+    formatted_date = d.created_at.strftime("%b %d, %Y, %I:%M %p") if d.created_at else ""
+    iso_date = d.created_at.isoformat() if d.created_at else ""
+
+    # Preview string for table display
+    clean_text = d.input_text or ""
+    preview_text = clean_text[:80] + "..." if len(clean_text) > 80 else clean_text
+
     return DetectionHistoryItem(
         id=d.id,
         input_type=d.input_type,
+        type=d.input_type,
         input_text=d.input_text,
+        preview=preview_text,
+        input=d.input_text,
         classification=d.classification,
-        risk_percentage=d.risk_percentage,
+        result=result_verdict,
+        risk_percentage=round(d.risk_percentage, 2),
+        confidence=round(d.risk_percentage, 2),
         is_phishing=d.is_phishing,
         is_spam=d.is_spam,
         model_used=d.model_used,
-        created_at=d.created_at.isoformat() if d.created_at else "",
+        created_at=iso_date,
+        date_time=formatted_date,
+        timestamp=formatted_date,
     )
 
 
@@ -51,8 +75,9 @@ def _format_detection(d: Detection) -> DetectionHistoryItem:
 )
 def get_user_detection_history(
     type: Optional[str] = Query(None, description="Filter by channel: email, sms, or url"),
-    result: Optional[str] = Query(None, description="Filter by result: safe or phishing"),
+    result: Optional[str] = Query(None, description="Filter by result: safe, suspicious, or phishing"),
     search: Optional[str] = Query(None, description="Search term in input text"),
+    date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=50, description="Items per page"),
     current_user: User = Depends(get_current_user),
@@ -64,16 +89,32 @@ def get_user_detection_history(
     query = db.query(Detection).filter(Detection.user_id == current_user.id)
 
     if type and type != "all":
-        query = query.filter(Detection.input_type == type.lower())
+        t = type.lower()
+        if t in ("message", "sms"):
+            query = query.filter(Detection.input_type == "sms")
+        else:
+            query = query.filter(Detection.input_type == t)
 
     if result and result != "all":
-        if result == "phishing" or result == "threat":
+        r = result.lower()
+        if r in ("phishing", "threat"):
             query = query.filter(Detection.is_phishing == True)
-        elif result == "safe":
-            query = query.filter(Detection.is_phishing == False)
+        elif r == "safe":
+            query = query.filter(Detection.is_phishing == False, Detection.risk_percentage < 40.0)
+        elif r == "suspicious":
+            query = query.filter(Detection.is_phishing == False, Detection.risk_percentage >= 40.0)
+
+    if date:
+        try:
+            target_date = datetime.strptime(date.strip(), "%Y-%m-%d").date()
+            query = query.filter(cast(Detection.created_at, Date) == target_date)
+        except Exception:
+            pass
 
     if search:
-        query = query.filter(Detection.input_text.ilike(f"%{search}%"))
+        s = search.strip()
+        if s:
+            query = query.filter(Detection.input_text.ilike(f"%{s}%"))
 
     total = query.count()
     offset = (page - 1) * limit
@@ -169,3 +210,52 @@ def get_user_recent_scans(
         .all()
     )
     return [_format_detection(d) for d in items]
+
+
+@router.get(
+    "/dashboard/chart",
+    response_model=List[ChartDayStats],
+    summary="Get 7-day scan activity overview for current user",
+)
+def get_user_dashboard_chart(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> List[ChartDayStats]:
+    """
+    Calculates 7-day scan activity breakdown (safe, suspicious, phishing) for the user.
+    """
+    user_detections = db.query(Detection).filter(Detection.user_id == current_user.id).all()
+
+    # Generate past 7 days (including today) in chronological order
+    today = datetime.now(timezone.utc).date()
+    days = [today - timedelta(days=i) for i in range(6, -1, -1)]
+
+    stats_by_date = {d: {"safe": 0, "suspicious": 0, "phishing": 0, "total": 0} for d in days}
+
+    for d in user_detections:
+        if d.created_at:
+            rec_date = d.created_at.date()
+            if rec_date in stats_by_date:
+                stats_by_date[rec_date]["total"] += 1
+                if d.is_phishing:
+                    stats_by_date[rec_date]["phishing"] += 1
+                elif d.risk_percentage < 40.0:
+                    stats_by_date[rec_date]["safe"] += 1
+                else:
+                    stats_by_date[rec_date]["suspicious"] += 1
+
+    chart_points = []
+    for day_date in days:
+        counts = stats_by_date[day_date]
+        chart_points.append(
+            ChartDayStats(
+                date=day_date.isoformat(),
+                day=day_date.strftime("%a"),
+                safe=counts["safe"],
+                suspicious=counts["suspicious"],
+                phishing=counts["phishing"],
+                total=counts["total"],
+            )
+        )
+    return chart_points
+

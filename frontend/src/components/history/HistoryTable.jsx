@@ -28,16 +28,50 @@ export default function HistoryTable({
 
 
   const getTypeIcon = (type) => {
-    switch (type?.toLowerCase()) {
+    const t = type?.toLowerCase();
+    switch (t) {
       case 'message':
+      case 'sms':
         return <MessageSquare className="w-4 h-4 text-blue-500" />;
       case 'email':
-        return <Mail className="w-4 h-4 text-blue-500" />;
+        return <Mail className="w-4 h-4 text-indigo-500" />;
       case 'url':
-        return <LinkIcon className="w-4 h-4 text-blue-500" />;
+        return <LinkIcon className="w-4 h-4 text-sky-500" />;
       default:
         return <ShieldCheck className="w-4 h-4 text-blue-500" />;
     }
+  };
+
+  const getTypeLabel = (type) => {
+    const t = type?.toLowerCase();
+    if (t === 'sms') return 'SMS';
+    if (t === 'message') return 'Message';
+    if (t === 'email') return 'Email';
+    if (t === 'url') return 'URL';
+    return type || 'Scan';
+  };
+
+  const formatDateTime = (item) => {
+    if (item.date_time) return item.date_time;
+    if (item.timestamp) return item.timestamp;
+    const raw = item.created_at || item.createdAt;
+    if (!raw) return '--';
+    try {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+      }
+    } catch {
+      // fallback
+    }
+    return raw;
   };
 
   return (
@@ -58,60 +92,68 @@ export default function HistoryTable({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
-                {items.map((item, index) => (
-                  <tr
-                    key={item.id || index}
-                    className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors text-xs text-slate-700 dark:text-slate-300"
-                  >
-                    <td className="py-3.5 px-4 font-medium text-slate-400 dark:text-slate-500">
-                      {index + 1}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <div className="inline-flex items-center gap-2 font-medium text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg">
-                        {getTypeIcon(item.type)}
-                        <span className="capitalize">{item.type}</span>
-                      </div>
-                    </td>
-                    <td
-                      className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate cursor-help"
-                      title={typeof (item.preview || item.input) === 'string' ? (item.preview || item.input) : ''}
+                {items.map((item, index) => {
+                  const type = item.type || item.input_type || '';
+                  const preview = item.preview || item.input || item.input_text || '';
+                  const result = item.result || (item.is_phishing ? 'Phishing' : (item.risk_percentage >= 40 ? 'Suspicious' : 'Safe')) || item.classification || 'Unknown';
+                  const confidence = item.confidence != null ? item.confidence : item.risk_percentage;
+
+                  return (
+                    <tr
+                      key={item.id || index}
+                      className="hover:bg-slate-50/60 dark:hover:bg-slate-800/40 transition-colors text-xs text-slate-700 dark:text-slate-300"
                     >
-                      {item.preview || item.input}
-                    </td>
-                    <td className="py-3.5 px-4">
-                      <Badge status={item.result}>{item.result}</Badge>
-                    </td>
-                    <td className="py-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">
-                      {item.confidence ? `${item.confidence}%` : '--'}
-                    </td>
-                    <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
-                      {item.date_time || item.createdAt}
-                    </td>
-                    <td className="py-3.5 px-4 text-right">
-                      <div className="inline-flex items-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => onView?.(item)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
-                          title="View Detection Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => onDelete?.(item)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer"
-                          title="Delete Record"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
+                      <td className="py-3.5 px-4 font-medium text-slate-400 dark:text-slate-500">
+                        {index + 1}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <div className="inline-flex items-center gap-2 font-medium text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/60 px-2.5 py-1 rounded-lg">
+                          {getTypeIcon(type)}
+                          <span className="capitalize">{getTypeLabel(type)}</span>
+                        </div>
+                      </td>
+                      <td
+                        className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate cursor-help"
+                        title={typeof preview === 'string' ? preview : ''}
+                      >
+                        {preview}
+                      </td>
+                      <td className="py-3.5 px-4">
+                        <Badge status={result}>{result}</Badge>
+                      </td>
+                      <td className="py-3.5 px-4 font-medium text-slate-600 dark:text-slate-300">
+                        {confidence != null ? `${confidence}%` : '--'}
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400">
+                        {formatDateTime(item)}
+                      </td>
+                      <td className="py-3.5 px-4 text-right">
+                        <div className="inline-flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={() => onView?.(item)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/50 transition-colors cursor-pointer"
+                            title="View Detection Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => onDelete?.(item)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 transition-colors cursor-pointer"
+                            title="Delete Record"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
+
 
           {/* Pagination */}
           <div className="flex items-center justify-center gap-1.5 p-4 border-t border-slate-100 dark:border-slate-800">

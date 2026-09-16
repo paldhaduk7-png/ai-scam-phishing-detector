@@ -10,12 +10,10 @@ import {
   Mail,
   Link as LinkIcon,
   ShieldCheck,
-  AlertTriangle,
   X,
   Copy,
   Check,
   Calendar,
-  Layers,
   Trash2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -93,8 +91,10 @@ export default function History() {
   };
 
   const getTypeIcon = (type) => {
-    switch (type?.toLowerCase()) {
+    const t = type?.toLowerCase();
+    switch (t) {
       case 'message':
+      case 'sms':
         return <MessageSquare className="w-5 h-5 text-blue-500" />;
       case 'email':
         return <Mail className="w-5 h-5 text-indigo-500" />;
@@ -103,6 +103,39 @@ export default function History() {
       default:
         return <ShieldCheck className="w-5 h-5 text-blue-500" />;
     }
+  };
+
+  const getTypeLabel = (type) => {
+    const t = type?.toLowerCase();
+    if (t === 'sms') return 'SMS';
+    if (t === 'message') return 'Message';
+    if (t === 'email') return 'Email';
+    if (t === 'url') return 'URL';
+    return type || 'Scan';
+  };
+
+  const formatDateTime = (item) => {
+    if (!item) return '--';
+    if (item.date_time) return item.date_time;
+    if (item.timestamp) return item.timestamp;
+    const raw = item.created_at || item.createdAt;
+    if (!raw) return '--';
+    try {
+      const d = new Date(raw);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleDateString('en-US', {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric',
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true,
+        });
+      }
+    } catch {
+      // fallback
+    }
+    return raw;
   };
 
   return (
@@ -154,102 +187,111 @@ export default function History() {
       />
 
       {/* Inspection Details Modal */}
-      {viewItem && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div
-            className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-fadeIn"
-            onClick={() => setViewItem(null)}
-            aria-hidden="true"
-          />
+      {viewItem && (() => {
+        const viewType = viewItem.type || viewItem.input_type || '';
+        const viewResult = viewItem.result || (viewItem.is_phishing ? 'Phishing' : (viewItem.risk_percentage >= 40 ? 'Suspicious' : 'Safe')) || viewItem.classification || 'Unknown';
+        const viewConfidence = viewItem.confidence != null ? viewItem.confidence : viewItem.risk_percentage;
+        const viewContent = viewItem.input || viewItem.input_text || viewItem.preview || 'No raw content recorded.';
+        const viewDate = formatDateTime(viewItem);
 
-          <div
-            role="dialog"
-            aria-modal="true"
-            className="relative z-10 w-full max-w-lg bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden space-y-5"
-          >
-            {/* Header */}
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
-                  {getTypeIcon(viewItem.type)}
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div
+              className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-fadeIn"
+              onClick={() => setViewItem(null)}
+              aria-hidden="true"
+            />
+
+            <div
+              role="dialog"
+              aria-modal="true"
+              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden space-y-5"
+            >
+              {/* Header */}
+              <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
+                    {getTypeIcon(viewType)}
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white capitalize">
+                      {getTypeLabel(viewType)} Detection Details
+                    </h3>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      <span>{viewDate}</span>
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900 dark:text-white capitalize">
-                    {viewItem.type} Detection Details
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                    <Calendar className="w-3.5 h-3.5" />
-                    <span>{viewItem.date_time || viewItem.createdAt || 'Recent scan'}</span>
+
+                <button
+                  type="button"
+                  onClick={() => setViewItem(null)}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Verdict + Confidence */}
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800">
+                <div className="space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    Classification
+                  </span>
+                  <div>
+                    <Badge status={viewResult} size="md">
+                      {viewResult}
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="text-right space-y-1">
+                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                    Risk / Confidence
+                  </span>
+                  <p className="text-base font-extrabold text-slate-900 dark:text-white">
+                    {viewConfidence != null ? `${viewConfidence}%` : '--'}
                   </p>
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setViewItem(null)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Verdict + Confidence */}
-            <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800">
-              <div className="space-y-1">
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Classification
-                </span>
-                <div>
-                  <Badge status={viewItem.result} size="md">
-                    {viewItem.result}
-                  </Badge>
+              {/* Content Analyzed */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                    Content Analyzed
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleCopyContent(viewContent)}
+                    className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                  >
+                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    <span>{copied ? 'Copied' : 'Copy'}</span>
+                  </button>
+                </div>
+                <div className="p-3 bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 max-h-48 overflow-y-auto break-all leading-relaxed select-text">
+                  {viewContent}
                 </div>
               </div>
 
-              <div className="text-right space-y-1">
-                <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                  Risk / Confidence
-                </span>
-                <p className="text-base font-extrabold text-slate-900 dark:text-white">
-                  {viewItem.confidence ? `${viewItem.confidence}%` : '--'}
-                </p>
-              </div>
-            </div>
-
-            {/* Content Analyzed */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                  Content Analyzed
-                </span>
-                <button
-                  type="button"
-                  onClick={() => handleCopyContent(viewItem.input || viewItem.preview)}
-                  className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+              {/* Close footer */}
+              <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={() => setViewItem(null)}
+                  className="px-5 py-2 text-xs font-semibold"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
-                  <span>{copied ? 'Copied' : 'Copy'}</span>
-                </button>
+                  Close Details
+                </Button>
               </div>
-              <div className="p-3 bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 max-h-48 overflow-y-auto break-all leading-relaxed select-text">
-                {viewItem.input || viewItem.preview || 'No raw content recorded.'}
-              </div>
-            </div>
-
-            {/* Close footer */}
-            <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setViewItem(null)}
-                className="px-5 py-2 text-xs font-semibold"
-              >
-                Close Details
-              </Button>
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
+
     </div>
   );
 }

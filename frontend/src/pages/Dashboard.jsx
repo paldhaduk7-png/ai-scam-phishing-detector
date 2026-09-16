@@ -6,7 +6,7 @@ import RecentDetections from '../components/dashboard/RecentDetections';
 import QuickActions from '../components/dashboard/QuickActions';
 import SafetyTips from '../components/dashboard/SafetyTips';
 import Card from '../components/common/Card';
-import { getDashboardStats, getRecentDetections } from '../services/api';
+import { getDashboardStats, getRecentDetections, getDashboardChart } from '../services/api';
 import {
   FileText,
   ShieldCheck,
@@ -24,7 +24,7 @@ export default function Dashboard() {
     phishing: '--',
   });
   const [recentScans, setRecentScans] = useState([]);
-
+  const [chartData, setChartData] = useState([]);
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -41,6 +41,15 @@ export default function Dashboard() {
         const recentData = await getRecentDetections();
         if (Array.isArray(recentData)) {
           setRecentScans(recentData);
+        }
+      } catch {
+        // Backend not yet running; keep clean honest empty state []
+      }
+
+      try {
+        const chart = await getDashboardChart();
+        if (Array.isArray(chart)) {
+          setChartData(chart);
         }
       } catch {
         // Backend not yet running; keep clean honest empty state []
@@ -161,7 +170,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column (8 cols): Chart + Recent Detections */}
         <div className="lg:col-span-8 space-y-6">
-          <DetectionChart />
+          <DetectionChart data={chartData} />
           <RecentDetections detections={recentScans} />
         </div>
 

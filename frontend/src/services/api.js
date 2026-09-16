@@ -141,6 +141,14 @@ export const getRecentDetections = async () => {
 };
 
 /**
+ * Fetch 7-day scan activity breakdown for current user.
+ */
+export const getDashboardChart = async () => {
+  const response = await api.get('/dashboard/chart');
+  return response.data;
+};
+
+/**
  * Fetch paginated detection history with optional filters.
  */
 export const getDetectionHistory = async (params = {}) => {
