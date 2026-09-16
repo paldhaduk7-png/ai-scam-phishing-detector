@@ -1,81 +1,36 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import {
-  register as registerApi,
-  login as loginApi,
-  logout as logoutApi,
-  getCurrentUser as getCurrentUserApi,
-  uploadProfilePhoto as uploadProfilePhotoApi,
-  deleteProfilePhoto as deleteProfilePhotoApi,
-  updateUserProfile as updateUserProfileApi,
-} from '../../services/api';
+import axios from 'axios';
+
+const API_BASE_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
 
 /**
- * Check active session on app boot.
- * Reads the HTTP-only cookie by requesting GET /auth/me.
+ * Check active session on app boot (GET /auth/me).
+ * Kept lightweight so the user stays logged in across page refreshes.
  */
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      const user = await getCurrentUserApi();
-      return user;
-    } catch (err) {
-      return rejectWithValue(err.response?.data?.detail || 'Unauthenticated');
-    }
-  }
-);
-
-/**
- * Log in with email and password.
- */
-export const loginUser = createAsyncThunk(
-  'auth/loginUser',
-  async (credentials, { rejectWithValue }) => {
-    try {
-      const user = await loginApi(credentials);
-      return user;
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      const message = typeof detail === 'string'
-        ? detail
-        : (detail?.[0]?.msg || 'Login failed. Please check your credentials.');
-      return rejectWithValue(message);
-    }
-  }
-);
-
-/**
- * Register a new user and automatically establish session.
- */
-export const registerUser = createAsyncThunk(
-  'auth/registerUser',
-  async (userData, { rejectWithValue }) => {
-    try {
-      await registerApi(userData);
-      // Auto login after successful registration
-      const user = await loginApi({
-        email: userData.email,
-        password: userData.password,
+      const res = await axios.get(`${API_BASE_URL}/auth/me`, {
+        withCredentials: true,
       });
-      return user;
-    } catch (err) {
-      const detail = err.response?.data?.detail;
-      const message = typeof detail === 'string'
-        ? detail
-        : (detail?.[0]?.msg || 'Registration failed. Please check your information.');
-      return rejectWithValue(message);
+      return res.data;
+    } catch {
+      return rejectWithValue('Unauthenticated');
     }
   }
 );
 
 /**
- * Log out and clear session.
+ * Log out user (POST /auth/logout).
  */
 export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
     try {
-      await logoutApi();
+      await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+        withCredentials: true,
+      });
       return null;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Logout failed');
@@ -84,49 +39,54 @@ export const logoutUser = createAsyncThunk(
 );
 
 /**
- * Upload profile avatar image to Cloudinary.
+ * Upload avatar from Profile page.
  */
 export const uploadAvatar = createAsyncThunk(
   'auth/uploadAvatar',
   async (formData, { rejectWithValue }) => {
     try {
-      const updatedUser = await uploadProfilePhotoApi(formData);
-      return updatedUser;
+      const res = await axios.post(`${API_BASE_URL}/auth/profile-photo`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        withCredentials: true,
+      });
+      return res.data;
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      return rejectWithValue(detail || 'Failed to upload photo.');
+      return rejectWithValue(err.response?.data?.detail || 'Failed to upload photo.');
     }
   }
 );
 
 /**
- * Delete profile avatar from Cloudinary.
+ * Delete avatar from Profile page.
  */
 export const deleteAvatar = createAsyncThunk(
   'auth/deleteAvatar',
   async (_, { rejectWithValue }) => {
     try {
-      const updatedUser = await deleteProfilePhotoApi();
-      return updatedUser;
+      const res = await axios.delete(`${API_BASE_URL}/auth/profile-photo`, {
+        withCredentials: true,
+      });
+      return res.data;
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      return rejectWithValue(detail || 'Failed to remove photo.');
+      return rejectWithValue(err.response?.data?.detail || 'Failed to remove photo.');
     }
   }
 );
 
 /**
- * Update user display name.
+ * Update user display name from Profile page.
  */
 export const updateProfileDetails = createAsyncThunk(
   'auth/updateProfileDetails',
   async (profileData, { rejectWithValue }) => {
     try {
-      const updatedUser = await updateUserProfileApi(profileData);
-      return updatedUser;
+      const res = await axios.put(`${API_BASE_URL}/auth/profile`, profileData, {
+        headers: { 'Content-Type': 'application/json' },
+        withCredentials: true,
+      });
+      return res.data;
     } catch (err) {
-      const detail = err.response?.data?.detail;
-      return rejectWithValue(detail || 'Failed to update profile.');
+      return rejectWithValue(err.response?.data?.detail || 'Failed to update profile.');
     }
   }
 );
@@ -139,10 +99,37 @@ const initialState = {
   initialized: false,
 };
 
+/**
+ * Minimal, clean authSlice.
+ * Form state, axios API calls, validations, and navigations are handled
+ * directly in Login.jsx and Register.jsx as requested.
+ */
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    setCredentials: (state, action) => {
+      state.user = action.payload;
+      state.isAuthenticated = true;
+      state.loading = false;
+      state.error = null;
+      state.initialized = true;
+    },
+    logout: (state) => {
+      state.user = null;
+      state.isAuthenticated = false;
+      state.loading = false;
+      state.error = null;
+    },
+    updateUser: (state, action) => {
+      state.user = state.user ? { ...state.user, ...action.payload } : action.payload;
+    },
+    setAuthLoading: (state, action) => {
+      state.loading = Boolean(action.payload);
+    },
+    setAuthError: (state, action) => {
+      state.error = action.payload;
+    },
     clearAuthError: (state) => {
       state.error = null;
     },
@@ -167,38 +154,6 @@ const authSlice = createSlice({
         state.initialized = true;
       })
 
-      // loginUser
-      .addCase(loginUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.isAuthenticated = true;
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(loginUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Login failed';
-      })
-
-      // registerUser
-      .addCase(registerUser.pending, (state) => {
-        state.loading = true;
-        state.error = null;
-      })
-      .addCase(registerUser.fulfilled, (state, action) => {
-        state.user = action.payload;
-        state.isAuthenticated = true;
-        state.loading = false;
-        state.error = null;
-      })
-      .addCase(registerUser.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload || 'Registration failed';
-      })
-
       // logoutUser
       .addCase(logoutUser.fulfilled, (state) => {
         state.user = null;
@@ -213,22 +168,26 @@ const authSlice = createSlice({
         state.error = null;
       })
 
-      // uploadAvatar
+      // Avatar & Profile updates
       .addCase(uploadAvatar.fulfilled, (state, action) => {
         state.user = action.payload;
       })
-
-      // deleteAvatar
       .addCase(deleteAvatar.fulfilled, (state, action) => {
         state.user = action.payload;
       })
-
-      // updateProfileDetails
       .addCase(updateProfileDetails.fulfilled, (state, action) => {
         state.user = action.payload;
       });
   },
 });
 
-export const { clearAuthError } = authSlice.actions;
+export const {
+  setCredentials,
+  logout,
+  updateUser,
+  setAuthLoading,
+  setAuthError,
+  clearAuthError,
+} = authSlice.actions;
+
 export default authSlice.reducer;
