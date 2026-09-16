@@ -76,3 +76,28 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+/* Subtle tech grid background pattern */
+.bg-grid-pattern {
+  background-size: 32px 32px;
+  background-image: linear-gradient(to right, rgba(148, 163, 184, 0.08) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+}
+
+html.dark .bg-grid-pattern {
+  background-image: linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+                    linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+}
+
+/* Subtle dot pattern for modern SaaS aesthetic */
+.bg-dots-pattern {
+  background-image: radial-gradient(rgba(148, 163, 184, 0.25) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+html.dark .bg-dots-pattern {
+  background-image: radial-gradient(rgba(56, 189, 248, 0.15) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+
+
