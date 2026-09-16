@@ -2,22 +2,100 @@ import axios from 'axios';
 
 /**
  * ScamShield API Client
- * Configured using VITE_API_BASE_URL environment variable.
- * Fallback to http://localhost:8000/api/v1 if not specified.
+ * Configured with VITE_API_BASE_URL and withCredentials=true for HTTP-only cookie JWTs.
  */
 const api = axios.create({
   baseURL: import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1',
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 10000,
+  withCredentials: true,
+  timeout: 15000,
 });
+
+// ==============================================================================
+// Authentication Endpoints
+// ==============================================================================
+
+/**
+ * Register a new user account.
+ * @param {Object} userData - { name, email, password, confirm_password }
+ * @returns {Promise<Object>} Safe user response
+ */
+export const register = async (userData) => {
+  const response = await api.post('/auth/register', userData);
+  return response.data;
+};
+
+/**
+ * Log in to account. Sets HTTP-only access_token cookie.
+ * @param {Object} credentials - { email, password }
+ * @returns {Promise<Object>} Safe user response
+ */
+export const login = async (credentials) => {
+  const response = await api.post('/auth/login', credentials);
+  return response.data;
+};
+
+/**
+ * Log out and clear HTTP-only cookie.
+ * @returns {Promise<Object>}
+ */
+export const logout = async () => {
+  const response = await api.post('/auth/logout');
+  return response.data;
+};
+
+/**
+ * Get current authenticated user profile via cookie session.
+ * @returns {Promise<Object>}
+ */
+export const getCurrentUser = async () => {
+  const response = await api.get('/auth/me');
+  return response.data;
+};
+
+/**
+ * Update authenticated user's profile details.
+ * @param {Object} profileData - { name }
+ * @returns {Promise<Object>}
+ */
+export const updateUserProfile = async (profileData) => {
+  const response = await api.put('/auth/profile', profileData);
+  return response.data;
+};
+
+/**
+ * Upload profile photo avatar to Cloudinary via FastAPI UploadFile.
+ * @param {FormData} formData - Multipart form data containing file
+ * @returns {Promise<Object>} Updated user profile
+ */
+export const uploadProfilePhoto = async (formData) => {
+  const response = await api.post('/auth/profile-photo', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
+ * Delete profile photo avatar from Cloudinary.
+ * @returns {Promise<Object>} Updated user profile
+ */
+export const deleteProfilePhoto = async () => {
+  const response = await api.delete('/auth/profile-photo');
+  return response.data;
+};
+
+// ==============================================================================
+// Threat Detection Endpoints (Public & Authenticated)
+// ==============================================================================
 
 /**
  * Scan content for scam / phishing indicators using the unified ML detection pipeline.
- * @param {Object} payload
- * @param {string} payload.content - Text message, email body, or URL to analyze
- * @param {'email'|'sms'|'url'} payload.content_type - Content classification channel
+ * Works for both Guest and Authenticated users.
+ * @param {Object} payload - { content, content_type }
  * @returns {Promise<Object>} DetectionResponse
  */
 export const detectScam = async ({ content, content_type }) => {
@@ -30,9 +108,8 @@ export const detectScam = async ({ content, content_type }) => {
 
 /**
  * Scan email content for phishing threats using the trained Deep Learning Bi-LSTM neural network.
- * Note: Exclusively supports email content channel.
- * @param {Object} payload
- * @param {string} payload.content - Email subject and body content to analyze
+ * Works for both Guest and Authenticated users.
+ * @param {Object} payload - { content }
  * @returns {Promise<Object>} DetectionResponse
  */
 export const detectEmailDL = async ({ content }) => {
@@ -43,8 +120,12 @@ export const detectEmailDL = async ({ content }) => {
   return response.data;
 };
 
+// ==============================================================================
+// Dashboard & Detection History Endpoints (Authenticated)
+// ==============================================================================
+
 /**
- * Fetch dashboard overview statistics
+ * Fetch dashboard overview statistics for current user.
  */
 export const getDashboardStats = async () => {
   const response = await api.get('/dashboard/stats');
@@ -52,15 +133,7 @@ export const getDashboardStats = async () => {
 };
 
 /**
- * Fetch detection overview chart data
- */
-export const getDetectionChartData = async () => {
-  const response = await api.get('/dashboard/chart');
-  return response.data;
-};
-
-/**
- * Fetch recent detections
+ * Fetch recent detections for current user.
  */
 export const getRecentDetections = async () => {
   const response = await api.get('/dashboard/recent');
@@ -68,34 +141,18 @@ export const getRecentDetections = async () => {
 };
 
 /**
- * Fetch paginated detection history with optional filters
+ * Fetch paginated detection history with optional filters.
  */
 export const getDetectionHistory = async (params = {}) => {
-  const response = await api.get('/history', { params });
+  const response = await api.get('/detections/history', { params });
   return response.data;
 };
 
 /**
- * Delete a detection record by ID
+ * Delete a detection record by ID.
  */
 export const deleteDetectionRecord = async (id) => {
-  const response = await api.delete(`/history/${id}`);
-  return response.data;
-};
-
-/**
- * Fetch current user profile
- */
-export const getUserProfile = async () => {
-  const response = await api.get('/profile');
-  return response.data;
-};
-
-/**
- * Update user profile
- */
-export const updateUserProfile = async (profileData) => {
-  const response = await api.put('/profile', profileData);
+  const response = await api.delete(`/detections/history/${id}`);
   return response.data;
 };
 
