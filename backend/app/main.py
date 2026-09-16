@@ -60,16 +60,6 @@ app = FastAPI(
     openapi_tags=TAGS_METADATA
 )
 
-# CORS Middleware with credentials enabled and explicit origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.allowed_origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"]
-)
-
-
 @app.middleware("http")
 async def security_and_rate_limit_middleware(request: Request, call_next):
     """
@@ -105,6 +95,17 @@ async def security_and_rate_limit_middleware(request: Request, call_next):
         _RATE_LIMIT_BUCKET[client_ip] = timestamps
 
     return await call_next(request)
+
+
+# CORS Middleware added after HTTP middleware so it acts as the outermost middleware
+# guaranteeing that all responses (including 401, 403, 422, 429, and 500) carry CORS headers
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.allowed_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"]
+)
 
 
 # Include modular routers
