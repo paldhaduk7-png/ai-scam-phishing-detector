@@ -7,7 +7,7 @@ export default function DetectionChart({ data = null }) {
   const hasData = Array.isArray(data) && data.length > 0;
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col">
       {/* Chart Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>

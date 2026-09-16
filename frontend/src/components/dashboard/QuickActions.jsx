@@ -34,7 +34,7 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card className="h-full">
+    <Card className="flex flex-col">
       <h2 className="text-base font-bold text-slate-900 dark:text-white mb-4">Quick Actions</h2>
       <div className="grid grid-cols-2 gap-3">
         {actions.map((action, idx) => {
