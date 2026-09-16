@@ -31,6 +31,16 @@ def get_db():
     finally:
         db.close()
 
+from sqlalchemy import text
 from app import models
 
-Base.metadata.create_all(bind=engine)        
+Base.metadata.create_all(bind=engine)
+
+# Safely ensure detections has user_id foreign key column
+with engine.connect() as _conn:
+    try:
+        _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_user_id ON detections(user_id);"))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
