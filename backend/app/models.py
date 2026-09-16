@@ -29,6 +29,33 @@ class User(Base):
     )
 
     detections: Mapped[List["Detection"]] = relationship("Detection", back_populates="user")
+    password_reset_otps: Mapped[List["PasswordResetOTP"]] = relationship(
+        "PasswordResetOTP",
+        back_populates="user",
+        cascade="all, delete-orphan",
+    )
+
+
+class PasswordResetOTP(Base):
+    __tablename__ = "password_reset_otps"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    user_id: Mapped[int] = mapped_column(
+        Integer,
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
+    )
+    otp_hash: Mapped[str] = mapped_column(String(255), index=True, nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    is_used: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        default=lambda: datetime.now(timezone.utc),
+        nullable=False,
+    )
+
+    user: Mapped["User"] = relationship("User", back_populates="password_reset_otps")
 
 
 class Detection(Base):

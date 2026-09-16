@@ -203,6 +203,85 @@ class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: str = Field(..., description="Registered account email address")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        s = v.strip().lower()
+        if not s or "@" not in s or "." not in s.split("@")[-1]:
+            raise ValueError("Please provide a valid email address.")
+        return s
+
+
+class ForgotPasswordResponse(BaseModel):
+    message: str
+
+
+class VerifyOTPRequest(BaseModel):
+    email: str = Field(..., description="Registered account email address")
+    otp: str = Field(..., min_length=6, max_length=6, description="6-digit OTP verification code")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        s = v.strip().lower()
+        if not s or "@" not in s or "." not in s.split("@")[-1]:
+            raise ValueError("Please provide a valid email address.")
+        return s
+
+    @field_validator("otp")
+    @classmethod
+    def validate_otp(cls, v: str) -> str:
+        s = v.strip()
+        if len(s) != 6 or not s.isdigit():
+            raise ValueError("Verification code must be exactly 6 digits.")
+        return s
+
+
+class VerifyOTPResponse(BaseModel):
+    message: str
+    reset_token: str
+
+
+class ResetPasswordRequest(BaseModel):
+    email: str = Field(..., description="Registered account email address")
+    otp: str = Field(..., min_length=6, max_length=6, description="6-digit OTP verification code")
+    reset_token: Optional[str] = Field(default=None, description="Optional temporary session token from verify-otp")
+    password: str = Field(..., min_length=6, max_length=128, description="New account password")
+    confirm_password: Optional[str] = Field(default=None, description="New password confirmation")
+
+    @field_validator("email")
+    @classmethod
+    def validate_email(cls, v: str) -> str:
+        s = v.strip().lower()
+        if not s or "@" not in s or "." not in s.split("@")[-1]:
+            raise ValueError("Please provide a valid email address.")
+        return s
+
+    @field_validator("otp")
+    @classmethod
+    def validate_otp(cls, v: str) -> str:
+        s = v.strip()
+        if len(s) != 6 or not s.isdigit():
+            raise ValueError("Verification code must be exactly 6 digits.")
+        return s
+
+    @field_validator("confirm_password")
+    @classmethod
+    def validate_confirm_password(cls, v: Optional[str], info) -> Optional[str]:
+        if v is not None:
+            pwd = info.data.get("password")
+            if pwd and v != pwd:
+                raise ValueError("Passwords do not match.")
+        return v
+
+
+class ResetPasswordResponse(BaseModel):
+    message: str
+
+
 class DetectionHistoryItem(BaseModel):
     id: int
     input_type: str

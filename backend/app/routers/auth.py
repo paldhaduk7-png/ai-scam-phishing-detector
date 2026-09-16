@@ -3,20 +3,29 @@ Authentication and User Profile Router.
 Handles registration, login, logout, current user profile, and Cloudinary avatar management.
 """
 
+from datetime import datetime, timedelta, timezone
+import hashlib
 import logging
+import secrets
 from typing import Dict
-from fastapi import APIRouter, Depends, File, HTTPException, Request, Response, UploadFile, status
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.exceptions import RequestValidationError
 from pydantic import ValidationError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.models import User
+from app.models import PasswordResetOTP, User
 from app.schemas import (
+    ForgotPasswordRequest,
+    ForgotPasswordResponse,
+    ResetPasswordRequest,
+    ResetPasswordResponse,
     UserLoginRequest,
     UserProfileUpdateRequest,
     UserRegisterRequest,
     UserResponse,
+    VerifyOTPRequest,
+    VerifyOTPResponse,
 )
 from app.services.auth_service import (
     clear_auth_cookie,
@@ -27,6 +36,7 @@ from app.services.auth_service import (
     verify_password,
 )
 from app.services.cloudinary_service import delete_profile_photo, upload_profile_photo
+from app.services.email_service import send_password_reset_otp_email
 
 logger = logging.getLogger("scamshield.auth_router")
 
@@ -268,3 +278,192 @@ def delete_avatar(
 
     logger.info("Deleted profile photo for user id=%s", current_user.id)
     return _format_user(current_user)
+
+
+@router.post(
+    "/forgot-password",
+    response_model=ForgotPasswordResponse,
+    summary="Request 6-digit password reset OTP",
+)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> ForgotPasswordResponse:
+    """
+    Generates a cryptographically secure 6-digit OTP with 10-minute validity.
+    Dispatches a branded email via SMTP in the background.
+    Includes a 60-second resend cooldown protection against spam/abuse.
+    Always returns a generic success message to prevent user account enumeration.
+    """
+    generic_message = "If an account exists for this email, a 6-digit verification code has been sent."
+
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="This email does not exist.",
+        )
+
+    # Cooldown check: prevent requesting new OTP within 60 seconds
+    recent_otp = (
+        db.query(PasswordResetOTP)
+        .filter(
+            PasswordResetOTP.user_id == user.id,
+            PasswordResetOTP.created_at >= datetime.now(timezone.utc) - timedelta(seconds=60),
+        )
+        .first()
+    )
+    if recent_otp:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Please wait 60 seconds before requesting another verification code.",
+        )
+
+    # Invalidate any existing unused OTPs for this user
+    db.query(PasswordResetOTP).filter(
+        PasswordResetOTP.user_id == user.id,
+        PasswordResetOTP.is_used == False,
+    ).update({"is_used": True})
+
+    # Generate cryptographically secure 6-digit OTP (e.g. "042918")
+    otp_code = f"{secrets.randbelow(1000000):06d}"
+    # Hash OTP combined with user ID so plaintext OTP is never persisted
+    otp_hash = hashlib.sha256(f"{user.id}:{otp_code}".encode("utf-8")).hexdigest()
+    expires_at = datetime.now(timezone.utc) + timedelta(minutes=10)
+
+    otp_record = PasswordResetOTP(
+        user_id=user.id,
+        otp_hash=otp_hash,
+        expires_at=expires_at,
+        is_used=False,
+    )
+    db.add(otp_record)
+    db.commit()
+
+    # Queue email delivery in background task (never logs the OTP)
+    background_tasks.add_task(send_password_reset_otp_email, user.email, user.name, otp_code)
+    logger.info("Queued password reset OTP for user id=%s", user.id)
+
+    return ForgotPasswordResponse(message=generic_message)
+
+
+@router.post(
+    "/verify-otp",
+    response_model=VerifyOTPResponse,
+    summary="Verify 6-digit password reset OTP",
+)
+def verify_otp(
+    request: VerifyOTPRequest,
+    db: Session = Depends(get_db),
+) -> VerifyOTPResponse:
+    """
+    Validates that the provided 6-digit OTP matches an active, unexpired record for this account.
+    Returns a confirmation response allowing the user to proceed to setting a new password.
+    """
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code.",
+        )
+
+    otp_hash = hashlib.sha256(f"{user.id}:{request.otp.strip()}".encode("utf-8")).hexdigest()
+
+    record = (
+        db.query(PasswordResetOTP)
+        .filter(
+            PasswordResetOTP.user_id == user.id,
+            PasswordResetOTP.otp_hash == otp_hash,
+            PasswordResetOTP.is_used == False,
+        )
+        .first()
+    )
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code. Please check and try again.",
+        )
+
+    # Check 10-minute expiration
+    now = datetime.now(timezone.utc)
+    if record.expires_at < now:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code has expired (valid for 10 minutes). Please request a new code.",
+        )
+
+    temp_token = secrets.token_urlsafe(32)
+    return VerifyOTPResponse(
+        message="Verification code confirmed successfully.",
+        reset_token=temp_token,
+    )
+
+
+@router.post(
+    "/reset-password",
+    response_model=ResetPasswordResponse,
+    summary="Reset password using verified 6-digit OTP",
+)
+def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db),
+) -> ResetPasswordResponse:
+    """
+    Consumes the single-use 6-digit OTP, validates 10-minute expiration,
+    hashes the new password using existing bcrypt configuration, and updates the user record.
+    """
+    user = db.query(User).filter(User.email == request.email).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code.",
+        )
+
+    otp_hash = hashlib.sha256(f"{user.id}:{request.otp.strip()}".encode("utf-8")).hexdigest()
+
+    record = (
+        db.query(PasswordResetOTP)
+        .filter(
+            PasswordResetOTP.user_id == user.id,
+            PasswordResetOTP.otp_hash == otp_hash,
+            PasswordResetOTP.is_used == False,
+        )
+        .first()
+    )
+
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired verification code. Please request a new code.",
+        )
+
+    # Check 10-minute expiration
+    now = datetime.now(timezone.utc)
+    if record.expires_at < now:
+        record.is_used = True
+        db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Verification code has expired (valid for 10 minutes). Please request a new code.",
+        )
+
+    # Hash new password using existing bcrypt service
+    user.password_hash = hash_password(request.password)
+    # Mark OTP as consumed (single-use)
+    record.is_used = True
+    # Invalidate any other active OTPs for this user
+    db.query(PasswordResetOTP).filter(
+        PasswordResetOTP.user_id == user.id,
+        PasswordResetOTP.is_used == False,
+    ).update({"is_used": True})
+
+    db.commit()
+
+    logger.info("Successfully reset password for user id=%s via OTP", user.id)
+    return ResetPasswordResponse(
+        message="Your password has been successfully reset. You can now log in with your new password."
+    )

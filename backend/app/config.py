@@ -96,6 +96,14 @@ class Settings:
         self.cloudinary_api_key: str = os.getenv("CLOUDINARY_API_KEY", "")
         self.cloudinary_api_secret: str = os.getenv("CLOUDINARY_API_SECRET", "")
 
+        # SMTP & Password Reset Email Settings
+        self.mail_username: str = os.getenv("MAIL_USERNAME", "")
+        self.mail_password: str = os.getenv("MAIL_PASSWORD", "")
+        self.mail_from: str = os.getenv("MAIL_FROM", os.getenv("MAIL_USERNAME", "no-reply@scamshield.ai"))
+        self.mail_server: str = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+        self.mail_port: int = int(os.getenv("MAIL_PORT", "587"))
+        self.frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
 
 # Singleton application settings instance
 settings = Settings()

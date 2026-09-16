@@ -15,6 +15,7 @@ import Profile from './pages/Profile';
 import About from './pages/About';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 
 const router = createBrowserRouter([
   // Public Landing Page
@@ -37,6 +38,14 @@ const router = createBrowserRouter([
       {
         path: '/signup',
         element: <Register />,
+      },
+      {
+        path: '/forgot-password',
+        element: <ForgotPassword />,
+      },
+      {
+        path: '/reset-password',
+        element: <Navigate to="/forgot-password" replace />,
       },
     ],
   },

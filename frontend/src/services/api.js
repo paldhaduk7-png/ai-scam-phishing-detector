@@ -47,6 +47,36 @@ export const logout = async () => {
 };
 
 /**
+ * Request 6-digit password reset OTP to email.
+ * @param {string} email
+ * @returns {Promise<Object>}
+ */
+export const forgotPassword = async (email) => {
+  const response = await api.post('/auth/forgot-password', { email });
+  return response.data;
+};
+
+/**
+ * Verify 6-digit password reset OTP.
+ * @param {Object} payload - { email, otp }
+ * @returns {Promise<Object>}
+ */
+export const verifyOTP = async ({ email, otp }) => {
+  const response = await api.post('/auth/verify-otp', { email, otp });
+  return response.data;
+};
+
+/**
+ * Reset password using verified 6-digit OTP.
+ * @param {Object} payload - { email, otp, reset_token, password, confirm_password }
+ * @returns {Promise<Object>}
+ */
+export const resetPassword = async (payload) => {
+  const response = await api.post('/auth/reset-password', payload);
+  return response.data;
+};
+
+/**
  * Get current authenticated user profile via cookie session.
  * @returns {Promise<Object>}
  */

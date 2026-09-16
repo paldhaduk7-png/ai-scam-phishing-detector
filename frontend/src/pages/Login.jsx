@@ -316,7 +316,7 @@ export default function Login() {
                 </div>
               </div>
 
-              {/* Remember Me Checkbox */}
+              {/* Remember Me Checkbox & Forgot Password Link */}
               <div className="flex items-center justify-between pt-1">
                 <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 dark:text-slate-400">
                   <input
@@ -328,10 +328,10 @@ export default function Login() {
                   <span>Remember email</span>
                 </label>
                 <Link
-                  to="/detect"
+                  to="/forgot-password"
                   className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline"
                 >
-                  Guest Scan
+                  Forgot Password?
                 </Link>
               </div>
 
@@ -347,7 +347,7 @@ export default function Login() {
               </Button>
             </form>
 
-            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center">
+            <div className="mt-6 pt-4 border-t border-slate-100 dark:border-slate-800/80 text-center space-y-2">
               <p className="text-xs text-slate-500 dark:text-slate-400">
                 New to ScamShield?{' '}
                 <Link
@@ -355,6 +355,15 @@ export default function Login() {
                   className="font-bold text-blue-600 dark:text-blue-400 hover:underline"
                 >
                   Create an account
+                </Link>
+              </p>
+              <p className="text-xs text-slate-400 dark:text-slate-500">
+                Just want to test?{' '}
+                <Link
+                  to="/detect"
+                  className="font-medium text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 hover:underline"
+                >
+                  Run a Guest Scan
                 </Link>
               </p>
             </div>
