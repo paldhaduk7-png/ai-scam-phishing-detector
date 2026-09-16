@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import StatCard from '../components/dashboard/StatCard';
 import DetectionChart from '../components/dashboard/DetectionChart';
 import RecentDetections from '../components/dashboard/RecentDetections';
@@ -15,6 +16,7 @@ import {
 } from 'lucide-react';
 
 export default function Dashboard() {
+  const { user } = useSelector((state) => state.auth);
   const [stats, setStats] = useState({
     totalScans: '--',
     safeResults: '--',
@@ -22,6 +24,7 @@ export default function Dashboard() {
     phishing: '--',
   });
   const [recentScans, setRecentScans] = useState([]);
+
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -57,7 +60,7 @@ export default function Dashboard() {
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="space-y-1.5 max-w-md">
               <h1 className="text-2xl sm:text-3xl font-bold text-slate-950 tracking-tight">
-                Welcome Back, Pal!
+                Welcome Back, {user?.name ? user.name.split(' ')[0] : 'User'}!
               </h1>
               <p className="text-sm font-semibold text-blue-700">
                 Stay Safe. Think Before You Click.
