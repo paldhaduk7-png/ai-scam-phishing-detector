@@ -100,6 +100,11 @@ html.dark ::-webkit-scrollbar-thumb:hover {
   animation: pulseGlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
+/* Handwriting accent font */
+.font-handwriting {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
 /* Subtle tech grid background pattern */
 .bg-grid-pattern {
   background-size: 32px 32px;
