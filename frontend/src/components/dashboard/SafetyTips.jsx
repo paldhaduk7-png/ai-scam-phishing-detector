@@ -1,8 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import { CheckCircle2, Lightbulb } from 'lucide-react';
 
 export default function SafetyTips() {
+  const navigate = useNavigate();
   const tips = [
     "Don't click on unknown links.",
     "Verify the sender's email address.",
@@ -12,7 +14,7 @@ export default function SafetyTips() {
   ];
 
   return (
-    <Card className="h-full flex flex-col justify-between relative overflow-hidden">
+    <Card className="flex flex-col justify-between relative overflow-hidden">
       <div>
         <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
           <div className="flex items-center gap-2">
@@ -20,6 +22,7 @@ export default function SafetyTips() {
           </div>
           <button
             type="button"
+            onClick={() => navigate('/about')}
             className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer"
           >
             See More

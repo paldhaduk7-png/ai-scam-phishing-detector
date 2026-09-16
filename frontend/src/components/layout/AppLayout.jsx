@@ -33,7 +33,7 @@ export default function AppLayout() {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-all duration-300">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-[padding] duration-300">
         <TopHeader
           title={getPageTitle(location.pathname)}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}

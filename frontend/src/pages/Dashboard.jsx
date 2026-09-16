@@ -56,7 +56,7 @@ export default function Dashboard() {
       {/* Top Welcome Banner & Quote Row matching Screenshot 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Welcome Banner Card (col-span-8) */}
-        <Card className="lg:col-span-8 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white dark:from-blue-950/40 dark:via-indigo-950/20 dark:to-[#11192e] border-blue-100 dark:border-blue-900/40 p-6 flex flex-col justify-between">
+        <Card className="lg:col-span-8 bg-gradient-to-r from-blue-50/70 via-indigo-50/40 to-white dark:from-[#11192e] dark:via-[#14203e] dark:to-[#11192e] border border-blue-100 dark:border-slate-700/80 p-6 flex flex-col justify-between">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               {user?.profile_photo ? (
@@ -108,7 +108,7 @@ export default function Dashboard() {
         </Card>
 
         {/* Security Quote Card (col-span-4) matching screenshot */}
-        <Card className="lg:col-span-4 bg-gradient-to-br from-white to-blue-50/50 dark:from-[#11192e] dark:to-blue-950/30 border-blue-100 dark:border-blue-900/40 p-6 flex flex-col justify-center relative overflow-hidden">
+        <Card className="lg:col-span-4 bg-gradient-to-br from-white to-blue-50/50 dark:from-[#11192e] dark:to-[#14203e] border border-blue-100 dark:border-slate-700/80 p-6 flex flex-col justify-center relative overflow-hidden">
           <div className="space-y-2 z-10">
             <span className="text-2xl text-blue-500 font-serif leading-none">“</span>
             <p className="text-sm font-bold text-slate-900 dark:text-white leading-snug">

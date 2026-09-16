@@ -1,11 +1,12 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Badge from '../common/Badge';
 import EmptyState from '../common/EmptyState';
 import { ShieldCheck, MessageSquare, Mail, Link as LinkIcon, FileSearch } from 'lucide-react';
 
 export default function RecentDetections({ detections = [] }) {
+  const navigate = useNavigate();
   const hasRecords = Array.isArray(detections) && detections.length > 0;
 
   const getTypeIcon = (type) => {
@@ -22,7 +23,7 @@ export default function RecentDetections({ detections = [] }) {
   };
 
   return (
-    <Card className="flex flex-col h-full">
+    <Card className="flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
         <div>
@@ -78,7 +79,7 @@ export default function RecentDetections({ detections = [] }) {
               title="No recent detections"
               description="Your scanned messages, emails, and links will show up here once analyzed."
               actionText="Scan Content Now"
-              onAction={() => {}}
+              onAction={() => navigate('/detect')}
               compact
             />
           </div>
