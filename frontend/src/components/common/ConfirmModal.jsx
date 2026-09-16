@@ -1,14 +1,13 @@
 import React, { useEffect } from 'react';
-import { AlertTriangle, LogOut, X, Loader2 } from 'lucide-react';
-import Button from './Button';
+import { LogOut, X, Loader2 } from 'lucide-react';
 
 export default function ConfirmModal({
   isOpen,
   onClose,
   onConfirm,
-  title = 'Sign Out Confirmation',
-  message = 'Are you sure you want to sign out? You will need to sign back in to access your personal dashboard and scan history.',
-  confirmText = 'Sign Out',
+  title = 'Confirmation Required',
+  message = 'Are you sure you want to proceed with this action?',
+  confirmText = 'Confirm',
   cancelText = 'Cancel',
   icon: Icon = LogOut,
   variant = 'danger',
@@ -31,7 +30,7 @@ export default function ConfirmModal({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-fadeIn"
+        className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-fadeIn"
         onClick={!loading ? onClose : undefined}
         aria-hidden="true"
       />
@@ -41,10 +40,14 @@ export default function ConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
-        className="relative z-10 w-full max-w-md bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-700/80 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden"
+        className="relative z-10 w-full max-w-md bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden"
       >
         {/* Subtle decorative glow */}
-        <div className="absolute -top-12 -left-12 w-36 h-36 bg-red-600/15 rounded-full blur-2xl pointer-events-none" />
+        <div
+          className={`absolute -top-12 -left-12 w-36 h-36 rounded-full blur-2xl pointer-events-none ${
+            variant === 'danger' ? 'bg-red-600/15' : 'bg-amber-600/15'
+          }`}
+        />
 
         {/* Close Button */}
         <button
@@ -60,10 +63,10 @@ export default function ConfirmModal({
         {/* Header Icon + Content */}
         <div className="flex items-start gap-4">
           <div
-            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-lg ${
+            className={`w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-md ${
               variant === 'danger'
-                ? 'bg-red-500/15 text-red-500 dark:text-red-400 border border-red-500/30 shadow-red-500/10'
-                : 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30 shadow-amber-500/10'
+                ? 'bg-red-50 dark:bg-red-950/60 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-900/60'
+                : 'bg-amber-50 dark:bg-amber-950/60 text-amber-600 dark:text-amber-400 border border-amber-200 dark:border-amber-900/60'
             }`}
           >
             <Icon className="w-6 h-6" />
@@ -83,12 +86,12 @@ export default function ConfirmModal({
         </div>
 
         {/* Action Buttons */}
-        <div className="mt-7 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 border-t border-slate-200 dark:border-slate-800/80 pt-5">
+        <div className="mt-7 flex flex-col-reverse sm:flex-row sm:justify-end gap-2.5 sm:gap-3 border-t border-slate-100 dark:border-slate-800 pt-5">
           <button
             type="button"
             onClick={onClose}
             disabled={loading}
-            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-700/80 transition-colors cursor-pointer disabled:opacity-50"
+            className="w-full sm:w-auto px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 border border-slate-300 dark:border-slate-700 transition-colors cursor-pointer disabled:opacity-50"
           >
             {cancelText}
           </button>
@@ -97,10 +100,10 @@ export default function ConfirmModal({
             type="button"
             onClick={onConfirm}
             disabled={loading}
-            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white shadow-lg transition-all cursor-pointer disabled:opacity-50 ${
+            className={`w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-white shadow-md transition-all cursor-pointer disabled:opacity-50 ${
               variant === 'danger'
-                ? 'bg-red-600 hover:bg-red-500 shadow-red-600/30'
-                : 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/30'
+                ? 'bg-red-600 hover:bg-red-500 shadow-red-600/20 focus-visible:ring-2 focus-visible:ring-red-500'
+                : 'bg-amber-600 hover:bg-amber-500 shadow-amber-600/20 focus-visible:ring-2 focus-visible:ring-amber-500'
             }`}
           >
             {loading ? (

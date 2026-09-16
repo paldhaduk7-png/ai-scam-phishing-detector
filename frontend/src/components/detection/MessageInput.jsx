@@ -1,7 +1,10 @@
 import React from 'react';
-import { Search } from 'lucide-react';
+import { Search, MessageSquare } from 'lucide-react';
 import Button from '../common/Button';
 
+/**
+ * MessageInput component for scanning SMS, text messages, and mobile chat threats.
+ */
 export default function MessageInput({
   value = '',
   onChange,
@@ -15,38 +18,52 @@ export default function MessageInput({
         e.preventDefault();
         onSubmit?.();
       }}
-      className="space-y-4"
+      className="space-y-4 text-left"
     >
       <div>
-        <label className="block text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2">
-          Enter Message Text
-        </label>
+        <div className="flex items-center justify-between mb-2">
+          <label
+            htmlFor="sms-message-input"
+            className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
+          >
+            <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span>Message or SMS Content</span>
+          </label>
+          <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
+            {value.length} / {maxLength} chars
+          </span>
+        </div>
+
         <div className="relative">
           <textarea
+            id="sms-message-input"
             rows={5}
             maxLength={maxLength}
             value={value}
             onChange={(e) => onChange(e.target.value)}
-            placeholder="Type or paste the message here..."
-            className="w-full p-4 bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-slate-700/80 rounded-2xl text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 resize-none transition-all"
+            placeholder="Paste or type suspicious text message, prize notification, or banking alert here..."
+            className="w-full p-4 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
           />
-          <div className="absolute right-4 bottom-3 text-xs font-medium text-slate-400 dark:text-slate-500 select-none">
-            {value.length}/{maxLength}
-          </div>
         </div>
+
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
+          Analyzes text patterns, urgency markers, and smishing fraud indicators using TF-IDF n-grams.
+        </p>
       </div>
 
-      <Button
-        type="submit"
-        variant="primary"
-        size="md"
-        icon={Search}
-        isLoading={isLoading}
-        disabled={!value.trim() || isLoading}
-        className="px-6 py-2.5 rounded-xl font-semibold shadow-md shadow-blue-600/20"
-      >
-        Analyze Now
-      </Button>
+      <div className="flex items-center justify-between pt-1">
+        <Button
+          type="submit"
+          variant="primary"
+          size="md"
+          icon={Search}
+          isLoading={isLoading}
+          disabled={!value.trim() || isLoading}
+          className="px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25"
+        >
+          Analyze Message
+        </Button>
+      </div>
     </form>
   );
 }

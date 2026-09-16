@@ -3,6 +3,10 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
 
+/**
+ * AppLayout provides the primary application frame for authenticated
+ * and internal tool routes, managing the responsive sidebar and content container.
+ */
 export default function AppLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
@@ -10,29 +14,29 @@ export default function AppLayout() {
   const getPageTitle = (pathname) => {
     switch (pathname) {
       case '/dashboard':
-        return 'Dashboard';
+        return 'Security Operations Dashboard';
       case '/detect':
-        return 'Detect Scams & Phishing';
+        return 'Multi-Vector Threat Detection';
       case '/history':
-        return 'Detection History';
+        return 'Audit & Scan History';
       case '/profile':
-        return 'My Profile';
+        return 'Account & Profile Settings';
       case '/about':
-        return 'About ScamShield';
+        return 'Platform Architecture & Mission';
       default:
-        return 'ScamShield';
+        return 'ScamShield AI';
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex transition-colors duration-200">
-      {/* Sidebar */}
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex transition-colors duration-200 antialiased">
+      {/* Sidebar Component */}
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
       />
 
-      {/* Main Content Area */}
+      {/* Main Content Column */}
       <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-[padding] duration-300">
         <TopHeader
           title={getPageTitle(location.pathname)}

@@ -23,7 +23,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
-  const { theme, isDark, toggleTheme } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -33,14 +33,14 @@ export default function Sidebar({ isOpen, onClose }) {
     ...(isAuthenticated
       ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }]
       : []),
-    { name: 'Detect', path: '/detect', icon: Search },
+    { name: 'Detect Threats', path: '/detect', icon: Search },
     ...(isAuthenticated
       ? [
-          { name: 'History', path: '/history', icon: Clock },
-          { name: 'Profile', path: '/profile', icon: User },
+          { name: 'Detection History', path: '/history', icon: Clock },
+          { name: 'My Profile', path: '/profile', icon: User },
         ]
       : []),
-    { name: 'About', path: '/about', icon: Info },
+    { name: 'About Platform', path: '/about', icon: Info },
   ];
 
   const handleConfirmLogout = async () => {
@@ -58,6 +58,13 @@ export default function Sidebar({ isOpen, onClose }) {
     }
   };
 
+  const getInitials = (fullName) => {
+    if (!fullName) return 'U';
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+  };
+
   return (
     <>
       {/* Mobile Backdrop */}
@@ -71,36 +78,45 @@ export default function Sidebar({ isOpen, onClose }) {
 
       {/* Sidebar Container */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#0d162a] text-slate-800 dark:text-white border-r border-slate-200/90 dark:border-slate-800/80 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
-          isOpen ? 'translate-x-0' : '-translate-x-full'
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-white dark:bg-[#0b101b] text-slate-800 dark:text-slate-100 border-r border-slate-200/90 dark:border-slate-800/80 flex flex-col transition-all duration-300 ease-in-out lg:translate-x-0 ${
+          isOpen ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
         }`}
       >
         {/* Header / Brand Logo */}
-        <div className="flex items-center justify-between px-6 py-6 border-b border-slate-200/90 dark:border-slate-800/80">
+        <div className="flex items-center justify-between px-6 py-5 border-b border-slate-200/80 dark:border-slate-800/80">
           <NavLink
             to="/"
             onClick={onClose}
-            className="flex items-center gap-3 group focus:outline-hidden"
+            className="flex items-center gap-3 group focus-visible:outline-none"
           >
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white shadow-md shadow-blue-500/25 group-hover:scale-105 transition-transform">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform shrink-0">
               <Shield className="w-5 h-5 fill-white/20 stroke-white stroke-[2.2]" />
             </div>
-            <span className="text-xl font-bold tracking-tight text-slate-900 dark:text-white font-sans">
-              ScamShield
-            </span>
+            <div>
+              <span className="text-lg font-bold tracking-tight text-slate-900 dark:text-white font-sans block leading-tight">
+                ScamShield
+              </span>
+              <span className="text-[10px] uppercase font-semibold tracking-wider text-slate-400 dark:text-slate-500">
+                Security Suite
+              </span>
+            </div>
           </NavLink>
 
           <button
+            type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Links */}
-        <nav className="flex-1 px-4 py-6 space-y-1.5 overflow-y-auto">
+        {/* Navigation Section */}
+        <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+            Navigation
+          </p>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -109,21 +125,26 @@ export default function Sidebar({ isOpen, onClose }) {
                 to={item.path}
                 onClick={onClose}
                 className={({ isActive }) =>
-                  `flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                     isActive
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-600/30 font-semibold'
-                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100 dark:hover:bg-slate-800/60'
+                      ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 shadow-2xs font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
                   }`
                 }
               >
                 {({ isActive }) => (
                   <>
+                    {isActive && (
+                      <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                    )}
                     <Icon
-                      className={`w-5 h-5 transition-transform ${
-                        isActive ? 'text-white' : 'text-slate-400 dark:text-slate-400'
+                      className={`w-4.5 h-4.5 shrink-0 transition-colors ${
+                        isActive
+                          ? 'text-blue-600 dark:text-blue-400'
+                          : 'text-slate-400 dark:text-slate-500'
                       }`}
                     />
-                    <span>{item.name}</span>
+                    <span className="truncate">{item.name}</span>
                   </>
                 )}
               </NavLink>
@@ -131,8 +152,33 @@ export default function Sidebar({ isOpen, onClose }) {
           })}
         </nav>
 
-        {/* Bottom Theme & Auth Section */}
-        <div className="p-4 border-t border-slate-200/90 dark:border-slate-800/80 space-y-2">
+        {/* Bottom User / Session / Theme Section */}
+        <div className="p-3 border-t border-slate-200/80 dark:border-slate-800/80 space-y-2 bg-slate-50/50 dark:bg-slate-900/30">
+          {/* User Preview Card if authenticated */}
+          {isAuthenticated && (
+            <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white dark:bg-slate-900/80 border border-slate-200/70 dark:border-slate-800/70 shadow-2xs">
+              {user?.profile_photo ? (
+                <img
+                  src={user.profile_photo}
+                  alt={user?.name || 'User'}
+                  className="w-8 h-8 rounded-lg object-cover ring-1 ring-blue-500/20 shrink-0"
+                />
+              ) : (
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-xs">
+                  {getInitials(user?.name)}
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-semibold text-slate-800 dark:text-slate-100 truncate">
+                  {user?.name || 'Authorized User'}
+                </p>
+                <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
+                  {user?.email || 'Active Session'}
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Theme Toggle Button */}
           <button
             type="button"
@@ -140,29 +186,30 @@ export default function Sidebar({ isOpen, onClose }) {
               toggleTheme();
               toast.info(`Switched to ${isDark ? 'Light' : 'Dark'} Mode`);
             }}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+            className="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/60 transition-colors cursor-pointer border border-transparent hover:border-slate-200 dark:hover:border-slate-700/60"
           >
-            <span className="flex items-center gap-3">
+            <span className="flex items-center gap-2.5">
               {isDark ? (
-                <Sun className="w-4 h-4 text-amber-400" />
+                <Sun className="w-4 h-4 text-amber-400 shrink-0" />
               ) : (
-                <Moon className="w-4 h-4 text-blue-600" />
+                <Moon className="w-4 h-4 text-blue-600 shrink-0" />
               )}
               <span>{isDark ? 'Dark Theme' : 'Light Theme'}</span>
             </span>
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700/60">
+            <span className="text-[9px] uppercase font-bold tracking-wider px-1.5 py-0.5 rounded bg-slate-200/70 dark:bg-slate-800 text-slate-600 dark:text-slate-400">
               Toggle
             </span>
           </button>
 
+          {/* Logout / Sign In Action */}
           {isAuthenticated ? (
             <button
               type="button"
               onClick={() => setShowLogoutModal(true)}
-              className="w-full flex items-center gap-3.5 px-3.5 py-2.5 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-slate-800/60 transition-colors cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/80 dark:hover:bg-red-950/30 transition-colors cursor-pointer"
             >
-              <LogOut className="w-4 h-4" />
-              <span>Log Out ({user?.name ? user.name.split(' ')[0] : 'User'})</span>
+              <LogOut className="w-4 h-4 shrink-0" />
+              <span>Sign Out</span>
             </button>
           ) : (
             <button
@@ -171,9 +218,9 @@ export default function Sidebar({ isOpen, onClose }) {
                 onClose?.();
                 navigate('/login');
               }}
-              className="w-full flex items-center gap-3.5 px-4 py-3 rounded-xl text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-950/40 transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-600/20 transition-all cursor-pointer"
             >
-              <LogIn className="w-5 h-5" />
+              <LogIn className="w-3.5 h-3.5" />
               <span>Sign In / Register</span>
             </button>
           )}

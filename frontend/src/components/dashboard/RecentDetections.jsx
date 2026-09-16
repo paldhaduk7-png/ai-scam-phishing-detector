@@ -3,7 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Badge from '../common/Badge';
 import EmptyState from '../common/EmptyState';
-import { ShieldCheck, MessageSquare, Mail, Link as LinkIcon, FileSearch } from 'lucide-react';
+import {
+  ShieldCheck,
+  MessageSquare,
+  Mail,
+  Link as LinkIcon,
+  FileSearch,
+  ExternalLink,
+  ChevronRight,
+} from 'lucide-react';
 
 export default function RecentDetections({ detections = [] }) {
   const navigate = useNavigate();
@@ -14,13 +22,13 @@ export default function RecentDetections({ detections = [] }) {
     switch (t) {
       case 'message':
       case 'sms':
-        return <MessageSquare className="w-4 h-4 text-blue-500" />;
+        return <MessageSquare className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />;
       case 'email':
-        return <Mail className="w-4 h-4 text-indigo-500" />;
+        return <Mail className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />;
       case 'url':
-        return <LinkIcon className="w-4 h-4 text-sky-500" />;
+        return <LinkIcon className="w-3.5 h-3.5 text-sky-600 dark:text-sky-400" />;
       default:
-        return <ShieldCheck className="w-4 h-4 text-blue-500" />;
+        return <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />;
     }
   };
 
@@ -57,69 +65,170 @@ export default function RecentDetections({ detections = [] }) {
   };
 
   return (
-    <Card className="flex flex-col">
+    <Card className="flex flex-col p-6">
       {/* Header */}
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
-        <div>
-          <h2 className="text-base font-bold text-slate-900 dark:text-white">Recent Detections</h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Latest scans analyzed by ScamShield</p>
+      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80">
+        <div className="flex items-center gap-2.5">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+            Recent Detections
+          </h2>
+          {hasRecords && (
+            <span className="text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full font-mono">
+              {detections.length} {detections.length === 1 ? 'record' : 'records'}
+            </span>
+          )}
         </div>
         <Link
           to="/history"
-          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline"
+          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors group"
         >
-          View All
+          <span>View All History</span>
+          <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
-      {/* Table / Empty State */}
-      <div className="flex-1 mt-2">
+      {/* Content */}
+      <div className="flex-1 mt-3">
         {hasRecords ? (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-400 dark:text-slate-500">
-                  <th className="py-3 px-2">Type</th>
-                  <th className="py-3 px-2">Input (Preview)</th>
-                  <th className="py-3 px-2">Result</th>
-                  <th className="py-3 px-2">Date & Time</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {detections.map((item, index) => {
-                  const type = item.type || item.input_type || '';
-                  const preview = item.preview || item.input || item.input_text || '';
-                  const result = item.result || (item.is_phishing ? 'Phishing' : (item.risk_percentage >= 40 ? 'Suspicious' : 'Safe')) || item.classification || 'Unknown';
+          <div>
+            {/* Desktop / Tablet Table View (hidden on very small screens) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                    <th className="py-2.5 px-3">Type</th>
+                    <th className="py-2.5 px-3">Analyzed Payload</th>
+                    <th className="py-2.5 px-3">Threat Result</th>
+                    <th className="py-2.5 px-3 text-right">Timestamp</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                  {detections.map((item, index) => {
+                    const type = item.type || item.input_type || '';
+                    const preview = item.preview || item.input || item.input_text || '';
+                    const result =
+                      item.result ||
+                      (item.is_phishing
+                        ? 'Phishing'
+                        : (item.risk_percentage >= 40
+                        ? 'Suspicious'
+                        : 'Safe')) ||
+                      item.classification ||
+                      'Unknown';
+                    const risk =
+                      typeof item.risk_percentage === 'number'
+                        ? item.risk_percentage.toFixed(1)
+                        : null;
 
-                  return (
-                    <tr key={item.id || index} className="hover:bg-slate-50/70 dark:hover:bg-slate-800/40 transition-colors">
-                      <td className="py-3 px-2 flex items-center gap-2 font-medium text-slate-700 dark:text-slate-300">
+                    return (
+                      <tr
+                        key={item.id || index}
+                        onClick={() => navigate('/history')}
+                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                      >
+                        <td className="py-3 px-3">
+                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                            {getTypeIcon(type)}
+                            <span>{getTypeLabel(type)}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-slate-600 dark:text-slate-300 max-w-[220px] md:max-w-[280px]">
+                          <p
+                            className="text-xs font-mono truncate"
+                            title={typeof preview === 'string' ? preview : ''}
+                          >
+                            {preview || 'Content payload analyzed'}
+                          </p>
+                        </td>
+                        <td className="py-3 px-3">
+                          <div className="flex items-center gap-2">
+                            <Badge status={result} size="sm">
+                              {result}
+                            </Badge>
+                            {risk !== null && (
+                              <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400">
+                                {risk}%
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="py-3 px-3 text-right text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                          {formatDateTime(item)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Stacked Card View (displayed only on small screens < 640px) */}
+            <div className="sm:hidden space-y-2.5">
+              {detections.map((item, index) => {
+                const type = item.type || item.input_type || '';
+                const preview = item.preview || item.input || item.input_text || '';
+                const result =
+                  item.result ||
+                  (item.is_phishing
+                    ? 'Phishing'
+                    : (item.risk_percentage >= 40
+                    ? 'Suspicious'
+                    : 'Safe')) ||
+                  item.classification ||
+                  'Unknown';
+                const risk =
+                  typeof item.risk_percentage === 'number'
+                    ? item.risk_percentage.toFixed(1)
+                    : null;
+
+                return (
+                  <div
+                    key={item.id || index}
+                    onClick={() => navigate('/history')}
+                    className="p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2 cursor-pointer hover:border-slate-200 dark:hover:border-slate-700 transition-colors"
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {getTypeIcon(type)}
-                        <span className="capitalize">{getTypeLabel(type)}</span>
-                      </td>
-                      <td className="py-3 px-2 text-slate-600 dark:text-slate-300 max-w-[200px] truncate" title={typeof preview === 'string' ? preview : ''}>
-                        {preview}
-                      </td>
-                      <td className="py-3 px-2">
-                        <Badge status={result}>{result}</Badge>
-                      </td>
-                      <td className="py-3 px-2 text-xs text-slate-400 dark:text-slate-500">
-                        {formatDateTime(item)}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                        <span>{getTypeLabel(type)}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Badge status={result} size="sm">
+                          {result}
+                        </Badge>
+                        {risk !== null && (
+                          <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400">
+                            {risk}%
+                          </span>
+                        )}
+                      </div>
+                    </div>
 
+                    <p
+                      className="text-xs text-slate-600 dark:text-slate-300 font-mono truncate"
+                      title={typeof preview === 'string' ? preview : ''}
+                    >
+                      {preview || 'Content payload analyzed'}
+                    </p>
+
+                    <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                      <span>{formatDateTime(item)}</span>
+                      <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 font-semibold">
+                        Details <ExternalLink className="w-3 h-3" />
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         ) : (
           <div className="py-6">
             <EmptyState
               icon={FileSearch}
-              title="No recent detections"
-              description="Your scanned messages, emails, and links will show up here once analyzed."
-              actionText="Scan Content Now"
+              title="No Recent Detections"
+              description="Your analyzed emails, messages, and web URLs will appear here once scans are processed."
+              actionText="Run New Threat Scan"
               onAction={() => navigate('/detect')}
               compact
             />

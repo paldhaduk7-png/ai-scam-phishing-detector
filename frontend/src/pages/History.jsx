@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HistoryFilters from '../components/history/HistoryFilters';
 import HistoryTable from '../components/history/HistoryTable';
 import ConfirmModal from '../components/common/ConfirmModal';
@@ -15,10 +16,13 @@ import {
   Check,
   Calendar,
   Trash2,
+  Plus,
+  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function History() {
+  const navigate = useNavigate();
   const [historyItems, setHistoryItems] = useState([]);
   const [typeFilter, setTypeFilter] = useState('all');
   const [resultFilter, setResultFilter] = useState('all');
@@ -95,13 +99,13 @@ export default function History() {
     switch (t) {
       case 'message':
       case 'sms':
-        return <MessageSquare className="w-5 h-5 text-blue-500" />;
+        return <MessageSquare className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
       case 'email':
-        return <Mail className="w-5 h-5 text-indigo-500" />;
+        return <Mail className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />;
       case 'url':
-        return <LinkIcon className="w-5 h-5 text-sky-500" />;
+        return <LinkIcon className="w-5 h-5 text-sky-600 dark:text-sky-400" />;
       default:
-        return <ShieldCheck className="w-5 h-5 text-blue-500" />;
+        return <ShieldCheck className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
     }
   };
 
@@ -141,13 +145,33 @@ export default function History() {
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* Page Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 dark:text-white tracking-tight">
-          Detection History
-        </h1>
-        <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-          View and manage your past scam and phishing detections.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
+              Detection History
+            </h1>
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 px-2.5 py-0.5 rounded-full font-mono">
+              <Activity className="w-3 h-3 text-blue-500" />
+              PostgreSQL Audit Log
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+            Review, inspect, and manage historical scan assessments across email, SMS, and web channels.
+          </p>
+        </div>
+
+        <div className="self-start sm:self-auto">
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => navigate('/detect')}
+            icon={Plus}
+            className="rounded-xl shadow-xs"
+          >
+            Start New Scan
+          </Button>
+        </div>
       </div>
 
       {/* Filters Bar */}
@@ -179,7 +203,7 @@ export default function History() {
         onConfirm={handleConfirmDelete}
         loading={deleteLoading}
         title="Delete Detection Record"
-        message={`Are you sure you want to delete this ${itemToDelete?.type || 'detection'} record? This action cannot be undone.`}
+        message={`Are you sure you want to permanently delete this ${itemToDelete?.type || 'detection'} record from your audit history? This action cannot be undone.`}
         confirmText="Delete Record"
         cancelText="Cancel"
         icon={Trash2}
@@ -189,15 +213,36 @@ export default function History() {
       {/* Inspection Details Modal */}
       {viewItem && (() => {
         const viewType = viewItem.type || viewItem.input_type || '';
-        const viewResult = viewItem.result || (viewItem.is_phishing ? 'Phishing' : (viewItem.risk_percentage >= 40 ? 'Suspicious' : 'Safe')) || viewItem.classification || 'Unknown';
-        const viewConfidence = viewItem.confidence != null ? viewItem.confidence : viewItem.risk_percentage;
-        const viewContent = viewItem.input || viewItem.input_text || viewItem.preview || 'No raw content recorded.';
+        const viewResult =
+          viewItem.result ||
+          (viewItem.is_phishing
+            ? 'Phishing'
+            : (viewItem.risk_percentage >= 40
+            ? 'Suspicious'
+            : 'Safe')) ||
+          viewItem.classification ||
+          'Unknown';
+        const rawConfidence =
+          viewItem.confidence != null ? viewItem.confidence : viewItem.risk_percentage;
+        const viewConfidence =
+          typeof rawConfidence === 'number' && !isNaN(rawConfidence)
+            ? Math.max(0, Math.min(100, rawConfidence))
+            : null;
+        const viewContent =
+          viewItem.input ||
+          viewItem.input_text ||
+          viewItem.preview ||
+          'No raw content recorded.';
         const viewDate = formatDateTime(viewItem);
+
+        const isPhish =
+          viewItem.is_phishing || String(viewResult).toLowerCase().includes('phish');
+        const isSusp = !isPhish && viewConfidence !== null && viewConfidence >= 40.0;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div
-              className="fixed inset-0 bg-slate-950/70 backdrop-blur-xs transition-opacity animate-fadeIn"
+              className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-fadeIn"
               onClick={() => setViewItem(null)}
               aria-hidden="true"
             />
@@ -210,15 +255,15 @@ export default function History() {
               {/* Header */}
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center shrink-0 shadow-2xs">
                     {getTypeIcon(viewType)}
                   </div>
                   <div>
-                    <h3 className="text-base font-bold text-slate-900 dark:text-white capitalize">
-                      {getTypeLabel(viewType)} Detection Details
+                    <h3 className="text-base font-bold text-slate-900 dark:text-white capitalize tracking-tight">
+                      {getTypeLabel(viewType)} Inspection Details
                     </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
-                      <Calendar className="w-3.5 h-3.5" />
+                    <p className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5 font-mono">
+                      <Calendar className="w-3.5 h-3.5 text-slate-400" />
                       <span>{viewDate}</span>
                     </p>
                   </div>
@@ -228,50 +273,75 @@ export default function History() {
                   type="button"
                   onClick={() => setViewItem(null)}
                   className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
+                  aria-label="Close dialog"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              {/* Verdict + Confidence */}
-              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800">
-                <div className="space-y-1">
-                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Classification
-                  </span>
-                  <div>
-                    <Badge status={viewResult} size="md">
-                      {viewResult}
-                    </Badge>
+              {/* Verdict + Confidence Banner */}
+              <div className="p-4 rounded-xl bg-slate-50/80 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800 space-y-3">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Verdict Classification
+                    </span>
+                    <div>
+                      <Badge status={viewResult} size="md">
+                        {viewResult}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div className="text-right space-y-1">
+                    <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+                      Risk Score
+                    </span>
+                    <p className="text-lg font-extrabold font-mono text-slate-900 dark:text-white">
+                      {viewConfidence !== null ? `${viewConfidence.toFixed(1)}%` : '--'}
+                    </p>
                   </div>
                 </div>
 
-                <div className="text-right space-y-1">
-                  <span className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-                    Risk / Confidence
-                  </span>
-                  <p className="text-base font-extrabold text-slate-900 dark:text-white">
-                    {viewConfidence != null ? `${viewConfidence}%` : '--'}
-                  </p>
-                </div>
+                {/* Visual Risk Progress Bar */}
+                {viewConfidence !== null && (
+                  <div className="space-y-1 pt-1 border-t border-slate-200/50 dark:border-slate-800/60">
+                    <div className="w-full h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+                      <div
+                        style={{ width: `${viewConfidence}%` }}
+                        className={`h-full rounded-full transition-all duration-300 ${
+                          isPhish
+                            ? 'bg-red-500'
+                            : isSusp
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* Content Analyzed */}
-              <div>
-                <div className="flex items-center justify-between mb-1.5">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
-                    Content Analyzed
+                    Analyzed Content Payload
                   </span>
                   <button
                     type="button"
                     onClick={() => handleCopyContent(viewContent)}
-                    className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                    className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer"
                   >
-                    {copied ? <Check className="w-3.5 h-3.5 text-emerald-500" /> : <Copy className="w-3.5 h-3.5" />}
+                    {copied ? (
+                      <Check className="w-3.5 h-3.5 text-emerald-500" />
+                    ) : (
+                      <Copy className="w-3.5 h-3.5" />
+                    )}
                     <span>{copied ? 'Copied' : 'Copy'}</span>
                   </button>
                 </div>
-                <div className="p-3 bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 max-h-48 overflow-y-auto break-all leading-relaxed select-text">
+                <div className="p-3.5 bg-slate-50 dark:bg-[#0b1120] border border-slate-200/80 dark:border-slate-800 rounded-xl text-xs font-mono text-slate-800 dark:text-slate-200 max-h-48 overflow-y-auto break-all leading-relaxed select-text">
                   {viewContent}
                 </div>
               </div>
@@ -279,12 +349,12 @@ export default function History() {
               {/* Close footer */}
               <div className="pt-3 border-t border-slate-100 dark:border-slate-800 flex justify-end">
                 <Button
-                  variant="primary"
+                  variant="outline"
                   size="sm"
                   onClick={() => setViewItem(null)}
-                  className="px-5 py-2 text-xs font-semibold"
+                  className="px-5 py-2 text-xs font-semibold rounded-xl"
                 >
-                  Close Details
+                  Close Inspection
                 </Button>
               </div>
             </div>

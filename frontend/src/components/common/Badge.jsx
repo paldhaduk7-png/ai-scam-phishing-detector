@@ -1,31 +1,80 @@
 import React from 'react';
 
-export default function Badge({ children, status = 'default', size = 'md', className = '' }) {
+/**
+ * Enhanced Badge component with clear cybersecurity status indicators,
+ * subtle threat severity dots, and crisp light/dark mode contrast.
+ */
+export default function Badge({
+  children,
+  status = 'default',
+  size = 'md',
+  className = '',
+  showDot = true,
+}) {
   const normalized = String(children || status).toLowerCase().trim();
 
-  let styles = 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+  let styles =
+    'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+  let dotColor = 'bg-slate-400';
+  let isAnimated = false;
 
-  if (normalized.includes('phishing') || normalized.includes('danger') || normalized.includes('scam')) {
-    styles = 'bg-red-50 dark:bg-red-950/60 text-red-700 dark:text-red-300 border-red-200 dark:border-red-900/60';
-  } else if (normalized.includes('suspicious') || normalized.includes('warning') || normalized.includes('medium')) {
-    styles = 'bg-amber-50 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 border-amber-200 dark:border-amber-900/60';
-  } else if (normalized.includes('safe') || normalized.includes('legit') || normalized.includes('clean') || normalized.includes('low')) {
-    styles = 'bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border-emerald-200 dark:border-emerald-900/60';
-  } else if (normalized.includes('info') || normalized.includes('message') || normalized.includes('email') || normalized.includes('url')) {
-    styles = 'bg-blue-50 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-900/60';
+  if (
+    normalized.includes('phishing') ||
+    normalized.includes('danger') ||
+    normalized.includes('scam') ||
+    normalized.includes('malicious')
+  ) {
+    styles =
+      'bg-red-50/90 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200/80 dark:border-red-900/60';
+    dotColor = 'bg-red-500';
+    isAnimated = true;
+  } else if (
+    normalized.includes('suspicious') ||
+    normalized.includes('warning') ||
+    normalized.includes('medium')
+  ) {
+    styles =
+      'bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/60';
+    dotColor = 'bg-amber-500';
+  } else if (
+    normalized.includes('safe') ||
+    normalized.includes('legit') ||
+    normalized.includes('clean') ||
+    normalized.includes('low')
+  ) {
+    styles =
+      'bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-900/60';
+    dotColor = 'bg-emerald-500';
+  } else if (
+    normalized.includes('info') ||
+    normalized.includes('message') ||
+    normalized.includes('sms') ||
+    normalized.includes('email') ||
+    normalized.includes('url')
+  ) {
+    styles =
+      'bg-blue-50/90 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-900/60';
+    dotColor = 'bg-blue-500';
   }
 
   const sizes = {
-    sm: 'text-[11px] px-2 py-0.5 font-medium',
-    md: 'text-xs px-2.5 py-1 font-medium',
-    lg: 'text-sm px-3 py-1.5 font-semibold',
+    sm: 'text-[11px] px-2 py-0.5 gap-1.5 font-medium',
+    md: 'text-xs px-2.5 py-1 gap-1.5 font-medium',
+    lg: 'text-sm px-3 py-1.5 gap-2 font-semibold',
   };
 
   return (
     <span
       className={`inline-flex items-center justify-center rounded-full border ${sizes[size] || sizes.md} ${styles} ${className}`}
     >
-      {children}
+      {showDot && (
+        <span
+          className={`w-1.5 h-1.5 rounded-full ${dotColor} shrink-0 ${
+            isAnimated ? 'animate-pulse' : ''
+          }`}
+        />
+      )}
+      <span>{children}</span>
     </span>
   );
 }
