@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import HistoryFilters from '../components/history/HistoryFilters';
 import HistoryTable from '../components/history/HistoryTable';
@@ -371,10 +372,10 @@ export default function History() {
           viewItem.is_phishing || String(viewResult).toLowerCase().includes('phish');
         const isSusp = !isPhish && viewConfidence !== null && viewConfidence >= 40.0;
 
-        return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        return createPortal(
+          <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
             <div
-              className="fixed inset-0 bg-slate-950/75 backdrop-blur-xs transition-opacity animate-fadeIn"
+              className="fixed inset-0 bg-slate-950/80 backdrop-blur-xs transition-opacity animate-fadeIn"
               onClick={() => setViewItem(null)}
               aria-hidden="true"
             />
@@ -490,7 +491,8 @@ export default function History() {
                 </Button>
               </div>
             </div>
-          </div>
+          </div>,
+          document.body
         );
       })()}
 
