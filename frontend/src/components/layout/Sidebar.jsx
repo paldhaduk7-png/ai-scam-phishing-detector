@@ -23,7 +23,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { isAuthenticated, user } = useSelector((state) => state.auth);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const { isDark, toggleTheme } = useTheme();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -57,13 +57,6 @@ export default function Sidebar({ isOpen, onClose }) {
     } finally {
       setLoggingOut(false);
     }
-  };
-
-  const getInitials = (fullName) => {
-    if (!fullName) return 'U';
-    const parts = fullName.trim().split(/\s+/);
-    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
   return (
