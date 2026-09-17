@@ -6,6 +6,7 @@ import HistoryTable from '../components/history/HistoryTable';
 import ConfirmModal from '../components/common/ConfirmModal';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import BottomPageNav from '../components/layout/BottomPageNav';
 import {
   getDetectionHistory,
   deleteDetectionRecord,
@@ -331,6 +332,9 @@ export default function History() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
+
+      {/* Bottom Navigation Hub */}
+      <BottomPageNav currentPage="history" />
 
       {/* Delete Record Confirmation Modal */}
       <ConfirmModal

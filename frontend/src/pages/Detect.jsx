@@ -9,6 +9,7 @@ import DetectionResult from '../components/detection/DetectionResult';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
+import BottomPageNav from '../components/layout/BottomPageNav';
 import { Clock, ArrowRight } from 'lucide-react';
 import { detectScam, detectEmailDL } from '../services/api';
 
@@ -198,7 +199,7 @@ export default function Detect() {
         </div>
       </div>
 
-      {/* Bottom Option: View Detection History */}
+      {/* Quick History Log Banner */}
       <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
@@ -228,6 +229,9 @@ export default function Detect() {
           <ArrowRight className="w-3.5 h-3.5" />
         </Button>
       </div>
+
+      {/* Bottom Navigation Hub: Navigate to Other Pages */}
+      <BottomPageNav currentPage="detect" />
     </div>
   );
 }
