@@ -1,19 +1,44 @@
 import axios from 'axios';
 
 /**
- * ScamShield API Client
- * Configured with VITE_API_BASE_URL and withCredentials=true for HTTP-only cookie JWTs.
+ * Centralized API Base URL resolver.
+ * Priority:
+ * 1. Explicit VITE_API_BASE_URL environment variable (if set).
+ * 2. Production Render backend when running on Vercel or non-localhost domain.
+ * 3. Localhost fallback (http://localhost:8000/api/v1).
  */
-const rawBaseURL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const cleanBaseURL = rawBaseURL.replace(/\/+$/, '');
+export const getApiBaseUrl = () => {
+  if (import.meta.env?.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, '');
+  }
+  if (
+    typeof window !== 'undefined' &&
+    window.location.hostname !== 'localhost' &&
+    window.location.hostname !== '127.0.0.1'
+  ) {
+    return 'https://ai-scam-phishing-detector.onrender.com/api/v1';
+  }
+  return 'http://localhost:8000/api/v1';
+};
 
 const api = axios.create({
-  baseURL: cleanBaseURL,
+  baseURL: getApiBaseUrl(),
   headers: {
     'Content-Type': 'application/json',
   },
   withCredentials: true,
   timeout: 45000,
+});
+
+// Attach Bearer token to all outgoing requests if available in localStorage
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem('scamshield_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
 });
 
 // ==============================================================================
@@ -37,6 +62,16 @@ export const register = async (userData) => {
  */
 export const login = async (credentials) => {
   const response = await api.post('/auth/login', credentials);
+  return response.data;
+};
+
+/**
+ * Exchange single-use, 60-second code from Google OAuth callback for user session & JWT.
+ * @param {string} code
+ * @returns {Promise<Object>} Safe user response with access_token
+ */
+export const exchangeGoogleCode = async (code) => {
+  const response = await api.post('/auth/google/exchange', { code });
   return response.data;
 };
 

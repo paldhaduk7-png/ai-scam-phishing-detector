@@ -90,10 +90,16 @@ class Settings:
         self.jwt_algorithm: str = os.getenv("JWT_ALGORITHM", "HS256")
         self.access_token_expire_minutes: int = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
+        # Environment Detection (Render sets RENDER=true automatically)
+        is_render = bool(os.getenv("RENDER") or os.getenv("RENDER_EXTERNAL_URL"))
+
         # Cookie Settings
-        cookie_sec_raw = os.getenv("COOKIE_SECURE", "False").lower()
+        cookie_sec_default = "True" if is_render else "False"
+        cookie_sec_raw = os.getenv("COOKIE_SECURE", cookie_sec_default).lower()
         self.cookie_secure: bool = cookie_sec_raw in ("true", "1", "yes")
-        self.cookie_samesite: str = os.getenv("COOKIE_SAMESITE", "lax").lower()
+
+        cookie_samesite_default = "none" if is_render else "lax"
+        self.cookie_samesite: str = os.getenv("COOKIE_SAMESITE", cookie_samesite_default).lower()
         self.cookie_name: str = "access_token"
 
         # Cloudinary Settings
@@ -107,15 +113,19 @@ class Settings:
         self.mail_from: str = os.getenv("MAIL_FROM", os.getenv("MAIL_USERNAME", "no-reply@scamshield.ai"))
         self.mail_server: str = os.getenv("MAIL_SERVER", "smtp.gmail.com")
         self.mail_port: int = int(os.getenv("MAIL_PORT", "587"))
-        self.frontend_url: str = os.getenv("FRONTEND_URL", "http://localhost:5173")
+
+        default_frontend = "https://ai-scam-phishing-detector.vercel.app" if is_render else "http://localhost:5173"
+        self.frontend_url: str = os.getenv("FRONTEND_URL", default_frontend)
 
         # Google OAuth 2.0 Settings
         self.google_client_id: str = os.getenv("GOOGLE_CLIENT_ID", "")
         self.google_client_secret: str = os.getenv("GOOGLE_CLIENT_SECRET", "")
-        self.google_redirect_uri: str = os.getenv(
-            "GOOGLE_REDIRECT_URI",
-            "http://localhost:8000/api/v1/auth/google/callback",
+        default_redirect_uri = (
+            "https://ai-scam-phishing-detector.onrender.com/api/v1/auth/google/callback"
+            if is_render
+            else "http://localhost:8000/api/v1/auth/google/callback"
         )
+        self.google_redirect_uri: str = os.getenv("GOOGLE_REDIRECT_URI", default_redirect_uri)
 
         # Deep Learning Model Control (set DISABLE_DL=true on memory-constrained platforms like Render Free tier)
         disable_dl_raw = os.getenv("DISABLE_DL", "false").strip().lower()

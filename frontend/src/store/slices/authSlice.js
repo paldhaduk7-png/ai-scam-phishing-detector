@@ -1,20 +1,16 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import axios from 'axios';
-
-const RAW_API_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
+import api from '../../services/api';
 
 /**
  * Check active session on app boot (GET /auth/me).
  * Kept lightweight so the user stays logged in across page refreshes.
+ * Works seamlessly with both Bearer token and HTTP-only cookie.
  */
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/auth/me`, {
-        withCredentials: true,
-      });
+      const res = await api.get('/auth/me');
       return res.data;
     } catch {
       return rejectWithValue('Unauthenticated');
@@ -29,11 +25,15 @@ export const logoutUser = createAsyncThunk(
   'auth/logoutUser',
   async (_, { rejectWithValue }) => {
     try {
-      await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
-        withCredentials: true,
-      });
+      await api.post('/auth/logout');
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('scamshield_token');
+      }
       return null;
     } catch (err) {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('scamshield_token');
+      }
       return rejectWithValue(err.response?.data?.detail || 'Logout failed');
     }
   }
@@ -46,9 +46,8 @@ export const uploadAvatar = createAsyncThunk(
   'auth/uploadAvatar',
   async (formData, { rejectWithValue }) => {
     try {
-      const res = await axios.post(`${API_BASE_URL}/auth/profile-photo`, formData, {
+      const res = await api.post('/auth/profile-photo', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        withCredentials: true,
       });
       return res.data;
     } catch (err) {
@@ -64,9 +63,7 @@ export const deleteAvatar = createAsyncThunk(
   'auth/deleteAvatar',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await axios.delete(`${API_BASE_URL}/auth/profile-photo`, {
-        withCredentials: true,
-      });
+      const res = await api.delete('/auth/profile-photo');
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Failed to remove photo.');
@@ -81,10 +78,7 @@ export const updateProfileDetails = createAsyncThunk(
   'auth/updateProfileDetails',
   async (profileData, { rejectWithValue }) => {
     try {
-      const res = await axios.put(`${API_BASE_URL}/auth/profile`, profileData, {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
-      });
+      const res = await api.put('/auth/profile', profileData);
       return res.data;
     } catch (err) {
       return rejectWithValue(err.response?.data?.detail || 'Failed to update profile.');
@@ -102,8 +96,6 @@ const initialState = {
 
 /**
  * Minimal, clean authSlice.
- * Form state, axios API calls, validations, and navigations are handled
- * directly in Login.jsx and Register.jsx as requested.
  */
 const authSlice = createSlice({
   name: 'auth',
@@ -115,12 +107,18 @@ const authSlice = createSlice({
       state.loading = false;
       state.error = null;
       state.initialized = true;
+      if (action.payload?.access_token && typeof window !== 'undefined') {
+        localStorage.setItem('scamshield_token', action.payload.access_token);
+      }
     },
     logout: (state) => {
       state.user = null;
       state.isAuthenticated = false;
       state.loading = false;
       state.error = null;
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('scamshield_token');
+      }
     },
     updateUser: (state, action) => {
       state.user = state.user ? { ...state.user, ...action.payload } : action.payload;
@@ -153,6 +151,9 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.initialized = true;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('scamshield_token');
+        }
       })
 
       // logoutUser
@@ -161,12 +162,18 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.loading = false;
         state.error = null;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('scamshield_token');
+        }
       })
       .addCase(logoutUser.rejected, (state) => {
         state.user = null;
         state.isAuthenticated = false;
         state.loading = false;
         state.error = null;
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('scamshield_token');
+        }
       })
 
       // Avatar & Profile updates

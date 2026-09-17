@@ -92,7 +92,7 @@ def test_register_invalid_payload():
 
 
 def test_login_successfully(db_session):
-    """4. Test successful login sets HTTP-only cookie and does not expose JWT in response body."""
+    """4. Test successful login sets HTTP-only cookie and returns Bearer access_token."""
     email = "test_login_success@example.com"
     client.post("/api/v1/auth/register", json={
         "name": "Login Tester",
@@ -107,13 +107,13 @@ def test_login_successfully(db_session):
     assert response.status_code == 200
     data = response.json()
 
-    # JWT must NOT be in JSON response
-    assert "token" not in data
-    assert "access_token" not in data
+    # JWT access_token is returned for Bearer authentication
+    assert data.get("access_token") is not None
+    assert data.get("token_type") == "bearer"
     assert "password_hash" not in data
     assert data["email"] == email
 
-    # Cookie must be set as HttpOnly
+    # Cookie must also be set as HttpOnly for backward compatibility
     assert "access_token" in response.cookies
     cookie_header = response.headers.get("set-cookie", "")
     assert "HttpOnly" in cookie_header or "httponly" in cookie_header.lower()
@@ -637,4 +637,49 @@ def test_google_callback_existing_user_preserves_password(db_session):
         db_session.refresh(user)
         assert user.password_hash == original_pwd_hash
         assert user.profile_photo == "https://example.com/existing.jpg"
+
+
+def test_google_exchange_code_valid_and_single_use(db_session):
+    """29. Test Google OAuth exchange endpoint: code exchange succeeds and is single-use."""
+    from app.routers.auth import _GOOGLE_EXCHANGE_CODES
+    email = "test_exchange_valid@example.com"
+    user = User(
+        name="Exchange Test User",
+        email=email,
+        password_hash=hash_password("DummyPassword123"),
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+
+    code = "test_single_use_valid_code_12345"
+    _GOOGLE_EXCHANGE_CODES[code] = {
+        "user_id": user.id,
+        "expires_at": datetime.now(timezone.utc) + timedelta(seconds=60),
+    }
+
+    # First exchange attempt: should succeed
+    resp = client.post("/api/v1/auth/google/exchange", json={"code": code})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["email"] == email
+    assert data.get("access_token") is not None
+    assert data.get("token_type") == "bearer"
+
+    # Second exchange attempt with same code: must fail (single-use)
+    resp2 = client.post("/api/v1/auth/google/exchange", json={"code": code})
+    assert resp2.status_code == 400
+
+
+def test_google_exchange_code_expired(db_session):
+    """30. Test Google OAuth exchange endpoint rejects expired codes."""
+    from app.routers.auth import _GOOGLE_EXCHANGE_CODES
+    code = "test_expired_code_123456789"
+    _GOOGLE_EXCHANGE_CODES[code] = {
+        "user_id": 999999,
+        "expires_at": datetime.now(timezone.utc) - timedelta(seconds=10),
+    }
+
+    resp = client.post("/api/v1/auth/google/exchange", json={"code": code})
+    assert resp.status_code == 400
 

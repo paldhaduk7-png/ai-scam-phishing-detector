@@ -199,8 +199,14 @@ class UserResponse(BaseModel):
     profile_photo: Optional[str] = None
     created_at: str
     updated_at: str
+    access_token: Optional[str] = None
+    token_type: Optional[str] = "bearer"
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class GoogleExchangeRequest(BaseModel):
+    code: str = Field(..., min_length=10, description="Single-use temporary authorization exchange code")
 
 
 class ForgotPasswordRequest(BaseModel):

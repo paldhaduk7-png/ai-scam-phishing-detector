@@ -23,8 +23,9 @@ import {
   LoginShieldIllustration,
 } from '../components/auth/AuthIllustrations';
 
-const RAW_API_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
+import { getApiBaseUrl, exchangeGoogleCode } from '../services/api';
+
+const API_BASE_URL = getApiBaseUrl();
 
 function GoogleIcon({ className = 'w-4 h-4' }) {
   return (
@@ -85,18 +86,40 @@ export default function Login() {
   // Handle Google OAuth callback parameters
   useEffect(() => {
     const googleAuth = searchParams.get('google_auth');
+    const code = searchParams.get('code');
     if (googleAuth === 'success') {
-      dispatch(checkAuth())
-        .unwrap()
-        .then((userData) => {
-          toast.success(`Welcome back, ${userData.name || 'User'}!`);
-          navigate(fromPath, { replace: true });
-        })
-        .catch(() => {
-          const failMsg = 'Google authentication session expired or invalid.';
-          setError(failMsg);
-          toast.error(failMsg);
-        });
+      if (code) {
+        // Secure single-use exchange code flow (NO JWT in URL!)
+        exchangeGoogleCode(code)
+          .then((userData) => {
+            if (userData?.access_token) {
+              localStorage.setItem('scamshield_token', userData.access_token);
+            }
+            dispatch(setCredentials(userData));
+            toast.success(`Welcome back, ${userData.name || 'User'}!`);
+            navigate(fromPath, { replace: true });
+          })
+          .catch((err) => {
+            const failMsg =
+              err.response?.data?.detail ||
+              'Google authentication session expired or invalid. Please try signing in again.';
+            setError(failMsg);
+            toast.error(failMsg);
+          });
+      } else {
+        // Fallback for cookie session (e.g. localhost)
+        dispatch(checkAuth())
+          .unwrap()
+          .then((userData) => {
+            toast.success(`Welcome back, ${userData.name || 'User'}!`);
+            navigate(fromPath, { replace: true });
+          })
+          .catch(() => {
+            const failMsg = 'Google authentication session expired or invalid.';
+            setError(failMsg);
+            toast.error(failMsg);
+          });
+      }
     }
   }, [searchParams, dispatch, navigate, fromPath]);
 
@@ -163,6 +186,9 @@ export default function Login() {
 
       if (response.data) {
         const userData = response.data;
+        if (userData.access_token) {
+          localStorage.setItem('scamshield_token', userData.access_token);
+        }
         toast.success(`Welcome back, ${userData.name || 'User'}!`);
         dispatch(setCredentials(userData));
         navigate(fromPath, { replace: true });

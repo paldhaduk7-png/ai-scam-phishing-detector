@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import logging
 import secrets
-from typing import Dict, Optional
+from typing import Any, Dict, Optional
 from urllib.parse import quote_plus
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Request, Response, UploadFile, status
 from fastapi.exceptions import RequestValidationError
@@ -22,6 +22,7 @@ from app.models import PasswordResetOTP, User
 from app.schemas import (
     ForgotPasswordRequest,
     ForgotPasswordResponse,
+    GoogleExchangeRequest,
     ResetPasswordRequest,
     ResetPasswordResponse,
     UserLoginRequest,
@@ -52,8 +53,8 @@ logger = logging.getLogger("scamshield.auth_router")
 router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
 
-def _format_user(user: User) -> UserResponse:
-    """Formats SQLAlchemy User model into safe UserResponse schema."""
+def _format_user(user: User, token: Optional[str] = None) -> UserResponse:
+    """Formats SQLAlchemy User model into safe UserResponse schema with optional Bearer token."""
     return UserResponse(
         id=user.id,
         name=user.name,
@@ -61,6 +62,8 @@ def _format_user(user: User) -> UserResponse:
         profile_photo=user.profile_photo,
         created_at=user.created_at.isoformat() if user.created_at else "",
         updated_at=user.updated_at.isoformat() if user.updated_at else "",
+        access_token=token,
+        token_type="bearer" if token else None,
     )
 
 
@@ -186,7 +189,7 @@ def login_user(
     set_auth_cookie(response, token)
 
     logger.info("User logged in id=%s email=%s", user.id, user.email)
-    return _format_user(user)
+    return _format_user(user, token=token)
 
 
 @router.post(
@@ -622,12 +625,75 @@ async def google_callback(
     # 7. Issue ScamShield JWT token
     token = create_access_token(user.id)
 
-    # 8. Redirect to frontend and set HTTP-only cookie
-    redirect_url = f"{settings.frontend_url}/login?google_auth=success"
+    # 8. Create cryptographically secure, short-lived (60s) single-use exchange code
+    # (Strictly no JWT or access token in URL / query parameters!)
+    _clean_expired_exchange_codes()
+    exchange_code = secrets.token_urlsafe(32)
+    _GOOGLE_EXCHANGE_CODES[exchange_code] = {
+        "user_id": user.id,
+        "expires_at": datetime.now(timezone.utc) + timedelta(seconds=60),
+    }
+
+    # 9. Redirect to frontend with exchange code
+    redirect_url = f"{settings.frontend_url}/login?google_auth=success&code={exchange_code}"
     response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     # Clear CSRF state cookie
     response.delete_cookie(key="oauth_state", path="/")
-    # Set ScamShield authentication cookie
+    # Set ScamShield authentication cookie (maintains full localhost compatibility)
     set_auth_cookie(response, token)
     return response
+
+
+# Thread-safe in-memory store for short-lived (60s) single-use Google OAuth exchange codes
+_GOOGLE_EXCHANGE_CODES: Dict[str, Dict[str, Any]] = {}
+
+
+def _clean_expired_exchange_codes() -> None:
+    """Removes expired exchange codes to prevent memory accumulation."""
+    now = datetime.now(timezone.utc)
+    expired = [k for k, v in _GOOGLE_EXCHANGE_CODES.items() if v.get("expires_at", now) < now]
+    for k in expired:
+        _GOOGLE_EXCHANGE_CODES.pop(k, None)
+
+
+@router.post(
+    "/google/exchange",
+    response_model=UserResponse,
+    summary="Exchange short-lived Google OAuth code for JWT and user session",
+)
+def exchange_google_code(
+    payload: GoogleExchangeRequest,
+    response: Response,
+    db: Session = Depends(get_db),
+) -> UserResponse:
+    """
+    Exchanges a single-use, 60-second authorization code issued during Google OAuth callback.
+    Guarantees no tokens or credentials ever appear in URLs, browser history, or logs.
+    Immediately invalidates the code upon consumption.
+    """
+    _clean_expired_exchange_codes()
+    code_data = _GOOGLE_EXCHANGE_CODES.pop(payload.code.strip(), None)
+    if not code_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid, expired, or already consumed Google sign-in code. Please try signing in again.",
+        )
+
+    if code_data["expires_at"] < datetime.now(timezone.utc):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Google sign-in code has expired (valid for 60 seconds). Please try signing in again.",
+        )
+
+    user = db.query(User).filter(User.id == code_data["user_id"]).first()
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User account associated with this session was not found.",
+        )
+
+    token = create_access_token(user.id)
+    set_auth_cookie(response, token)
+    logger.info("Successfully exchanged Google code for user id=%s email=%s", user.id, user.email)
+    return _format_user(user, token=token)
 

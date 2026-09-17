@@ -22,8 +22,9 @@ import {
 import { toast } from 'sonner';
 import { RegisterProfileIllustration } from '../components/auth/AuthIllustrations';
 
-const RAW_API_URL = import.meta.env?.VITE_API_BASE_URL || 'http://localhost:8000/api/v1';
-const API_BASE_URL = RAW_API_URL.replace(/\/+$/, '');
+import { getApiBaseUrl } from '../services/api';
+
+const API_BASE_URL = getApiBaseUrl();
 
 function GoogleIcon({ className = 'w-5 h-5' }) {
   return (
