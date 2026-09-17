@@ -45,10 +45,6 @@ export default function MessageInput({
             className="w-full p-4 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
           />
         </div>
-
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1.5">
-          Analyzes text patterns, urgency markers, and smishing fraud indicators using TF-IDF n-grams.
-        </p>
       </div>
 
       <div className="flex items-center justify-between pt-1">

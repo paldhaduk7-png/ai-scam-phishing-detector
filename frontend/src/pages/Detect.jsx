@@ -46,14 +46,10 @@ export default function Detect() {
     if (activeTab === 'message') {
       setMessageText(example.text);
     } else if (activeTab === 'email') {
-      setEmailSubject('Urgent Notification');
+      setEmailSubject(example.label || 'Urgent Notification');
       setEmailContent(example.text);
     } else if (activeTab === 'url') {
-      if (example.text.includes('link') || example.text.includes('iPhone')) {
-        setUrlInput('http://scam-offer.com/claim-prize');
-      } else {
-        setUrlInput('https://paypal-security-verify-account.com');
-      }
+      setUrlInput(example.text);
     }
   };
 
@@ -119,35 +115,41 @@ export default function Detect() {
     setAnalysisStatus('idle');
     setAnalysisResult(null);
     setErrorMessage('');
+    setMessageText('');
+    setEmailSubject('');
+    setEmailContent('');
+    setUrlInput('');
   };
 
   return (
-    <div className="space-y-6 sm:space-y-8 animate-fadeIn text-left">
-      {/* Page Heading & Context Badge */}
-      <div>
-        <div className="flex items-center gap-2 mb-1.5">
-          <Badge status="info" size="sm">
-            AI Threat Inspection Engine
-          </Badge>
+    <div className="space-y-6 animate-fadeIn text-left">
+      {/* Page Heading */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-200/80 dark:border-slate-800/80 pb-4">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <Badge status="info" size="sm">
+              AI Security Scanner
+            </Badge>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
+            Threat Classification
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
+            Instant multi-vector detection for suspicious SMS messages, phishing emails, and deceptive URLs.
+          </p>
         </div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-          Detect Scams &amp; Phishing
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-1 max-w-2xl leading-relaxed">
-          Screen suspicious text messages, full emails, or web hyperlinks using specialized machine learning and deep sequence modeling.
-        </p>
       </div>
 
-      {/* Main Detection Workspace & Assistant Column */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column: Interactive Input Canvas & Results (col-span-8) */}
-        <div className="lg:col-span-8 space-y-6">
-          <Card className="p-6 space-y-6 shadow-sm">
+      {/* Main Detection Workspace: Side-by-Side 2 Columns (Input on Left, Result on Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left Column: Input Form (col-span-12 lg:col-span-6) */}
+        <div className="lg:col-span-6 space-y-4">
+          <Card className="p-5 sm:p-6 space-y-5 shadow-sm border border-slate-200/90 dark:border-slate-800">
             {/* Segmented Channel Selection Tabs */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100 dark:border-slate-800">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <DetectionTabs activeTab={activeTab} onChange={handleTabChange} />
-              <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider hidden sm:block">
-                Channel: {activeTab}
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 hidden sm:block font-mono">
+                {activeTab}
               </span>
             </div>
 
@@ -183,11 +185,13 @@ export default function Detect() {
               />
             )}
 
-            {/* Sample Test Phrases Selector */}
-            <DetectionExamples onSelect={handleSelectExample} />
+            {/* Context-aware Test Samples */}
+            <DetectionExamples activeTab={activeTab} onSelect={handleSelectExample} />
           </Card>
+        </div>
 
-          {/* Prominent Detection Result Section */}
+        {/* Right Column: Prominently Highlighted Result Card (col-span-12 lg:col-span-6) */}
+        <div className="lg:col-span-6">
           <DetectionResult
             status={analysisStatus}
             result={analysisResult}
@@ -195,112 +199,6 @@ export default function Detect() {
             onRetry={handleAnalyze}
             onReset={handleReset}
           />
-        </div>
-
-        {/* Right Column: Threat Telemetry & Security Guidance (col-span-4) */}
-        <div className="lg:col-span-4 space-y-6">
-          {/* Card 1: Vector Inspection Guide */}
-          <Card className="p-6 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              Supported Vectors
-            </h3>
-
-            <div className="space-y-3.5">
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <MessageSquare className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    SMS &amp; Text Messages
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Evaluates smishing urgency, courier scams, and prize alerts.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <Mail className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    {isDLDisabled ? 'Emails (ML Engine)' : 'Emails (Dual-Engine)'}
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    {isDLDisabled
-                      ? 'Trained LinearSVC ML with TF-IDF n-gram vectorization.'
-                      : 'Choose LinearSVC ML or 128-unit Bi-LSTM sequence neural net.'}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 shadow-2xs">
-                  <LinkIcon className="w-4 h-4" />
-                </div>
-                <div>
-                  <h4 className="text-xs font-bold text-slate-900 dark:text-slate-100">
-                    Suspicious URLs
-                  </h4>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">
-                    Analyzes typosquatting, deceptive domain entropy, and paths.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 2: Privacy Assurance */}
-          <Card className="p-5 bg-gradient-to-b from-white to-blue-50/20 dark:from-[#0f172a] dark:to-blue-950/20 border-blue-100 dark:border-slate-800">
-            <div className="flex items-start gap-3">
-              <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Lock className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-xs font-bold text-slate-900 dark:text-white">
-                  Privacy-Preserving Telemetry
-                </p>
-                <p className="text-[11px] text-slate-600 dark:text-slate-300 mt-0.5 leading-relaxed">
-                  Guest analyses are evaluated entirely in ephemeral memory. Scans are only persisted to PostgreSQL when authenticated.
-                </p>
-              </div>
-            </div>
-          </Card>
-
-          {/* Card 3: Model Architecture Telemetry */}
-          <Card className="p-5">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800 mb-3">
-              <span className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
-                <Zap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
-                Active Model Pipeline
-              </span>
-              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-semibold">
-                Online
-              </span>
-            </div>
-            <ul className="space-y-2 text-[11px] text-slate-600 dark:text-slate-400">
-              <li className="flex items-center justify-between">
-                <span>Email ML:</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200">LinearSVC + TF-IDF</span>
-              </li>
-              {!isDLDisabled && (
-                <li className="flex items-center justify-between">
-                  <span>Email DL:</span>
-                  <span className="font-mono text-slate-800 dark:text-slate-200">Bi-LSTM (Keras)</span>
-                </li>
-              )}
-              <li className="flex items-center justify-between">
-                <span>SMS Spam:</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200">LinearSVC Pipeline</span>
-              </li>
-              <li className="flex items-center justify-between">
-                <span>URL Scanner:</span>
-                <span className="font-mono text-slate-800 dark:text-slate-200">XGBoost Classifier</span>
-              </li>
-            </ul>
-          </Card>
         </div>
       </div>
     </div>

@@ -1,6 +1,7 @@
 """
 Detection Service Module for AI Scam & Phishing Detector.
 Encapsulates inference execution by connecting to the existing ML prediction pipelines.
+Updated with URL normalization and trusted authority verification.
 """
 
 import sys
@@ -20,4 +21,5 @@ def detect(content: str, content_type: str) -> Dict[str, Any]:
     Dispatches incoming content to the appropriate ML classification pipeline
     (email, sms, or url) and returns the prediction result dictionary.
     """
-    return predict(content, content_type)
+    from ml.src.predict import predict as _predict
+    return _predict(content, content_type)

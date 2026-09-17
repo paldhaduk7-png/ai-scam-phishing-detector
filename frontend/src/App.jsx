@@ -18,10 +18,14 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 
 const router = createBrowserRouter([
-  // Public Landing Page
+  // Public Landing & About Pages
   {
     path: '/',
     element: <Home />,
+  },
+  {
+    path: '/about',
+    element: <About />,
   },
   // Public Auth Pages (Guarded by GuestRoute: logged-in users redirected to /dashboard)
   {
@@ -57,10 +61,6 @@ const router = createBrowserRouter([
       {
         path: 'detect',
         element: <Detect />,
-      },
-      {
-        path: 'about',
-        element: <About />,
       },
       // Protected Pages (Authentication strictly required)
       {

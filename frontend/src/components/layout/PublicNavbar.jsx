@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { Shield, Menu, X, LogOut, LayoutDashboard, Sun, Moon } from 'lucide-react';
 import Button from '../common/Button';
@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 export default function PublicNavbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { isDark, toggleTheme } = useTheme();
@@ -19,6 +20,14 @@ export default function PublicNavbar() {
     toast.success('Signed out successfully.');
     navigate('/');
   };
+
+  const isActive = (path) => location.pathname === path;
+  const linkClass = (path) =>
+    `text-sm transition-colors ${
+      isActive(path)
+        ? 'font-bold text-blue-600 dark:text-blue-400'
+        : 'font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400'
+    }`;
 
   return (
     <header className="sticky top-0 z-40 bg-white/85 dark:bg-[#090d16]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
@@ -40,54 +49,34 @@ export default function PublicNavbar() {
 
         {/* Desktop Navigation Links */}
         <nav className="hidden md:flex items-center gap-7">
-          <Link
-            to="/"
-            className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
+          <Link to="/" className={linkClass('/')}>
             Home
           </Link>
-          <Link
-            to="/detect"
-            className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-          >
+          <Link to="/detect" className={linkClass('/detect')}>
             Detect
+          </Link>
+          <Link to="/about" className={linkClass('/about')}>
+            About
           </Link>
           {isAuthenticated ? (
             <>
-              <Link
-                to="/dashboard"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
+              <Link to="/dashboard" className={linkClass('/dashboard')}>
                 Dashboard
               </Link>
-              <Link
-                to="/history"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
+              <Link to="/history" className={linkClass('/history')}>
                 History
               </Link>
-              <Link
-                to="/profile"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
+              <Link to="/profile" className={linkClass('/profile')}>
                 Profile
               </Link>
             </>
           ) : (
-            <>
-              <a
-                href="/#features"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                Features
-              </a>
-              <Link
-                to="/about"
-                className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
-              >
-                About
-              </Link>
-            </>
+            <a
+              href="/#features"
+              className="text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              Features
+            </a>
           )}
         </nav>
 
@@ -199,6 +188,13 @@ export default function PublicNavbar() {
           >
             Detect Threats
           </Link>
+          <Link
+            to="/about"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
+          >
+            About
+          </Link>
           {isAuthenticated ? (
             <>
               <Link
@@ -242,13 +238,6 @@ export default function PublicNavbar() {
               >
                 Features
               </a>
-              <Link
-                to="/about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-              >
-                About Platform
-              </Link>
               <div className="pt-2 flex flex-col gap-2">
                 <Button
                   variant="outline"
