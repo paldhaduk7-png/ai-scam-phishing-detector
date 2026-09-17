@@ -12,8 +12,6 @@ import {
   AlertCircle,
   LogOut,
   Loader2,
-  ShieldCheck,
-  CheckCircle2,
   Lock,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -243,28 +241,6 @@ export default function ProfileForm() {
               Sign Out of Account
             </Button>
           </div>
-        </Card>
-
-        {/* Security Posture Note */}
-        <Card className="p-5 bg-slate-50/60 dark:bg-slate-900/40 border border-slate-200/60 dark:border-slate-800/80 space-y-3">
-          <div className="flex items-center gap-2 text-slate-900 dark:text-white font-bold text-xs uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <span>Account Security</span>
-          </div>
-          <ul className="space-y-2 text-xs text-slate-600 dark:text-slate-400">
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>HTTP-only JWT cookie authentication</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>bcrypt salted password storage</span>
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
-              <span>Isolated personal detection history</span>
-            </li>
-          </ul>
         </Card>
       </div>
 

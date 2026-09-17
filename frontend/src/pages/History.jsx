@@ -17,7 +17,6 @@ import {
   Calendar,
   Trash2,
   Plus,
-  Activity,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -151,10 +150,6 @@ export default function History() {
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
               Detection History
             </h1>
-            <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 px-2.5 py-0.5 rounded-full font-mono">
-              <Activity className="w-3 h-3 text-blue-500" />
-              PostgreSQL Audit Log
-            </span>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
             Review, inspect, and manage historical scan assessments across email, SMS, and web channels.

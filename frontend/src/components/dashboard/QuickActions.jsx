@@ -39,7 +39,7 @@ export default function QuickActions() {
     },
     {
       label: 'View History',
-      description: 'PostgreSQL audit logs',
+      description: 'Audit logs & scan records',
       icon: Clock,
       path: '/history',
       color:
