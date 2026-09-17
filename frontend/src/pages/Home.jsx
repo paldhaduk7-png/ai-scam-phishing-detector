@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import PublicNavbar from '../components/layout/PublicNavbar';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
@@ -17,10 +18,12 @@ import {
   History,
   Activity,
   CheckCircle2,
+  LayoutDashboard,
 } from 'lucide-react';
 
 export default function Home() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   const trustItems = [
     {
@@ -445,14 +448,26 @@ export default function Home() {
                 >
                   Start Scanning Now
                 </Button>
-                <Button
-                  variant="outline"
-                  size="lg"
-                  onClick={() => navigate('/register')}
-                  className="rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold"
-                >
-                  Create Account
-                </Button>
+                {isAuthenticated ? (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => navigate('/dashboard')}
+                    className="rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold flex items-center gap-2"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Go to Dashboard</span>
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    onClick={() => navigate('/register')}
+                    className="rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold"
+                  >
+                    Create Account
+                  </Button>
+                )}
               </div>
             </div>
           </div>
