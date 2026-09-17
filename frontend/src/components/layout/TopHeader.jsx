@@ -19,6 +19,8 @@ import {
   Clock,
   ArrowRight,
   Loader2,
+  Star,
+  Settings,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { logoutUser } from '../../store/slices/authSlice';
@@ -112,6 +114,7 @@ export default function TopHeader({ onToggleSidebar, title }) {
     { label: 'Malicious URL Scanner', hint: 'Inspect deceptive web domains & links', path: '/detect?tab=url', icon: LinkIcon },
     { label: 'Security Dashboard', hint: 'Threat intelligence & scan telemetry', path: '/dashboard', icon: LayoutDashboard },
     { label: 'Detection History', hint: 'Review historical scans and audit records', path: '/history', icon: Clock },
+    { label: 'Starred History', hint: 'Saved & bookmarked threat assessments', path: '/history?tab=starred', icon: Star },
     { label: 'User Account Profile', hint: 'Manage user credentials and settings', path: '/profile', icon: User },
   ];
 
@@ -456,6 +459,22 @@ export default function TopHeader({ onToggleSidebar, title }) {
                         className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors"
                       >
                         <User className="w-4 h-4 text-indigo-500" />
+                        <span>My Profile</span>
+                      </Link>
+                      <Link
+                        to="/history?tab=starred"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-amber-600 dark:text-amber-400 hover:bg-amber-50/70 dark:hover:bg-amber-950/40 transition-colors"
+                      >
+                        <Star className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+                        <span className="font-semibold">Starred History</span>
+                      </Link>
+                      <Link
+                        to="/profile"
+                        onClick={() => setMenuOpen(false)}
+                        className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-colors"
+                      >
+                        <Settings className="w-4 h-4 text-slate-500" />
                         <span>Account Settings</span>
                       </Link>
                     </div>

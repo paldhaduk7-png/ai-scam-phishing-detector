@@ -13,12 +13,16 @@ import {
   ChevronRight,
   Clock,
   ShieldCheck,
+  Star,
 } from 'lucide-react';
 
 export default function HistoryTable({
   items = [],
   onView,
   onDelete,
+  onToggleStar,
+  isStarredView = false,
+  onSwitchToScanHistory,
   currentPage = 1,
   totalPages = 1,
   onPageChange,
@@ -169,6 +173,25 @@ export default function HistoryTable({
                         <div className="inline-flex items-center gap-1.5">
                           <button
                             type="button"
+                            onClick={() => onToggleStar?.(item)}
+                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                              item.is_starred
+                                ? 'text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700/60 shadow-sm'
+                                : 'text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60'
+                            }`}
+                            title={item.is_starred ? 'Remove from Starred History' : 'Move to Starred History'}
+                          >
+                            <Star
+                              className={`w-3.5 h-3.5 ${
+                                item.is_starred
+                                  ? 'fill-amber-400 text-amber-500'
+                                  : 'text-slate-400 group-hover:text-amber-500'
+                              }`}
+                            />
+                            <span>{item.is_starred ? 'Starred' : 'Star'}</span>
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => onView?.(item)}
                             className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors cursor-pointer"
                             title="Inspect scan details"
@@ -214,22 +237,34 @@ export default function HistoryTable({
                   ? Math.max(0, Math.min(100, confidence))
                   : null;
 
+              const isPhish =
+                result.toLowerCase() === 'phishing' ||
+                result.toLowerCase() === 'malicious' ||
+                item.is_phishing;
+              const isSusp =
+                result.toLowerCase() === 'suspicious' ||
+                (!isPhish && numRisk >= 40);
+
               return (
                 <div
                   key={item.id || index}
-                  className="p-4 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 space-y-2.5"
+                  className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2.5 shadow-sm"
                 >
                   <div className="flex items-center justify-between gap-2">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
-                      {getTypeIcon(type)}
-                      <span>{getTypeLabel(type)}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800">
+                        {getTypeIcon(type)}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
+                        {getTypeLabel(type)}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Badge status={result} size="sm">
                         {result}
                       </Badge>
                       {numRisk !== null && (
-                        <span className="font-mono font-bold text-xs text-slate-600 dark:text-slate-300">
+                        <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
                           {numRisk.toFixed(1)}%
                         </span>
                       )}
@@ -246,6 +281,23 @@ export default function HistoryTable({
                   <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
                     <span>{formatDateTime(item)}</span>
                     <div className="inline-flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onToggleStar?.(item)}
+                        className={`font-semibold inline-flex items-center gap-1 py-1 ${
+                          item.is_starred
+                            ? 'text-amber-600 dark:text-amber-400'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-amber-600'
+                        }`}
+                        title={item.is_starred ? 'Remove from Starred History' : 'Move to Starred History'}
+                      >
+                        <Star
+                          className={`w-3.5 h-3.5 ${
+                            item.is_starred ? 'fill-amber-400 text-amber-500' : ''
+                          }`}
+                        />
+                        <span>{item.is_starred ? 'Starred' : 'Star'}</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => onView?.(item)}
@@ -302,16 +354,28 @@ export default function HistoryTable({
         </>
       ) : (
         <div className="py-14">
-          <EmptyState
-            icon={Clock}
-            title="No Detection Records Found"
-            description="No past scan records matched your criteria. Analyze an email, SMS, or URL to record audit history."
-            actionText="Start New Threat Scan"
-            onAction={() => navigate('/detect')}
-          />
+          {isStarredView ? (
+            <EmptyState
+              icon={Star}
+              title="No Starred Scans Yet"
+              description="Click the Star button on any scan in your Scan History to save it here for quick access."
+              actionText="Browse Scan History"
+              onAction={() => {
+                if (onSwitchToScanHistory) onSwitchToScanHistory();
+                else navigate('/history');
+              }}
+            />
+          ) : (
+            <EmptyState
+              icon={Clock}
+              title="No Detection Records Found"
+              description="No past scan records matched your criteria. Analyze an email, SMS, or URL to record audit history."
+              actionText="Start New Threat Scan"
+              onAction={() => navigate('/detect')}
+            />
+          )}
         </div>
       )}
     </Card>
   );
 }
-

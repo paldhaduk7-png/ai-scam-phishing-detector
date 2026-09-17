@@ -205,4 +205,12 @@ export const clearAllDetectionHistory = async () => {
   return response.data;
 };
 
+/**
+ * Toggle star / bookmark status on a detection record.
+ */
+export const toggleStarDetection = async (id) => {
+  const response = await api.patch(`/detections/history/${id}/star`);
+  return response.data;
+};
+
 export default api;

@@ -9,6 +9,7 @@ import {
   getDetectionHistory,
   deleteDetectionRecord,
   clearAllDetectionHistory,
+  toggleStarDetection,
 } from '../services/api';
 import {
   MessageSquare,
@@ -21,12 +22,16 @@ import {
   Calendar,
   Trash2,
   Plus,
+  Star,
+  Clock,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function History() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = searchParams.get('tab') === 'starred' ? 'starred' : 'all';
+
   const [historyItems, setHistoryItems] = useState([]);
   const [typeFilter, setTypeFilter] = useState('all');
   const [resultFilter, setResultFilter] = useState('all');
@@ -60,6 +65,7 @@ export default function History() {
           date: dateFilter || undefined,
           search: searchQuery || undefined,
           page: currentPage,
+          starred: activeTab === 'starred' ? true : false,
         });
 
         if (response && Array.isArray(response.items)) {
@@ -74,7 +80,44 @@ export default function History() {
     };
 
     fetchHistory();
-  }, [typeFilter, resultFilter, dateFilter, searchQuery, currentPage]);
+  }, [typeFilter, resultFilter, dateFilter, searchQuery, currentPage, activeTab]);
+
+  const handleTabChange = (tabKey) => {
+    const nextParams = new URLSearchParams(searchParams);
+    if (tabKey === 'starred') {
+      nextParams.set('tab', 'starred');
+    } else {
+      nextParams.delete('tab');
+    }
+    setSearchParams(nextParams);
+    setCurrentPage(1);
+  };
+
+  const handleToggleStar = async (item) => {
+    if (!item?.id) return;
+    try {
+      const res = await toggleStarDetection(item.id);
+      const isNowStarred = res?.is_starred ?? !item.is_starred;
+
+      // As per user specification:
+      // When starred in normal history: removed from normal history and moved to starred history.
+      // When unstarred in starred history: removed from starred history and moved back to scan history.
+      setHistoryItems((prev) => prev.filter((i) => i.id !== item.id));
+
+      if (isNowStarred) {
+        toast.success('Moved to Starred History ⭐', {
+          description: 'This scan is now saved in your Starred History tab.',
+        });
+      } else {
+        toast.success('Removed from Starred History', {
+          description: 'This scan has been moved back to your general Scan History.',
+        });
+      }
+    } catch (err) {
+      console.error('Error toggling star:', err);
+      toast.error('Failed to update star status. Please try again.');
+    }
+  };
 
   const handleView = (item) => {
     setViewItem(item);
@@ -177,12 +220,28 @@ export default function History() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2.5 flex-wrap">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
-              Detection History
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight flex items-center gap-2.5">
+              {activeTab === 'starred' ? (
+                <>
+                  <span className="p-1.5 rounded-xl bg-amber-100/80 dark:bg-amber-950/60 border border-amber-200 dark:border-amber-800/60 text-amber-600 dark:text-amber-400">
+                    <Star className="w-5 h-5 fill-amber-400 text-amber-500" />
+                  </span>
+                  <span>Starred History</span>
+                </>
+              ) : (
+                <>
+                  <span className="p-1.5 rounded-xl bg-blue-100/80 dark:bg-blue-950/60 border border-blue-200 dark:border-blue-800/60 text-blue-600 dark:text-blue-400">
+                    <Clock className="w-5 h-5" />
+                  </span>
+                  <span>Scan History</span>
+                </>
+              )}
             </h1>
           </div>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
-            Review, inspect, and manage historical scan assessments across email, SMS, and web channels.
+            {activeTab === 'starred'
+              ? 'Quickly access and inspect all saved high-priority messages and threat assessments.'
+              : 'Review, inspect, and manage historical scan assessments across email, SMS, and web channels.'}
           </p>
         </div>
 
@@ -211,6 +270,39 @@ export default function History() {
         </div>
       </div>
 
+      {/* View Switcher Tabs: Scan History vs Starred History */}
+      <div className="flex items-center gap-1.5 p-1 bg-slate-100/90 dark:bg-slate-900/90 rounded-2xl border border-slate-200/80 dark:border-slate-800/80 w-fit">
+        <button
+          type="button"
+          onClick={() => handleTabChange('all')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            activeTab !== 'starred'
+              ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          <Clock className="w-4 h-4" />
+          <span>Scan History</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => handleTabChange('starred')}
+          className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
+            activeTab === 'starred'
+              ? 'bg-white dark:bg-slate-800 text-amber-600 dark:text-amber-400 shadow-xs'
+              : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+          }`}
+        >
+          <Star
+            className={`w-4 h-4 ${
+              activeTab === 'starred' ? 'fill-amber-400 text-amber-500' : ''
+            }`}
+          />
+          <span>Starred History</span>
+        </button>
+      </div>
+
       {/* Filters Bar */}
       <HistoryFilters
         typeFilter={typeFilter}
@@ -228,6 +320,9 @@ export default function History() {
         items={historyItems}
         onView={handleView}
         onDelete={handleDeletePrompt}
+        onToggleStar={handleToggleStar}
+        isStarredView={activeTab === 'starred'}
+        onSwitchToScanHistory={() => handleTabChange('all')}
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={setCurrentPage}
