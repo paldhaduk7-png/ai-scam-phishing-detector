@@ -8,7 +8,7 @@ from datetime import datetime, timezone, timedelta
 import logging
 from typing import Any, Dict, List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import Date, cast, desc
+from sqlalchemy import Date, cast, desc, or_
 from sqlalchemy.orm import Session
 
 from app.database import get_db
@@ -56,6 +56,7 @@ def _format_detection(d: Detection) -> DetectionHistoryItem:
         confidence=round(d.risk_percentage, 2),
         is_phishing=d.is_phishing,
         is_spam=d.is_spam,
+        is_starred=bool(getattr(d, "is_starred", False)),
         model_used=d.model_used,
         created_at=iso_date,
         date_time=formatted_date,
@@ -78,6 +79,7 @@ def get_user_detection_history(
     result: Optional[str] = Query(None, description="Filter by result: safe, suspicious, or phishing"),
     search: Optional[str] = Query(None, description="Search term in input text"),
     date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
+    starred: Optional[bool] = Query(None, description="Filter by starred status"),
     page: int = Query(1, ge=1, description="Page number"),
     limit: int = Query(10, ge=1, le=50, description="Items per page"),
     current_user: User = Depends(get_current_user),
@@ -87,6 +89,11 @@ def get_user_detection_history(
     Returns only detection records belonging to the authenticated user.
     """
     query = db.query(Detection).filter(Detection.user_id == current_user.id)
+
+    if starred is True:
+        query = query.filter(Detection.is_starred == True)
+    elif starred is False:
+        query = query.filter(or_(Detection.is_starred == False, Detection.is_starred == None))
 
     if type and type != "all":
         t = type.lower()
@@ -187,6 +194,43 @@ def delete_user_detection(
     db.delete(record)
     db.commit()
     return {"message": "Record deleted successfully."}
+
+
+@router.patch(
+    "/detections/history/{detection_id}/star",
+    summary="Toggle star status on a detection record",
+)
+@router.patch(
+    "/history/{detection_id}/star",
+    include_in_schema=False,
+)
+def toggle_star_detection(
+    detection_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Toggles the is_starred status of a detection record belonging to current_user.
+    """
+    record = (
+        db.query(Detection)
+        .filter(Detection.id == detection_id, Detection.user_id == current_user.id)
+        .first()
+    )
+    if not record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Detection record not found or unauthorized.",
+        )
+
+    current_star = bool(getattr(record, "is_starred", False))
+    record.is_starred = not current_star
+    db.commit()
+    return {
+        "id": record.id,
+        "is_starred": record.is_starred,
+        "message": "Detection starred." if record.is_starred else "Detection unstarred.",
+    }
 
 
 @router.get(

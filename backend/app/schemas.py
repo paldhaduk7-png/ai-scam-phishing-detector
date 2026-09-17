@@ -295,6 +295,7 @@ class DetectionHistoryItem(BaseModel):
     confidence: float
     is_phishing: bool
     is_spam: Optional[bool] = None
+    is_starred: bool = False
     model_used: str
     created_at: str
     date_time: str

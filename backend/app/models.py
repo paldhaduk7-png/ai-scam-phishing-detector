@@ -77,6 +77,7 @@ class Detection(Base):
     risk_percentage: Mapped[float] = mapped_column(Float, nullable=False)
     is_phishing: Mapped[bool] = mapped_column(Boolean, nullable=False)
     is_spam: Mapped[Optional[bool]] = mapped_column(Boolean, nullable=True)
+    is_starred: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     model_used: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),

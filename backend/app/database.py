@@ -36,11 +36,13 @@ from app import models
 
 Base.metadata.create_all(bind=engine)
 
-# Safely ensure detections has user_id foreign key column
+# Safely ensure detections has user_id and is_starred columns
 with engine.connect() as _conn:
     try:
         _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id) ON DELETE SET NULL;"))
         _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_user_id ON detections(user_id);"))
+        _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS is_starred BOOLEAN DEFAULT FALSE;"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_is_starred ON detections(is_starred);"))
         _conn.commit()
     except Exception:
         _conn.rollback()
