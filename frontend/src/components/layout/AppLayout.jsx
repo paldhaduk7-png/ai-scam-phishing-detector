@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import TopHeader from './TopHeader';
+import BottomNav from './BottomNav';
 
 /**
  * AppLayout provides the primary application frame for authenticated
@@ -37,7 +38,7 @@ export default function AppLayout() {
       />
 
       {/* Main Content Column */}
-      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-[padding] duration-300">
+      <div className="flex-1 flex flex-col min-w-0 lg:pl-64 transition-[padding] duration-300 pb-16 lg:pb-0">
         <TopHeader
           title={getPageTitle(location.pathname)}
           onToggleSidebar={() => setIsSidebarOpen((prev) => !prev)}
@@ -47,6 +48,10 @@ export default function AppLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Mobile Persistent Bottom Navigation Bar */}
+      <BottomNav />
     </div>
   );
 }
+
