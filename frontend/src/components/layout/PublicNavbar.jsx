@@ -31,7 +31,7 @@ export default function PublicNavbar() {
 
   return (
     <header className="sticky top-0 z-40 bg-white/85 dark:bg-[#090d16]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-18 flex items-center justify-between">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform shrink-0">
@@ -173,7 +173,7 @@ export default function PublicNavbar() {
 
       {/* Mobile Drawer */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0b101b]/95 backdrop-blur-md px-4 pt-3 pb-5 space-y-2 animate-fadeIn">
+        <div className="md:hidden border-t border-slate-200 dark:border-slate-800 bg-white/95 dark:bg-[#0b101b]/95 backdrop-blur-md px-4 pt-3 pb-5 space-y-2 animate-fadeIn max-h-[calc(100vh-4rem)] overflow-y-auto">
           <Link
             to="/"
             onClick={() => setMobileMenuOpen(false)}

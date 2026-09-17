@@ -335,8 +335,8 @@ export default function Register() {
           </div>
 
           {/* RIGHT COLUMN: Wide & Vertically Compact Registration Card */}
-          <div className="w-full max-w-[540px] lg:w-[480px] xl:w-[510px] 2xl:w-[540px] shrink-0">
-            <div className="w-full bg-white dark:bg-[#0f172a] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 px-7 sm:px-8 py-5 sm:py-6">
+          <div className="w-full max-w-[540px] lg:w-[480px] xl:w-[510px] 2xl:w-[540px] shrink-0 mx-auto lg:mx-0">
+            <div className="w-full bg-white dark:bg-[#0f172a] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 px-4 sm:px-8 py-5 sm:py-6">
               {/* 1. Blue Account Icon */}
               <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-1.5">
                 <User className="w-5 h-5 stroke-[2.2]" />

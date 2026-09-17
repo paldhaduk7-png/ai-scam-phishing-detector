@@ -41,13 +41,16 @@ export default function History() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  const urlSearch = searchParams.get('search');
+  const [prevUrlSearch, setPrevUrlSearch] = useState(urlSearch);
+
   // Sync searchQuery if URL param changes
-  useEffect(() => {
-    const q = searchParams.get('search');
-    if (q !== null && q !== searchQuery) {
-      setSearchQuery(q);
+  if (urlSearch !== prevUrlSearch) {
+    setPrevUrlSearch(urlSearch);
+    if (urlSearch !== null) {
+      setSearchQuery(urlSearch);
     }
-  }, [searchParams]);
+  }
 
   // Modal states
   const [itemToDelete, setItemToDelete] = useState(null);
@@ -383,7 +386,7 @@ export default function History() {
             <div
               role="dialog"
               aria-modal="true"
-              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden space-y-5"
+              className="relative z-10 w-full max-w-lg bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-5 sm:p-7 text-left transform transition-all animate-scaleUp overflow-y-auto max-h-[calc(100vh-2rem)] space-y-4 sm:space-y-5"
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">

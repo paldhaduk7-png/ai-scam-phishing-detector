@@ -176,8 +176,8 @@ export default function ForgotPassword() {
   return (
     <div className="min-h-screen bg-[#f8fafc] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Header */}
-      <header className="w-full px-6 lg:px-12 py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#0b101b]/70 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
-        <Link to="/" className="flex items-center gap-3 group focus-visible:outline-none">
+      <header className="w-full px-4 sm:px-6 lg:px-12 py-3 sm:py-4 border-b border-slate-200/80 dark:border-slate-800/80 bg-white/70 dark:bg-[#0b101b]/70 backdrop-blur-md sticky top-0 z-30 flex items-center justify-between">
+        <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group focus-visible:outline-none">
           <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-md shadow-blue-600/20 group-hover:scale-105 transition-transform shrink-0">
             <Shield className="w-5 h-5 fill-white/20 stroke-white stroke-[2.2]" />
           </div>
@@ -191,7 +191,7 @@ export default function ForgotPassword() {
           </div>
         </Link>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => {
@@ -210,7 +210,7 @@ export default function ForgotPassword() {
 
           <Link
             to="/login"
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline px-2"
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-blue-600 dark:text-blue-400 hover:underline px-1 sm:px-2"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Back to Login</span>
@@ -219,9 +219,9 @@ export default function ForgotPassword() {
       </header>
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-16 flex flex-col items-center justify-center">
+      <main className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-16 flex flex-col items-center justify-center">
         <div className="w-full max-w-md">
-          <Card className="p-7 sm:p-9 shadow-lg dark:shadow-2xl">
+          <Card className="p-5 sm:p-9 shadow-lg dark:shadow-2xl">
             {/* Step Indicators */}
             {step < 4 && (
               <div className="flex items-center justify-center gap-2 mb-6">
@@ -364,7 +364,7 @@ export default function ForgotPassword() {
                         if (error) setError('');
                       }}
                       placeholder="000000"
-                      className="w-full text-center tracking-[8px] sm:tracking-[12px] font-mono text-2xl sm:text-3xl font-bold py-3 bg-slate-50 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-blue-600 dark:text-blue-400 placeholder-slate-300 dark:placeholder-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
+                      className="w-full text-center tracking-[6px] sm:tracking-[12px] font-mono text-xl sm:text-3xl font-bold py-3 bg-slate-50 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl text-blue-600 dark:text-blue-400 placeholder-slate-300 dark:placeholder-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
                     />
                   </div>
 
@@ -380,7 +380,7 @@ export default function ForgotPassword() {
                   </Button>
                 </form>
 
-                <div className="mt-5 flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
+                <div className="mt-5 flex flex-wrap items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
                   <button
                     type="button"
                     onClick={() => setStep(1)}

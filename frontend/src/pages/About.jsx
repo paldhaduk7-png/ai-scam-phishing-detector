@@ -221,7 +221,7 @@ export default function About() {
         </div>
 
         {/* Action Callout */}
-        <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-blue-600/20 text-left">
+        <div className="p-6 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-lg shadow-blue-600/20 text-left">
           <div className="space-y-1">
             <h3 className="text-lg font-extrabold text-white">
               Ready to verify suspicious content?
@@ -234,7 +234,7 @@ export default function About() {
             variant="secondary"
             size="md"
             onClick={() => navigate('/detect')}
-            className="rounded-xl font-bold bg-white text-blue-700 hover:bg-slate-100 shrink-0 shadow-md"
+            className="w-full sm:w-auto rounded-xl font-bold bg-white text-blue-700 hover:bg-slate-100 shrink-0 shadow-md justify-center"
           >
             <span>Launch Threat Scanner</span>
             <ArrowRight className="w-4 h-4 ml-1.5" />

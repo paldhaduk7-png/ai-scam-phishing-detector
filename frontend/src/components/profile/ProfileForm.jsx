@@ -315,13 +315,13 @@ export default function ProfileForm() {
             </div>
 
             {/* Submit Actions */}
-            <div className="pt-5 border-t border-slate-100 dark:border-slate-800 flex justify-end">
+            <div className="pt-5 border-t border-slate-100 dark:border-slate-800 flex justify-stretch sm:justify-end">
               <Button
                 type="submit"
                 variant="primary"
                 size="md"
                 disabled={profileLoading}
-                className="px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs"
+                className="w-full sm:w-auto px-6 py-2.5 text-sm font-semibold rounded-xl shadow-xs justify-center"
               >
                 {profileLoading ? 'Saving Changes...' : 'Save Profile Changes'}
               </Button>

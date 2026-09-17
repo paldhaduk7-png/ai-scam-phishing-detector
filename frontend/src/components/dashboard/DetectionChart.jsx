@@ -119,10 +119,10 @@ export default function DetectionChart({ data = null }) {
       </div>
 
       {/* Chart Body */}
-      <div className="flex-1 flex items-center justify-center min-h-[240px] pt-6">
+      <div className="flex-1 flex items-center justify-center min-h-[240px] pt-6 overflow-x-auto">
         {hasActivity ? (
-          <div className="w-full flex flex-col justify-between h-[230px]">
-            <div className="flex-1 flex items-end justify-between gap-2 sm:gap-4 px-2 pb-2">
+          <div className="w-full flex flex-col justify-between h-[230px] min-w-[260px]">
+            <div className="flex-1 flex items-end justify-between gap-1 sm:gap-4 px-1 sm:px-2 pb-2">
               {points.map((pt, idx) => {
                 const total = pt.total || 0;
                 const safe = pt.safe || 0;

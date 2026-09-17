@@ -138,34 +138,34 @@ export default function Home() {
       <PublicNavbar />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-18 lg:pt-18 lg:pb-24 bg-grid-pattern">
+      <section className="relative overflow-hidden pt-10 pb-14 sm:pt-16 sm:pb-20 lg:pt-18 lg:pb-24 bg-grid-pattern">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             {/* Left Hero Content */}
-            <div className="lg:col-span-7 space-y-6 text-left">
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 text-blue-700 dark:text-blue-300 text-xs font-semibold shadow-2xs">
                 <span className="w-1.5 h-1.5 rounded-full bg-blue-600 dark:bg-blue-400 animate-pulse" />
                 <span>AI-Powered Cybersecurity Telemetry</span>
               </div>
 
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 dark:text-white tracking-tight leading-[1.12]">
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-slate-950 dark:text-white tracking-tight leading-[1.12]">
                 Detect Scams &amp; Phishing Before You Click
               </h1>
 
-              <p className="text-lg sm:text-xl font-medium text-slate-700 dark:text-slate-300 leading-snug">
+              <p className="text-base sm:text-xl font-medium text-slate-700 dark:text-slate-300 leading-snug">
                 Unified protection across Emails, SMS messages, and Web Links using dual Machine Learning &amp; Deep Learning models.
               </p>
 
-              <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
+              <p className="text-xs sm:text-base text-slate-600 dark:text-slate-400 max-w-xl leading-relaxed">
                 ScamShield analyzes deceptive language, spoofed identities, urgency triggers, and malicious domains in real time to help individuals and teams prevent credential theft and social engineering fraud.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3.5 pt-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5 pt-2">
                 <Button
                   variant="primary"
                   size="lg"
                   onClick={() => navigate('/detect')}
-                  className="rounded-xl px-7 shadow-md shadow-blue-600/25 group font-semibold text-sm sm:text-base"
+                  className="w-full sm:w-auto rounded-xl px-7 shadow-md shadow-blue-600/25 group font-semibold text-sm sm:text-base justify-center"
                 >
                   <span>Launch Threat Scanner</span>
                   <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
@@ -178,7 +178,7 @@ export default function Home() {
                     const el = document.getElementById('features');
                     el?.scrollIntoView({ behavior: 'smooth' });
                   }}
-                  className="rounded-xl px-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm sm:text-base shadow-2xs"
+                  className="w-full sm:w-auto rounded-xl px-6 bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-200 font-semibold text-sm sm:text-base shadow-2xs justify-center"
                 >
                   Explore Capabilities
                 </Button>
@@ -439,12 +439,12 @@ export default function Home() {
               <p className="text-sm sm:text-base text-blue-100 leading-relaxed">
                 Scan emails, SMS alerts, and web addresses with instant AI analysis. Keep your personal data, bank accounts, and passwords safe.
               </p>
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-4">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 pt-4">
                 <Button
                   variant="secondary"
                   size="lg"
                   onClick={() => navigate('/detect')}
-                  className="rounded-xl px-7 bg-white text-blue-700 hover:bg-slate-100 font-bold shadow-md"
+                  className="w-full sm:w-auto rounded-xl px-7 bg-white text-blue-700 hover:bg-slate-100 font-bold shadow-md justify-center"
                 >
                   Start Scanning Now
                 </Button>
@@ -453,7 +453,7 @@ export default function Home() {
                     variant="outline"
                     size="lg"
                     onClick={() => navigate('/dashboard')}
-                    className="rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold flex items-center gap-2"
+                    className="w-full sm:w-auto rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold flex items-center justify-center gap-2"
                   >
                     <LayoutDashboard className="w-4 h-4" />
                     <span>Go to Dashboard</span>
@@ -463,7 +463,7 @@ export default function Home() {
                     variant="outline"
                     size="lg"
                     onClick={() => navigate('/register')}
-                    className="rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold"
+                    className="w-full sm:w-auto rounded-xl px-6 border-white/40 text-white hover:bg-white/10 font-bold justify-center"
                   >
                     Create Account
                   </Button>

@@ -19,7 +19,7 @@ import { logoutUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../context/ThemeContext';
 import ConfirmModal from '../common/ConfirmModal';
 
-export default function TopHeader({ onToggleSidebar, title }) {
+export default function TopHeader({ onToggleSidebar, title: _title }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { user, isAuthenticated } = useSelector((state) => state.auth);
@@ -66,10 +66,10 @@ export default function TopHeader({ onToggleSidebar, title }) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/85 dark:bg-[#0b101b]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-4 sm:px-6 lg:px-8 py-3 transition-colors">
-        <div className="flex items-center justify-between gap-4 max-w-7xl mx-auto w-full">
+      <header className="sticky top-0 z-30 bg-white/85 dark:bg-[#0b101b]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-colors">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 max-w-7xl mx-auto w-full">
           {/* Left Section: Mobile Menu Toggle + System Status Indicator */}
-          <div className="flex items-center gap-3 sm:gap-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <button
               type="button"
               onClick={onToggleSidebar}
@@ -81,7 +81,7 @@ export default function TopHeader({ onToggleSidebar, title }) {
 
             {/* System Status Indicator Badge */}
             <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/60 shadow-2xs select-none cursor-default"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/70 dark:border-emerald-800/60 shadow-2xs select-none cursor-default"
               role="status"
               aria-label="System status: All Systems Operational"
             >
@@ -89,8 +89,11 @@ export default function TopHeader({ onToggleSidebar, title }) {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500" />
               </span>
-              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 tracking-tight whitespace-nowrap">
+              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 tracking-tight whitespace-nowrap hidden sm:inline">
                 All Systems Operational
+              </span>
+              <span className="text-xs font-semibold text-emerald-800 dark:text-emerald-300 tracking-tight whitespace-nowrap sm:hidden">
+                Online
               </span>
             </div>
           </div>
@@ -157,7 +160,7 @@ export default function TopHeader({ onToggleSidebar, title }) {
 
                 {/* Dropdown Card */}
                 {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 animate-scaleUp">
+                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 animate-scaleUp">
                     {/* User Header */}
                     <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                       <p className="text-xs font-bold text-slate-900 dark:text-white truncate">

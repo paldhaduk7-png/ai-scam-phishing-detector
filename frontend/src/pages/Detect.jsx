@@ -199,7 +199,7 @@ export default function Detect() {
       </div>
 
       {/* Bottom Option: View Detection History */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
             <Clock className="w-5 h-5" />
@@ -221,7 +221,7 @@ export default function Detect() {
           variant="primary"
           size="sm"
           onClick={() => navigate('/history')}
-          className="rounded-xl font-semibold text-xs px-5 py-2.5 shadow-sm shrink-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+          className="w-full sm:w-auto rounded-xl font-semibold text-xs px-5 py-2.5 shadow-sm shrink-0 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
         >
           <Clock className="w-3.5 h-3.5" />
           <span>Go to Scan History</span>

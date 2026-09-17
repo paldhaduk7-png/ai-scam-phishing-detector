@@ -118,33 +118,33 @@ export default function Dashboard() {
         {/* User Identity Banner (8 cols) */}
         <Card className="lg:col-span-8 p-6 flex flex-col justify-between relative overflow-hidden">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
               {user?.profile_photo ? (
                 <div className="relative shrink-0">
                   <img
                     src={user.profile_photo}
                     alt={user.name || 'User'}
-                    className="w-16 h-16 rounded-2xl object-cover ring-2 ring-blue-500/30 shadow-md"
+                    className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl object-cover ring-2 ring-blue-500/30 shadow-md"
                   />
                   <span
-                    className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs"
+                    className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs"
                     title="Active User Session"
                   />
                 </div>
               ) : (
                 <div className="relative shrink-0">
-                  <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-xl shadow-md ring-2 ring-blue-500/30">
+                  <div className="w-13 h-13 sm:w-16 sm:h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center font-bold text-lg sm:text-xl shadow-md ring-2 ring-blue-500/30">
                     {user?.name ? user.name.substring(0, 2).toUpperCase() : 'U'}
                   </div>
                   <span
-                    className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs"
+                    className="absolute -bottom-1 -right-1 w-3.5 h-3.5 sm:w-4 sm:h-4 bg-emerald-500 border-2 border-white dark:border-slate-900 rounded-full shadow-xs"
                     title="Active User Session"
                   />
                 </div>
               )}
-              <div className="space-y-1">
+              <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight">
+                  <h2 className="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white tracking-tight truncate">
                     Welcome back, {user?.name || 'User'}
                   </h2>
                   <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full">
@@ -152,7 +152,7 @@ export default function Dashboard() {
                     Authenticated
                   </span>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono">
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono truncate">
                   {user?.email || 'Active session'}
                 </p>
                 <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 leading-relaxed pt-0.5">

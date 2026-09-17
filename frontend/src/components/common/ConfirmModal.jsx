@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { LogOut, X, Loader2 } from 'lucide-react';
 
@@ -14,12 +14,6 @@ export default function ConfirmModal({
   variant = 'danger',
   loading = false,
 }) {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   // Close on Escape key press
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -43,7 +37,7 @@ export default function ConfirmModal({
     };
   }, [isOpen]);
 
-  if (!isOpen || !mounted) return null;
+  if (!isOpen || typeof document === 'undefined') return null;
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
@@ -59,7 +53,7 @@ export default function ConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
-        className="relative z-10 w-full max-w-md bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp overflow-hidden"
+        className="relative z-10 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp"
       >
         {/* Subtle decorative glow */}
         <div

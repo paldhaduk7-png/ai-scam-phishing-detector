@@ -237,14 +237,6 @@ export default function HistoryTable({
                   ? Math.max(0, Math.min(100, confidence))
                   : null;
 
-              const isPhish =
-                result.toLowerCase() === 'phishing' ||
-                result.toLowerCase() === 'malicious' ||
-                item.is_phishing;
-              const isSusp =
-                result.toLowerCase() === 'suspicious' ||
-                (!isPhish && numRisk >= 40);
-
               return (
                 <div
                   key={item.id || index}

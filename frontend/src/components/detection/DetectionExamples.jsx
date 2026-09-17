@@ -42,12 +42,12 @@ export default function DetectionExamples({ activeTab = 'message', onSelect }) {
             key={idx}
             type="button"
             onClick={() => onSelect?.(ex)}
-            className="px-2.5 py-1 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 border border-slate-200/70 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-800/70 transition-all duration-150 cursor-pointer shadow-2xs active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30"
+            className="max-w-full px-2.5 py-1 rounded-xl text-xs font-medium text-slate-700 dark:text-slate-300 bg-slate-100/80 dark:bg-slate-800/80 hover:bg-blue-50 dark:hover:bg-blue-950/50 hover:text-blue-700 dark:hover:text-blue-300 border border-slate-200/70 dark:border-slate-700/60 hover:border-blue-300 dark:hover:border-blue-800/70 transition-all duration-150 cursor-pointer shadow-2xs active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 truncate"
           >
-            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 mr-1.5">
+            <span className="text-[10px] uppercase font-bold text-blue-600 dark:text-blue-400 mr-1.5 shrink-0">
               {ex.label}:
             </span>
-            <span className="truncate max-w-[180px] inline-block align-bottom font-mono text-[11px]">
+            <span className="truncate max-w-[120px] sm:max-w-[180px] inline-block align-bottom font-mono text-[11px]">
               {ex.text}
             </span>
           </button>

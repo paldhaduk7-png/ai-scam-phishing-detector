@@ -29,7 +29,7 @@ export default function HistoryFilters({
     <Card className="p-4 sm:p-5">
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-3 w-full">
         {/* Search Input */}
-        <div className="relative flex-1 min-w-[200px]">
+        <div className="relative flex-1 min-w-0">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
           <input
             type="text"

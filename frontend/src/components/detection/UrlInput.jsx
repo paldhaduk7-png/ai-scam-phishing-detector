@@ -56,7 +56,7 @@ export default function UrlInput({
           icon={Search}
           isLoading={isLoading}
           disabled={!value.trim() || isLoading}
-          className="px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25 justify-center"
         >
           Scan URL
         </Button>

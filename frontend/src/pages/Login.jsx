@@ -338,10 +338,9 @@ export default function Login() {
 
           {/* RIGHT LOGIN CARD (~460px wide, exactly matching reference) */}
           <div
-            className="w-full max-w-[460px] lg:w-[460px] shrink-0 relative flex items-center justify-center"
-            style={{ minWidth: '320px' }}
+            className="w-full max-w-[460px] lg:w-[460px] shrink-0 relative flex items-center justify-center mx-auto lg:mx-0"
           >
-            <div className="w-full bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-8">
+            <div className="w-full bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-5 sm:p-8">
               {/* Top Lock Badge */}
               <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-3">
                 <Lock className="w-5 h-5 stroke-[2.2]" />

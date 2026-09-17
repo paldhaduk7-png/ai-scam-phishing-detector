@@ -78,7 +78,7 @@ export default function EmailInput({
       {/* Action Row: Engine Selector + Analyze Email Button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
         {!isDLDisabled ? (
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2">
             <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0">
               Engine:
             </span>
@@ -134,7 +134,7 @@ export default function EmailInput({
           icon={Search}
           isLoading={isLoading}
           disabled={(!subject.trim() && !content.trim()) || isLoading}
-          className="px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25 shrink-0"
+          className="w-full sm:w-auto px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25 shrink-0 justify-center"
         >
           Analyze Email
         </Button>

@@ -33,11 +33,11 @@ export default function DetectionResult({
   // 1. Idle State: Clean ready-to-scan card
   if (status === 'idle') {
     return (
-      <Card className="flex flex-col items-center justify-center p-8 text-center min-h-[420px] border border-dashed border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30">
-        <div className="w-16 h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-4 shadow-sm">
-          <Shield className="w-8 h-8" />
+      <Card className="flex flex-col items-center justify-center p-6 sm:p-8 text-center min-h-[280px] sm:min-h-[420px] border border-dashed border-slate-300 dark:border-slate-800 bg-white/50 dark:bg-slate-900/30">
+        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-200/70 dark:border-blue-800/60 flex items-center justify-center text-blue-600 dark:text-blue-400 mb-3 sm:mb-4 shadow-sm">
+          <Shield className="w-7 h-7 sm:w-8 sm:h-8" />
         </div>
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-1.5">
+        <h3 className="text-base sm:text-lg font-bold text-slate-900 dark:text-white mb-1.5">
           Ready for Threat Analysis
         </h3>
         <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed mb-5">
@@ -80,7 +80,7 @@ export default function DetectionResult({
   // 2. Loading State: High-tech scanning radar
   if (status === 'loading') {
     return (
-      <Card className="flex flex-col items-center justify-center p-8 text-center min-h-[420px] animate-fadeIn border border-blue-200/60 dark:border-blue-900/40 bg-white/70 dark:bg-slate-900/60">
+      <Card className="flex flex-col items-center justify-center p-6 sm:p-8 text-center min-h-[280px] sm:min-h-[420px] animate-fadeIn border border-blue-200/60 dark:border-blue-900/40 bg-white/70 dark:bg-slate-900/60">
         <div className="relative w-16 h-16 mb-4 flex items-center justify-center">
           <div className="absolute inset-0 rounded-2xl bg-blue-600/15 dark:bg-blue-500/20 animate-ping" />
           <div className="relative w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-lg shadow-blue-500/25">
@@ -103,7 +103,7 @@ export default function DetectionResult({
   // 3. Error State: Clean highlighted error card
   if (status === 'error') {
     return (
-      <Card className="p-6 text-left border border-red-200 dark:border-red-900/60 bg-red-50/70 dark:bg-red-950/30 animate-fadeIn min-h-[420px] flex flex-col justify-center">
+      <Card className="p-5 sm:p-6 text-left border border-red-200 dark:border-red-900/60 bg-red-50/70 dark:bg-red-950/30 animate-fadeIn min-h-[280px] sm:min-h-[420px] flex flex-col justify-center">
         <div className="flex items-start gap-3.5">
           <div className="p-2.5 rounded-xl bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 shrink-0 mt-0.5">
             <AlertCircle className="w-6 h-6" />
@@ -219,12 +219,12 @@ export default function DetectionResult({
         {/* Prominent Highlighted Verdict Card */}
         <div className={`p-5 sm:p-6 rounded-2xl ${verdictStyles.card} space-y-4 transition-all`}>
           {/* Header Row: Icon + Verdict Title + Badge + Reset */}
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+            <div className="flex items-start gap-3 min-w-0">
               <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${verdictStyles.iconBox}`}>
                 <VerdictIcon className="w-6 h-6" />
               </div>
-              <div>
+              <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
                   <h3 className={`text-lg sm:text-xl font-extrabold tracking-tight ${verdictStyles.titleColor}`}>
                     {classification}
@@ -239,7 +239,7 @@ export default function DetectionResult({
               </div>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
               <Button
                 variant="outline"
                 size="sm"
@@ -304,9 +304,9 @@ export default function DetectionResult({
           </div>
 
           {/* Footer Metadata & View History Action */}
-          <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
-            <span className="flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+          <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[11px] text-slate-500 dark:text-slate-400">
+            <span className="flex items-center gap-1.5 flex-wrap">
+              <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>{result.score_type || 'Machine Learning Pipeline'}</span>
               {result.score !== null && result.score !== undefined && (
                 <span className="font-mono text-[10px] ml-1">Raw: {Number(result.score).toFixed(4)}</span>
@@ -315,7 +315,7 @@ export default function DetectionResult({
             <button
               type="button"
               onClick={() => navigate('/history')}
-              className="inline-flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer"
+              className="inline-flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer self-start sm:self-auto"
             >
               <Clock className="w-3.5 h-3.5" />
               <span>View History</span>
