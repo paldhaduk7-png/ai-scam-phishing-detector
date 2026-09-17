@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import DetectionTabs from '../components/detection/DetectionTabs';
 import MessageInput from '../components/detection/MessageInput';
 import EmailInput from '../components/detection/EmailInput';
@@ -8,20 +8,16 @@ import DetectionExamples from '../components/detection/DetectionExamples';
 import DetectionResult from '../components/detection/DetectionResult';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
+import Button from '../components/common/Button';
+import { Clock, ArrowRight } from 'lucide-react';
 import { detectScam, detectEmailDL } from '../services/api';
-import {
-  MessageSquare,
-  Mail,
-  Link as LinkIcon,
-  Zap,
-  Lock,
-} from 'lucide-react';
 
 const isDLDisabled =
   import.meta.env.VITE_DISABLE_DL === 'true' ||
   (import.meta.env.PROD && import.meta.env.VITE_DISABLE_DL !== 'false');
 
 export default function Detect() {
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const rawTab = searchParams.get('tab');
@@ -200,6 +196,37 @@ export default function Detect() {
             onReset={handleReset}
           />
         </div>
+      </div>
+
+      {/* Bottom Option: View Detection History */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-50 to-blue-50/40 dark:from-slate-900 dark:to-blue-950/20 border border-slate-200/90 dark:border-slate-800 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-blue-500/20">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <h4 className="text-sm font-bold text-slate-950 dark:text-white flex items-center gap-2">
+              <span>View Detection History</span>
+              <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/60 text-blue-700 dark:text-blue-300">
+                Audit Log
+              </span>
+            </h4>
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+              Access your saved scans, past threats, severity scores, and timestamped classification records.
+            </p>
+          </div>
+        </div>
+
+        <Button
+          variant="primary"
+          size="sm"
+          onClick={() => navigate('/history')}
+          className="rounded-xl font-semibold text-xs px-5 py-2.5 shadow-sm shrink-0 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
+        >
+          <Clock className="w-3.5 h-3.5" />
+          <span>Go to Scan History</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Button>
       </div>
     </div>
   );

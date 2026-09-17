@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import Badge from '../common/Badge';
@@ -6,13 +7,13 @@ import {
   AlertTriangle,
   ShieldCheck,
   AlertCircle,
-  Search,
   CheckCircle2,
   RotateCcw,
   Cpu,
   Activity,
   Shield,
-  Zap,
+  Clock,
+  ArrowRight,
 } from 'lucide-react';
 
 /**
@@ -27,6 +28,8 @@ export default function DetectionResult({
   onRetry,
   onReset,
 }) {
+  const navigate = useNavigate();
+
   // 1. Idle State: Clean ready-to-scan card
   if (status === 'idle') {
     return (
@@ -41,7 +44,7 @@ export default function DetectionResult({
           Enter text or a URL on the left and click Scan to see real-time AI security scoring and risk verdict here.
         </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xs text-left">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full max-w-xs text-left mb-5">
           <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-100/70 dark:bg-slate-800/50 text-[11px] font-medium text-slate-600 dark:text-slate-300">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
             <span>Phishing detection</span>
@@ -59,6 +62,17 @@ export default function DetectionResult({
             <span>Instant risk meter</span>
           </div>
         </div>
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => navigate('/history')}
+          className="rounded-xl text-xs font-semibold px-4 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 border-slate-300 dark:border-slate-700 shadow-2xs text-slate-700 dark:text-slate-200"
+        >
+          <Clock className="w-3.5 h-3.5 mr-1.5 text-blue-600 dark:text-blue-400" />
+          <span>View Scan History</span>
+          <ArrowRight className="w-3 h-3 ml-1.5" />
+        </Button>
       </Card>
     );
   }
@@ -225,17 +239,28 @@ export default function DetectionResult({
               </div>
             </div>
 
-            {onReset && (
+            <div className="flex items-center gap-1.5 shrink-0">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={onReset}
-                icon={RotateCcw}
-                className="rounded-xl text-xs shrink-0 bg-white/90 dark:bg-slate-900/90 border-slate-300 dark:border-slate-700 hover:bg-white"
+                onClick={() => navigate('/history')}
+                icon={Clock}
+                className="rounded-xl text-xs bg-white/90 dark:bg-slate-900/90 border-slate-300 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
               >
-                Reset
+                History
               </Button>
-            )}
+              {onReset && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={onReset}
+                  icon={RotateCcw}
+                  className="rounded-xl text-xs bg-white/90 dark:bg-slate-900/90 border-slate-300 dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800"
+                >
+                  Reset
+                </Button>
+              )}
+            </div>
           </div>
 
           {/* Prominent Threat Severity Score Gauge */}
@@ -278,15 +303,24 @@ export default function DetectionResult({
             </ul>
           </div>
 
-          {/* Footer Metadata Badge */}
-          <div className="pt-2 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
+          {/* Footer Metadata & View History Action */}
+          <div className="pt-2.5 border-t border-slate-200/60 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
             <span className="flex items-center gap-1.5">
               <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
               <span>{result.score_type || 'Machine Learning Pipeline'}</span>
+              {result.score !== null && result.score !== undefined && (
+                <span className="font-mono text-[10px] ml-1">Raw: {Number(result.score).toFixed(4)}</span>
+              )}
             </span>
-            {result.score !== null && result.score !== undefined && (
-              <span className="font-mono text-[10px]">Raw: {Number(result.score).toFixed(4)}</span>
-            )}
+            <button
+              type="button"
+              onClick={() => navigate('/history')}
+              className="inline-flex items-center gap-1 font-bold text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:underline cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5" />
+              <span>View History</span>
+              <ArrowRight className="w-3 h-3" />
+            </button>
           </div>
         </div>
       </div>
