@@ -140,7 +140,7 @@ export default function Detect() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         {/* Left Column: Input Form (col-span-12 lg:col-span-6) */}
         <div className="lg:col-span-6 space-y-4">
-          <Card className="p-5 sm:p-6 space-y-5 shadow-sm border border-slate-200/90 dark:border-slate-800">
+          <Card className="p-5 space-y-4 shadow-sm border border-slate-200/90 dark:border-slate-800">
             {/* Segmented Channel Selection Tabs */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <DetectionTabs activeTab={activeTab} onChange={handleTabChange} />

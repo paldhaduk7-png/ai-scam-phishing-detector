@@ -33,7 +33,7 @@ export default function EmailInput({
       <div>
         <label
           htmlFor="email-subject-input"
-          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 mb-2"
+          className="flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200 mb-1.5"
         >
           <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>Email Subject (Optional)</span>
@@ -44,13 +44,13 @@ export default function EmailInput({
           value={subject}
           onChange={(e) => onSubjectChange?.(e.target.value)}
           placeholder="e.g. URGENT: Verification required for your account access"
-          className="w-full px-4 py-2.5 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all duration-150"
+          className="w-full px-4 py-2 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all duration-150"
         />
       </div>
 
       {/* Email Body Content */}
       <div>
-        <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center justify-between mb-1.5">
           <label
             htmlFor="email-body-input"
             className="block text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
@@ -65,82 +65,68 @@ export default function EmailInput({
         <div className="relative">
           <textarea
             id="email-body-input"
-            rows={5}
+            rows={4}
             maxLength={maxLength}
             value={content}
             onChange={(e) => onContentChange?.(e.target.value)}
             placeholder="Paste full email text, including headers or suspicious link references..."
-            className="w-full p-4 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
+            className="w-full p-3.5 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
           />
         </div>
       </div>
 
-      {/* Email Model Selection Segmented Controls */}
-      {!isDLDisabled ? (
-        <div className="p-3 rounded-2xl bg-slate-100/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 space-y-2">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              AI Classification Engine
-            </span>
-            <span className="text-[11px] text-slate-500 dark:text-slate-400">
-              {emailModel === 'dl'
-                ? 'Deep Learning — Recurrent neural sequence analysis'
-                : 'Traditional ML — Fast TF-IDF + LinearSVC classification'}
-            </span>
-          </div>
-
-          <div
-            role="radiogroup"
-            aria-label="Detection Model"
-            className="grid grid-cols-2 gap-2"
-          >
-            <button
-              type="button"
-              role="radio"
-              aria-checked={emailModel === 'ml'}
-              onClick={() => onEmailModelChange?.('ml')}
-              className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
-                emailModel === 'ml'
-                  ? 'bg-white dark:bg-[#1e293b] text-blue-700 dark:text-blue-300 shadow-xs border border-blue-200/80 dark:border-blue-800/80 font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
-              }`}
-            >
-              <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-              <span>Traditional ML</span>
-            </button>
-
-            <button
-              type="button"
-              role="radio"
-              aria-checked={emailModel === 'dl'}
-              onClick={() => onEmailModelChange?.('dl')}
-              className={`flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-150 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 ${
-                emailModel === 'dl'
-                  ? 'bg-white dark:bg-[#1e293b] text-indigo-700 dark:text-indigo-300 shadow-xs border border-indigo-200/80 dark:border-indigo-800/80 font-bold'
-                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-800/50 border border-transparent'
-              }`}
-            >
-              <Sparkles className="w-4 h-4 text-indigo-600 dark:text-indigo-400 shrink-0" />
-              <span>Bi-LSTM Neural Net</span>
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="p-3 rounded-2xl bg-slate-100/60 dark:bg-slate-900/50 border border-slate-200/70 dark:border-slate-800 flex items-center justify-between">
+      {/* Action Row: Engine Selector + Analyze Email Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-1">
+        {!isDLDisabled ? (
           <div className="flex items-center gap-2">
-            <Cpu className="w-4 h-4 text-blue-600 dark:text-blue-400 shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
-              AI Classification Engine
+            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 shrink-0">
+              Engine:
             </span>
-          </div>
-          <span className="text-xs font-semibold text-blue-700 dark:text-blue-300">
-            Traditional ML (TF-IDF + LinearSVC)
-          </span>
-        </div>
-      )}
+            <div
+              role="radiogroup"
+              aria-label="Detection Model"
+              className="inline-flex p-1 bg-slate-100/90 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-800 rounded-xl gap-1"
+            >
+              <button
+                type="button"
+                role="radio"
+                aria-checked={emailModel === 'ml'}
+                onClick={() => onEmailModelChange?.('ml')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  emailModel === 'ml'
+                    ? 'bg-white dark:bg-[#1e293b] text-blue-700 dark:text-blue-300 shadow-xs border border-slate-200/90 dark:border-slate-700 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="Traditional ML — Fast TF-IDF + LinearSVC classification"
+              >
+                <Cpu className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
+                <span>Traditional ML</span>
+              </button>
 
-      {/* Action Row */}
-      <div className="flex items-center justify-between pt-1">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={emailModel === 'dl'}
+                onClick={() => onEmailModelChange?.('dl')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-150 cursor-pointer ${
+                  emailModel === 'dl'
+                    ? 'bg-white dark:bg-[#1e293b] text-indigo-700 dark:text-indigo-300 shadow-xs border border-indigo-200/90 dark:border-indigo-800/80 font-bold'
+                    : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'
+                }`}
+                title="Bi-LSTM Neural Net — Deep Learning Sequence Analysis"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400 shrink-0" />
+                <span>Bi-LSTM Net</span>
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 font-medium">
+            <Cpu className="w-3.5 h-3.5 text-blue-500" />
+            <span>Traditional ML (TF-IDF + LinearSVC)</span>
+          </div>
+        )}
+
         <Button
           type="submit"
           variant="primary"
@@ -148,7 +134,7 @@ export default function EmailInput({
           icon={Search}
           isLoading={isLoading}
           disabled={(!subject.trim() && !content.trim()) || isLoading}
-          className="px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25"
+          className="px-6 py-2.5 rounded-xl font-semibold shadow-xs shadow-blue-600/25 shrink-0"
         >
           Analyze Email
         </Button>
