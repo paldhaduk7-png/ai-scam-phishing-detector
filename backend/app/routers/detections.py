@@ -131,6 +131,33 @@ def get_user_detection_history(
 
 
 @router.delete(
+    "/detections/history",
+    summary="Delete all detection records belonging to current user",
+)
+@router.delete(
+    "/history",
+    include_in_schema=False,
+)
+def clear_user_detection_history(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Deletes all detection records belonging to the authenticated user.
+    """
+    deleted_count = (
+        db.query(Detection)
+        .filter(Detection.user_id == current_user.id)
+        .delete(synchronize_session=False)
+    )
+    db.commit()
+    return {
+        "message": f"All detection history cleared successfully ({deleted_count} records removed).",
+        "deleted_count": deleted_count,
+    }
+
+
+@router.delete(
     "/detections/history/{detection_id}",
     summary="Delete a detection record belonging to current user",
 )

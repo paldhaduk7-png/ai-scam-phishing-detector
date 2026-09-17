@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import HistoryFilters from '../components/history/HistoryFilters';
 import HistoryTable from '../components/history/HistoryTable';
 import ConfirmModal from '../components/common/ConfirmModal';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
-import { getDetectionHistory, deleteDetectionRecord } from '../services/api';
+import {
+  getDetectionHistory,
+  deleteDetectionRecord,
+  clearAllDetectionHistory,
+} from '../services/api';
 import {
   MessageSquare,
   Mail,
@@ -22,17 +26,28 @@ import { toast } from 'sonner';
 
 export default function History() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [historyItems, setHistoryItems] = useState([]);
   const [typeFilter, setTypeFilter] = useState('all');
   const [resultFilter, setResultFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('search') || '');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+
+  // Sync searchQuery if URL param changes
+  useEffect(() => {
+    const q = searchParams.get('search');
+    if (q !== null && q !== searchQuery) {
+      setSearchQuery(q);
+    }
+  }, [searchParams]);
 
   // Modal states
   const [itemToDelete, setItemToDelete] = useState(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [showClearAllModal, setShowClearAllModal] = useState(false);
+  const [clearAllLoading, setClearAllLoading] = useState(false);
   const [viewItem, setViewItem] = useState(null);
   const [copied, setCopied] = useState(false);
 
@@ -82,6 +97,21 @@ export default function History() {
       toast.error('Unable to delete record. Service may be temporarily offline.');
     } finally {
       setDeleteLoading(false);
+    }
+  };
+
+  const handleConfirmClearAll = async () => {
+    setClearAllLoading(true);
+    try {
+      await clearAllDetectionHistory();
+      setHistoryItems([]);
+      setTotalPages(1);
+      toast.success('All detection history cleared successfully.');
+      setShowClearAllModal(false);
+    } catch {
+      toast.error('Unable to clear history. Service may be temporarily offline.');
+    } finally {
+      setClearAllLoading(false);
     }
   };
 
@@ -156,7 +186,19 @@ export default function History() {
           </p>
         </div>
 
-        <div className="self-start sm:self-auto">
+        <div className="self-start sm:self-auto flex items-center gap-2.5">
+          {historyItems.length > 0 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowClearAllModal(true)}
+              icon={Trash2}
+              className="rounded-xl border-red-200 dark:border-red-900/60 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 hover:border-red-300 dark:hover:border-red-800 font-semibold shadow-2xs"
+            >
+              Delete All
+            </Button>
+          )}
+
           <Button
             variant="primary"
             size="sm"
@@ -357,6 +399,31 @@ export default function History() {
         );
       })()}
 
+      {/* Delete Single Item Confirmation Modal */}
+      <ConfirmModal
+        isOpen={Boolean(itemToDelete)}
+        onClose={() => !deleteLoading && setItemToDelete(null)}
+        onConfirm={handleConfirmDelete}
+        loading={deleteLoading}
+        title="Delete Scan Record"
+        message="Are you sure you want to delete this scan record from your detection history? This action cannot be undone."
+        confirmText="Delete Record"
+        cancelText="Cancel"
+        icon={Trash2}
+      />
+
+      {/* Delete All History Confirmation Modal */}
+      <ConfirmModal
+        isOpen={showClearAllModal}
+        onClose={() => !clearAllLoading && setShowClearAllModal(false)}
+        onConfirm={handleConfirmClearAll}
+        loading={clearAllLoading}
+        title="Delete All Detection History?"
+        message="Are you sure you want to delete all historical detection scans? This action cannot be undone and will permanently remove all your past threat assessments."
+        confirmText="Delete All"
+        cancelText="Cancel"
+        icon={Trash2}
+      />
     </div>
   );
 }

@@ -197,4 +197,12 @@ export const deleteDetectionRecord = async (id) => {
   return response.data;
 };
 
+/**
+ * Delete all detection records for current user.
+ */
+export const clearAllDetectionHistory = async () => {
+  const response = await api.delete('/detections/history');
+  return response.data;
+};
+
 export default api;
