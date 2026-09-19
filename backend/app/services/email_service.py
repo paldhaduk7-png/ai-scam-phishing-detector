@@ -177,24 +177,26 @@ https://scamshield.ai
 </html>
 """
 
+    from_address = settings.mail_from or settings.mail_username
     msg = MIMEMultipart("alternative")
     msg["Subject"] = "ScamShield — Your Password Reset Code"
-    msg["From"] = settings.mail_from
+    msg["From"] = f"ScamShield <{from_address}>" if "<" not in from_address else from_address
     msg["To"] = to_email
 
     msg.attach(MIMEText(text_content, "plain", "utf-8"))
     msg.attach(MIMEText(html_content, "html", "utf-8"))
 
+    clean_pwd = settings.mail_password.replace(" ", "").strip()
     try:
         server = smtplib.SMTP(settings.mail_server, settings.mail_port, timeout=15)
         server.ehlo()
         server.starttls()
         server.ehlo()
-        server.login(settings.mail_username, settings.mail_password)
-        server.sendmail(settings.mail_from, [to_email], msg.as_string())
+        server.login(settings.mail_username, clean_pwd)
+        server.sendmail(from_address, [to_email], msg.as_string())
         server.quit()
-        logger.info("Password reset OTP email sent successfully to %s", to_email)
+        logger.info("Password reset OTP email sent successfully to %s via %s", to_email, settings.mail_server)
         return True
     except Exception as exc:
-        logger.error("Failed to deliver password reset OTP email to %s: %s", to_email, exc)
+        logger.error("Failed to deliver password reset OTP email to %s: %s (%s)", to_email, exc, type(exc).__name__, exc_info=True)
         return False

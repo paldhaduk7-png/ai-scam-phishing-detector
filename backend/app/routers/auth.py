@@ -13,6 +13,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Re
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import RedirectResponse
 from pydantic import ValidationError
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.config import settings
@@ -310,7 +311,8 @@ async def forgot_password(
     """
     generic_message = "If an account exists for this email, a 6-digit verification code has been sent."
 
-    user = db.query(User).filter(User.email == request.email).first()
+    clean_email = request.email.strip().lower()
+    user = db.query(User).filter(func.lower(User.email) == clean_email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -373,7 +375,8 @@ def verify_otp(
     Validates that the provided 6-digit OTP matches an active, unexpired record for this account.
     Returns a confirmation response allowing the user to proceed to setting a new password.
     """
-    user = db.query(User).filter(User.email == request.email).first()
+    clean_email = request.email.strip().lower()
+    user = db.query(User).filter(func.lower(User.email) == clean_email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -428,7 +431,8 @@ def reset_password(
     Consumes the single-use 6-digit OTP, validates 10-minute expiration,
     hashes the new password using existing bcrypt configuration, and updates the user record.
     """
-    user = db.query(User).filter(User.email == request.email).first()
+    clean_email = request.email.strip().lower()
+    user = db.query(User).filter(func.lower(User.email) == clean_email).first()
     if not user:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

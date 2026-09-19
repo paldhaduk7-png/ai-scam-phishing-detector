@@ -12,9 +12,9 @@ from dotenv import load_dotenv
 # Load backend/.env if present
 env_path = Path(__file__).resolve().parent.parent / ".env"
 if env_path.exists():
-    load_dotenv(dotenv_path=env_path)
+    load_dotenv(dotenv_path=env_path, override=True)
 else:
-    load_dotenv()
+    load_dotenv(override=True)
 
 API_TITLE_DEFAULT = "AI Scam & Phishing Detector API"
 API_VERSION_DEFAULT = "1.0.0"
@@ -108,10 +108,11 @@ class Settings:
         self.cloudinary_api_secret: str = os.getenv("CLOUDINARY_API_SECRET", "")
 
         # SMTP & Password Reset Email Settings
-        self.mail_username: str = os.getenv("MAIL_USERNAME", "")
-        self.mail_password: str = os.getenv("MAIL_PASSWORD", "")
-        self.mail_from: str = os.getenv("MAIL_FROM", os.getenv("MAIL_USERNAME", "no-reply@scamshield.ai"))
-        self.mail_server: str = os.getenv("MAIL_SERVER", "smtp.gmail.com")
+        self.mail_username: str = (os.getenv("MAIL_USERNAME") or "").strip()
+        # Clean app password (remove spaces often provided by Google like 'abcd efgh ijkl mnop')
+        self.mail_password: str = (os.getenv("MAIL_PASSWORD") or "").replace(" ", "").strip()
+        self.mail_from: str = (os.getenv("MAIL_FROM") or self.mail_username or "no-reply@scamshield.ai").strip()
+        self.mail_server: str = (os.getenv("MAIL_SERVER") or "smtp.gmail.com").strip()
         self.mail_port: int = int(os.getenv("MAIL_PORT", "587"))
 
         default_frontend = "https://ai-scam-phishing-detector.vercel.app" if is_render else "http://localhost:5173"
