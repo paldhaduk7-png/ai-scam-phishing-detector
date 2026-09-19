@@ -58,6 +58,9 @@ def _format_detection(d: Detection) -> DetectionHistoryItem:
         is_spam=d.is_spam,
         is_starred=bool(getattr(d, "is_starred", False)),
         model_used=d.model_used,
+        source=getattr(d, "source", None) or "manual",
+        sender=getattr(d, "sender", None),
+        subject=getattr(d, "subject", None),
         created_at=iso_date,
         date_time=formatted_date,
         timestamp=formatted_date,
@@ -76,6 +79,7 @@ def _format_detection(d: Detection) -> DetectionHistoryItem:
 )
 def get_user_detection_history(
     type: Optional[str] = Query(None, description="Filter by channel: email, sms, or url"),
+    source: Optional[str] = Query(None, description="Filter by source: manual or gmail"),
     result: Optional[str] = Query(None, description="Filter by result: safe, suspicious, or phishing"),
     search: Optional[str] = Query(None, description="Search term in input text"),
     date: Optional[str] = Query(None, description="Filter by date (YYYY-MM-DD)"),
@@ -118,10 +122,20 @@ def get_user_detection_history(
         except Exception:
             pass
 
+    if source and source != "all":
+        query = query.filter(Detection.source == source.lower())
+
     if search:
         s = search.strip()
         if s:
-            query = query.filter(Detection.input_text.ilike(f"%{s}%"))
+            pattern = f"%{s}%"
+            query = query.filter(
+                or_(
+                    Detection.input_text.ilike(pattern),
+                    Detection.subject.ilike(pattern),
+                    Detection.sender.ilike(pattern),
+                )
+            )
 
     total = query.count()
     offset = (page - 1) * limit
