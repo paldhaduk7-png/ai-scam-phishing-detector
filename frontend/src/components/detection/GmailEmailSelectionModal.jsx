@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   X,
   Search,
   Check,
-  CheckSquare,
-  Square,
   ArrowUpDown,
   ChevronDown,
   ShieldCheck,
@@ -115,6 +113,11 @@ export default function GmailEmailSelectionModal({
   const [connectedEmail, setConnectedEmail] = useState(initialEmail || '');
   const [selectedIds, setSelectedIds] = useState([]);
 
+  const connectedEmailRef = useRef(connectedEmail);
+  useEffect(() => {
+    connectedEmailRef.current = connectedEmail;
+  }, [connectedEmail]);
+
   // Search, Filter & Sort states
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all' | 'selected' | 'unselected'
@@ -128,24 +131,35 @@ export default function GmailEmailSelectionModal({
     setLoading(true);
     setError('');
     try {
-      // First ensure we have connected email address
-      if (!connectedEmail) {
-        const statusRes = await getGmailStatus();
-        if (statusRes?.email) {
-          setConnectedEmail(statusRes.email);
-        }
-      }
-
       const res = await getGmailMessages({ max_results: 25 });
       setMessages(res?.messages || []);
+
+      // If connectedEmail is missing, populate it quietly in the background
+      if (!connectedEmailRef.current) {
+        getGmailStatus()
+          .then((statusRes) => {
+            if (statusRes?.email) {
+              setConnectedEmail(statusRes.email);
+            }
+          })
+          .catch(() => {});
+      }
     } catch (err) {
       console.error('Failed to load Gmail messages for modal:', err);
       const detail = err?.response?.data?.detail;
-      setError(detail || 'Failed to load inbox emails from Gmail. Please try again.');
+      const errorMsg =
+        typeof detail === 'string'
+          ? detail
+          : Array.isArray(detail)
+          ? detail[0]?.msg || 'Validation error while loading messages.'
+          : err?.message === 'Network Error'
+          ? 'Network error: Cannot reach backend server. Please verify backend is accessible.'
+          : 'Failed to load inbox emails from Gmail. Please try again.';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, [connectedEmail]);
+  }, []);
 
   useEffect(() => {
     if (isOpen) {

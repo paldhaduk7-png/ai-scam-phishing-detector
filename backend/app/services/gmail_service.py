@@ -104,11 +104,16 @@ async def get_gmail_profile(access_token: str) -> Dict[str, Any]:
         return {}
 
 
-async def get_gmail_message_metadata(access_token: str, message_id: str) -> Dict[str, Any]:
+async def get_gmail_message_metadata(
+    access_token: str,
+    message_id: str,
+    client: Optional[httpx.AsyncClient] = None,
+) -> Dict[str, Any]:
     """
     Fetches only lightweight message metadata and headers (From, Subject, Date)
     without downloading the entire email MIME body.
     Endpoint: GET https://gmail.googleapis.com/gmail/v1/users/me/messages/{message_id}?format=metadata
+    Supports reusing an existing httpx.AsyncClient to benefit from connection pooling and HTTP/2 keep-alive.
     """
     headers = {"Authorization": f"Bearer {access_token}"}
     params = {
@@ -116,8 +121,24 @@ async def get_gmail_message_metadata(access_token: str, message_id: str) -> Dict
         "metadataHeaders": ["Subject", "From", "Date"],
     }
 
-    async with httpx.AsyncClient(timeout=15.0) as client:
+    if client is not None:
         response = await client.get(
+            f"{settings.gmail_api_base_url}/messages/{message_id}",
+            headers=headers,
+            params=params,
+        )
+        if response.status_code != 200:
+            logger.warning(
+                "Failed to fetch Gmail message metadata %s (status %d): %s",
+                message_id,
+                response.status_code,
+                response.text,
+            )
+            response.raise_for_status()
+        return response.json()
+
+    async with httpx.AsyncClient(timeout=15.0) as local_client:
+        response = await local_client.get(
             f"{settings.gmail_api_base_url}/messages/{message_id}",
             headers=headers,
             params=params,

@@ -27,19 +27,67 @@ const api = axios.create({
     'Content-Type': 'application/json',
   },
   withCredentials: true,
-  timeout: 45000,
+  timeout: 60000,
 });
 
-// Attach Bearer token to all outgoing requests if available in localStorage
-api.interceptors.request.use((config) => {
-  if (typeof window !== 'undefined') {
-    const token = localStorage.getItem('scamshield_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+// Attach Bearer token and enforce withCredentials on all outgoing requests
+api.interceptors.request.use(
+  (config) => {
+    // 1. Explicitly ensure withCredentials is true for cookie-based authentication
+    config.withCredentials = true;
+
+    // 2. Retrieve Bearer token from storage
+    if (typeof window !== 'undefined') {
+      const candidateToken =
+        localStorage.getItem('scamshield_token') ||
+        localStorage.getItem('access_token') ||
+        sessionStorage.getItem('scamshield_token') ||
+        sessionStorage.getItem('access_token');
+
+      if (candidateToken) {
+        let cleanToken = candidateToken.trim();
+        // Unwrap quotes if stored as stringified JSON
+        if (cleanToken.startsWith('"') && cleanToken.endsWith('"')) {
+          try {
+            cleanToken = JSON.parse(cleanToken);
+          } catch {
+            cleanToken = cleanToken.slice(1, -1);
+          }
+        }
+        if (cleanToken.startsWith('Bearer ')) {
+          cleanToken = cleanToken.slice(7).trim();
+        }
+
+        if (cleanToken) {
+          const authHeaderValue = `Bearer ${cleanToken}`;
+          // Set using AxiosHeaders set() method if present (Axios 1.x), otherwise assign directly
+          if (config.headers?.set) {
+            config.headers.set('Authorization', authHeaderValue);
+          } else if (config.headers) {
+            config.headers.Authorization = authHeaderValue;
+          } else {
+            config.headers = { Authorization: authHeaderValue };
+          }
+        }
+      }
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Response interceptor for consistent error handling
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      if (error.config?.url?.includes('/auth/me')) {
+        localStorage.removeItem('scamshield_token');
+      }
+    }
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
 // ==============================================================================
 // Authentication Endpoints
@@ -256,7 +304,7 @@ export const toggleStarDetection = async (id) => {
  * Checks current user's Gmail connection status.
  */
 export const getGmailStatus = async () => {
-  const response = await api.get('/gmail/status');
+  const response = await api.get('/gmail/status', { withCredentials: true });
   return response.data;
 };
 
@@ -264,7 +312,7 @@ export const getGmailStatus = async () => {
  * Disconnects Gmail integration and clears session tokens.
  */
 export const disconnectGmail = async () => {
-  const response = await api.post('/gmail/disconnect');
+  const response = await api.post('/gmail/disconnect', {}, { withCredentials: true });
   return response.data;
 };
 
@@ -274,7 +322,10 @@ export const disconnectGmail = async () => {
  * @returns {Promise<{ count: number, messages: Array }>}
  */
 export const getGmailMessages = async (params = {}) => {
-  const response = await api.get('/gmail/messages', { params });
+  const response = await api.get('/gmail/messages', {
+    params,
+    withCredentials: true,
+  });
   return response.data;
 };
 
@@ -287,7 +338,7 @@ export const startGmailAnalysis = async (messageIds = null) => {
   const payload = messageIds && Array.isArray(messageIds) && messageIds.length > 0
     ? { message_ids: messageIds }
     : {};
-  const response = await api.post('/gmail/analysis/start', payload);
+  const response = await api.post('/gmail/analysis/start', payload, { withCredentials: true });
   return response.data;
 };
 
@@ -295,7 +346,7 @@ export const startGmailAnalysis = async (messageIds = null) => {
  * Discovers any active or recently completed Gmail analysis job.
  */
 export const getActiveGmailAnalysis = async () => {
-  const response = await api.get('/gmail/analysis/active');
+  const response = await api.get('/gmail/analysis/active', { withCredentials: true });
   return response.data;
 };
 
@@ -303,7 +354,7 @@ export const getActiveGmailAnalysis = async () => {
  * Polls live progress of a Gmail analysis job by ID.
  */
 export const getGmailAnalysisProgress = async (jobId) => {
-  const response = await api.get(`/gmail/analysis/progress/${jobId}`);
+  const response = await api.get(`/gmail/analysis/progress/${jobId}`, { withCredentials: true });
   return response.data;
 };
 
@@ -311,7 +362,7 @@ export const getGmailAnalysisProgress = async (jobId) => {
  * Explicitly cancels an ongoing Gmail analysis job.
  */
 export const cancelGmailAnalysis = async (jobId) => {
-  const response = await api.post(`/gmail/analysis/cancel/${jobId}`);
+  const response = await api.post(`/gmail/analysis/cancel/${jobId}`, {}, { withCredentials: true });
   return response.data;
 };
 

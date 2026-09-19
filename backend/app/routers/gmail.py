@@ -658,30 +658,37 @@ async def list_messages(
         )
 
     messages_meta = raw_list.get("messages", [])
-    items: List[Dict[str, Any]] = []
-    for m in messages_meta:
-        msg_id = m.get("id")
-        if not msg_id:
-            continue
-        try:
-            meta_msg = await get_gmail_message_metadata(access_token, msg_id)
-            parsed = parse_gmail_message(meta_msg)
-            items.append({
-                "id": parsed["id"],
-                "subject": parsed["subject"],
-                "from": parsed["from"],
-                "date": parsed["date"],
-                "snippet": parsed["snippet"],
-            })
-        except Exception as exc:
-            logger.warning("Failed to fetch metadata for message %s: %s", msg_id, exc)
-            items.append({
-                "id": msg_id,
-                "subject": "Email",
-                "from": "Unknown",
-                "date": "",
-                "snippet": "",
-            })
+    semaphore = asyncio.Semaphore(10)
+
+    async with httpx.AsyncClient(timeout=20.0) as client:
+        async def _fetch_meta(m: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+            msg_id = m.get("id")
+            if not msg_id:
+                return None
+            async with semaphore:
+                try:
+                    meta_msg = await get_gmail_message_metadata(access_token, msg_id, client=client)
+                    parsed = parse_gmail_message(meta_msg)
+                    return {
+                        "id": parsed["id"],
+                        "subject": parsed["subject"],
+                        "from": parsed["from"],
+                        "date": parsed["date"],
+                        "snippet": parsed["snippet"],
+                    }
+                except Exception as exc:
+                    logger.warning("Failed to fetch metadata for message %s: %s", msg_id, exc)
+                    return {
+                        "id": msg_id,
+                        "subject": "Email",
+                        "from": "Unknown",
+                        "date": "",
+                        "snippet": "",
+                    }
+
+        tasks = [_fetch_meta(m) for m in messages_meta]
+        results = await asyncio.gather(*tasks)
+        items = [r for r in results if r is not None]
 
     return {
         "count": len(items),

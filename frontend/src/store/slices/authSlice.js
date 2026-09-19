@@ -145,6 +145,9 @@ const authSlice = createSlice({
         state.loading = false;
         state.initialized = true;
         state.error = null;
+        if (action.payload?.access_token && typeof window !== 'undefined') {
+          localStorage.setItem('scamshield_token', action.payload.access_token);
+        }
       })
       .addCase(checkAuth.rejected, (state) => {
         state.user = null;

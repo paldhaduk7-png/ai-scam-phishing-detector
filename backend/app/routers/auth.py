@@ -215,8 +215,10 @@ def get_current_user_profile(
 ) -> UserResponse:
     """
     Reads the JWT from the HTTP-only cookie and returns the current user profile.
+    Includes fresh Bearer access_token for frontend Authorization header synchronization.
     """
-    return _format_user(current_user)
+    token = create_access_token(current_user.id)
+    return _format_user(current_user, token=token)
 
 
 @router.put(
