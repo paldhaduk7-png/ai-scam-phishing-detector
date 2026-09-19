@@ -1,8 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Lock, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
-import { getApiBaseUrl, getGmailStatus, startGmailAnalysis, disconnectGmail } from '../../services/api';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  Lock,
+  CheckCircle2,
+  ArrowRight,
+  Loader2,
+  Mail,
+  LogOut,
+  Sparkles,
+} from 'lucide-react';
+import {
+  getApiBaseUrl,
+  getGmailStatus,
+  startGmailAnalysis,
+  disconnectGmail,
+} from '../../services/api';
+import GmailEmailSelectionModal from './GmailEmailSelectionModal';
 
-function GoogleIcon({ className = 'w-3.5 h-3.5' }) {
+function GoogleIcon({ className = 'w-4 h-4' }) {
   return (
     <svg className={className} viewBox="0 0 24 24">
       <path
@@ -25,61 +39,184 @@ function GoogleIcon({ className = 'w-3.5 h-3.5' }) {
   );
 }
 
-export default function GmailImportCard({ onConnect, onJobStarted }) {
+export default function GmailImportCard({
+  onConnect,
+  onJobStarted,
+  autoOpenModal = false,
+  onModalStateChange,
+}) {
   const [isConnected, setIsConnected] = useState(false);
+  const [connectedEmail, setConnectedEmail] = useState(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
 
-  useEffect(() => {
-    let isMounted = true;
-    const check = async () => {
-      try {
-        const res = await getGmailStatus();
-        if (isMounted && res?.connected) {
-          setIsConnected(true);
-        }
-      } catch {
-        // Backend not reached or not connected
+  const checkStatus = useCallback(async () => {
+    setCheckingStatus(true);
+    try {
+      const res = await getGmailStatus();
+      if (res?.connected) {
+        setIsConnected(true);
+        setConnectedEmail(res?.email || null);
+      } else {
+        setIsConnected(false);
+        setConnectedEmail(null);
       }
-    };
-    check();
-    return () => {
-      isMounted = false;
-    };
+    } catch {
+      setIsConnected(false);
+    } finally {
+      setCheckingStatus(false);
+    }
   }, []);
 
-  const handleConnect = async () => {
-    if (isConnected) {
-      // Already authorized, start scanning
-      setActionLoading(true);
-      try {
-        const job = await startGmailAnalysis();
-        if (onJobStarted) {
-          onJobStarted(job);
-        }
-      } catch (err) {
-        console.error('Failed to start Gmail analysis:', err);
-      } finally {
-        setActionLoading(false);
-      }
+  useEffect(() => {
+    checkStatus();
+  }, [checkStatus]);
+
+  // Handle external trigger to open modal (e.g. after OAuth return)
+  useEffect(() => {
+    if (autoOpenModal && isConnected) {
+      setIsModalOpen(true);
+      onModalStateChange?.(true);
+    }
+  }, [autoOpenModal, isConnected, onModalStateChange]);
+
+  const handleConnect = () => {
+    if (onConnect) {
+      onConnect();
     } else {
-      if (onConnect) {
-        onConnect();
-      } else {
-        window.location.href = `${getApiBaseUrl()}/gmail/connect`;
-      }
+      window.location.href = `${getApiBaseUrl()}/gmail/connect`;
     }
   };
 
   const handleDisconnect = async (e) => {
-    e.stopPropagation();
+    e?.stopPropagation();
     try {
       await disconnectGmail();
       setIsConnected(false);
+      setConnectedEmail(null);
+      setIsModalOpen(false);
     } catch (err) {
       console.error('Failed to disconnect Gmail:', err);
     }
   };
 
+  const handleOpenModal = () => {
+    setIsModalOpen(true);
+    onModalStateChange?.(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    onModalStateChange?.(false);
+  };
+
+  const handleAnalyzeSelected = async (selectedIds) => {
+    if (!selectedIds || selectedIds.length === 0) return;
+    setActionLoading(true);
+    try {
+      const job = await startGmailAnalysis(selectedIds);
+      if (onJobStarted) {
+        onJobStarted(job);
+      }
+    } catch (err) {
+      console.error('Failed to start selective Gmail analysis:', err);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  if (checkingStatus) {
+    return (
+      <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-8 bg-white dark:bg-[#0b101b] shadow-2xs flex flex-col items-center justify-center min-h-[220px] text-center">
+        <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
+        <p className="text-xs text-slate-500 dark:text-slate-400">Verifying Gmail connection status...</p>
+      </div>
+    );
+  }
+
+  // State: Connected
+  if (isConnected) {
+    return (
+      <>
+        <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b101b] shadow-2xs space-y-5 animate-fadeIn">
+          {/* Header Bar */}
+          <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center shrink-0 p-2 shadow-2xs">
+                <img
+                  src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png"
+                  alt="Gmail"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800/50 px-2.5 py-0.5 rounded-full font-mono">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Connected ✓
+                  </span>
+                </div>
+                <div className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white mt-1 flex items-center gap-1.5">
+                  <span className="text-slate-500 dark:text-slate-400 font-normal">Gmail Account:</span>
+                  <span className="text-blue-600 dark:text-blue-400 font-mono font-bold truncate">
+                    {connectedEmail || 'paldhaduk18@gmail.com'}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleDisconnect}
+              title="Disconnect Gmail"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/50 hover:bg-rose-100 dark:hover:bg-rose-900/60 border border-rose-200/60 dark:border-rose-900/40 rounded-lg transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Disconnect</span>
+            </button>
+          </div>
+
+          {/* Action Callout */}
+          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/80 dark:border-blue-900/40 rounded-xl p-4 sm:p-5 space-y-3">
+            <div className="flex items-center gap-2 text-blue-950 dark:text-blue-100 font-bold text-xs sm:text-sm">
+              <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+              <span>Selective Threat Analysis</span>
+            </div>
+            <p className="text-xs text-slate-600 dark:text-slate-400 leading-relaxed">
+              Open your connected Gmail inbox to choose specific emails to analyze for phishing, scams, and deceptive content using ScamShield AI.
+            </p>
+          </div>
+
+          {/* Button to Open Selection Modal */}
+          <button
+            type="button"
+            onClick={handleOpenModal}
+            disabled={actionLoading}
+            className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md shadow-blue-600/20 hover:shadow-lg transition-all duration-150 cursor-pointer disabled:opacity-75"
+          >
+            <Mail className="w-4 h-4" />
+            <span>Choose Gmail Emails to Analyze</span>
+            <ArrowRight className="w-4 h-4 ml-0.5" />
+          </button>
+
+          <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 font-normal">
+            <span>Google OAuth 2.0 • Read-only access</span>
+          </div>
+        </div>
+
+        {/* Gmail Selection Modal Popup */}
+        <GmailEmailSelectionModal
+          isOpen={isModalOpen}
+          onClose={handleCloseModal}
+          onAnalyze={handleAnalyzeSelected}
+          connectedEmail={connectedEmail}
+        />
+      </>
+    );
+  }
+
+  // State: Disconnected -> Connect Gmail
   return (
     <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b101b] shadow-2xs space-y-5 animate-fadeIn">
       {/* Header: Gmail Icon + Title & Description */}
@@ -92,26 +229,17 @@ export default function GmailImportCard({ onConnect, onJobStarted }) {
           />
         </div>
         <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between gap-2">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
-              Import from Gmail
-            </h3>
-            {isConnected && (
-              <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/60 dark:border-emerald-800/40 px-2 py-0.5 rounded-full font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                Connected
-              </span>
-            )}
-          </div>
+          <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight">
+            Connect Gmail
+          </h3>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
-            Analyze your inbox automatically for phishing and scam threats.
+            Connect your Gmail account to open the inbox selector, choose emails, and scan them with ScamShield ML detection.
           </p>
         </div>
       </div>
 
-      {/* Security Panel: Light blue container with read-only badge & 4 guarantees */}
+      {/* Security Panel */}
       <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/80 dark:border-blue-900/40 rounded-xl p-4 sm:p-4.5 space-y-3">
-        {/* Panel Top Row */}
         <div className="flex items-center justify-between gap-2 pb-1">
           <div className="flex items-center gap-2 text-blue-950 dark:text-blue-100 font-bold text-xs sm:text-sm">
             <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 shadow-2xs">
@@ -124,7 +252,6 @@ export default function GmailImportCard({ onConnect, onJobStarted }) {
           </span>
         </div>
 
-        {/* Checklist */}
         <div className="space-y-2 text-xs text-slate-700 dark:text-slate-300 font-medium">
           <div className="flex items-center gap-2.5">
             <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
@@ -145,7 +272,7 @@ export default function GmailImportCard({ onConnect, onJobStarted }) {
         </div>
       </div>
 
-      {/* Connect Action Button & Trust Footer */}
+      {/* Connect Action Button */}
       <div className="space-y-2.5">
         <button
           type="button"
@@ -153,44 +280,15 @@ export default function GmailImportCard({ onConnect, onJobStarted }) {
           disabled={actionLoading}
           className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md shadow-blue-600/20 hover:shadow-lg transition-all duration-150 cursor-pointer disabled:opacity-75"
         >
-          {actionLoading ? (
-            <>
-              <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Starting Analysis...</span>
-            </>
-          ) : isConnected ? (
-            <>
-              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0 shadow-2xs">
-                <GoogleIcon className="w-3.5 h-3.5" />
-              </div>
-              <span>Start Inbox Analysis</span>
-              <ArrowRight className="w-4 h-4 ml-0.5" />
-            </>
-          ) : (
-            <>
-              <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0 shadow-2xs">
-                <GoogleIcon className="w-3.5 h-3.5" />
-              </div>
-              <span>Connect Gmail</span>
-              <ArrowRight className="w-4 h-4 ml-0.5" />
-            </>
-          )}
+          <div className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0 shadow-2xs">
+            <GoogleIcon className="w-3.5 h-3.5" />
+          </div>
+          <span>Connect Gmail</span>
+          <ArrowRight className="w-4 h-4 ml-0.5" />
         </button>
 
         <div className="flex items-center justify-center gap-2 text-[11px] text-slate-400 dark:text-slate-500 font-normal">
           <span>Google OAuth 2.0 • Read-only access</span>
-          {isConnected && (
-            <>
-              <span>•</span>
-              <button
-                type="button"
-                onClick={handleDisconnect}
-                className="hover:text-rose-500 underline transition-colors cursor-pointer"
-              >
-                Disconnect
-              </button>
-            </>
-          )}
         </div>
       </div>
     </div>

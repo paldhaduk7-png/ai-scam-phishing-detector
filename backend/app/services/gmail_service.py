@@ -83,6 +83,56 @@ async def list_gmail_messages(
         return response.json()
 
 
+async def get_gmail_profile(access_token: str) -> Dict[str, Any]:
+    """
+    Fetches the user's Gmail profile, including emailAddress.
+    Endpoint: GET https://gmail.googleapis.com/gmail/v1/users/me/profile
+    """
+    headers = {"Authorization": f"Bearer {access_token}"}
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        response = await client.get(
+            f"{settings.gmail_api_base_url}/profile",
+            headers=headers,
+        )
+        if response.status_code == 200:
+            return response.json()
+        logger.warning(
+            "Failed to fetch Gmail profile (status %d): %s",
+            response.status_code,
+            response.text,
+        )
+        return {}
+
+
+async def get_gmail_message_metadata(access_token: str, message_id: str) -> Dict[str, Any]:
+    """
+    Fetches only lightweight message metadata and headers (From, Subject, Date)
+    without downloading the entire email MIME body.
+    Endpoint: GET https://gmail.googleapis.com/gmail/v1/users/me/messages/{message_id}?format=metadata
+    """
+    headers = {"Authorization": f"Bearer {access_token}"}
+    params = {
+        "format": "metadata",
+        "metadataHeaders": ["Subject", "From", "Date"],
+    }
+
+    async with httpx.AsyncClient(timeout=15.0) as client:
+        response = await client.get(
+            f"{settings.gmail_api_base_url}/messages/{message_id}",
+            headers=headers,
+            params=params,
+        )
+        if response.status_code != 200:
+            logger.warning(
+                "Failed to fetch Gmail message metadata %s (status %d): %s",
+                message_id,
+                response.status_code,
+                response.text,
+            )
+            response.raise_for_status()
+        return response.json()
+
+
 async def get_gmail_message(access_token: str, message_id: str) -> Dict[str, Any]:
     """
     Fetches the full message metadata and content for a given message ID.
@@ -106,6 +156,7 @@ async def get_gmail_message(access_token: str, message_id: str) -> Dict[str, Any
             )
             response.raise_for_status()
         return response.json()
+
 
 
 def parse_gmail_message(message_data: Dict[str, Any]) -> Dict[str, Any]:

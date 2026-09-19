@@ -334,3 +334,11 @@ class ChartDayStats(BaseModel):
     suspicious: int
     phishing: int
     total: int
+
+
+class GmailStartAnalysisRequest(BaseModel):
+    message_ids: Optional[list[str]] = Field(
+        default=None,
+        description="Optional list of specific Gmail message IDs to analyze.",
+    )
+

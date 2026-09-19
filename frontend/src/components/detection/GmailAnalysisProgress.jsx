@@ -16,6 +16,7 @@ import { getGmailAnalysisProgress, cancelGmailAnalysis } from '../../services/ap
 
 export default function GmailAnalysisProgress({
   initialJob,
+  onProgressUpdate,
   onCompleted,
   onCancel,
   onStartNew,
@@ -45,16 +46,15 @@ export default function GmailAnalysisProgress({
       try {
         const updated = await getGmailAnalysisProgress(job.job_id);
         setJob(updated);
+        onProgressUpdate?.(updated);
 
         if (updated.status === 'completed') {
           clearInterval(intervalId);
-          setTimeout(() => {
-            if (onCompleted) {
-              onCompleted(updated);
-            } else {
-              navigate('/history/email');
-            }
-          }, 1500);
+          if (onCompleted) {
+            onCompleted(updated);
+          } else {
+            navigate('/history/email');
+          }
         } else if (['failed', 'cancelled'].includes(updated.status)) {
           clearInterval(intervalId);
         }
@@ -64,7 +64,7 @@ export default function GmailAnalysisProgress({
     }, 1500);
 
     return () => clearInterval(intervalId);
-  }, [job?.job_id, job?.status, navigate, onCompleted]);
+  }, [job?.job_id, job?.status, navigate, onCompleted, onProgressUpdate]);
 
   const handleCancel = async () => {
     if (!job?.job_id || cancelling) return;

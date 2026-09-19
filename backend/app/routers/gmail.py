@@ -29,11 +29,14 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import SessionLocal, get_db
 from app.models import Detection, User
+from app.schemas import GmailStartAnalysisRequest
 from app.services.auth_service import get_current_user
 from app.services.gmail_service import (
     build_gmail_authorization_url,
     exchange_gmail_code_for_tokens,
     get_gmail_message,
+    get_gmail_message_metadata,
+    get_gmail_profile,
     list_gmail_messages,
     parse_gmail_message,
 )
@@ -215,13 +218,21 @@ async def gmail_callback(
         return response
 
     expires_in = token_data.get("expires_in", 3599)
+    gmail_email = None
+    try:
+        profile = await get_gmail_profile(access_token)
+        gmail_email = profile.get("emailAddress")
+    except Exception as prof_err:
+        logger.warning("Could not fetch Gmail profile email during callback: %s", prof_err)
+
     _GMAIL_USER_TOKENS[user_id] = {
         "access_token": access_token,
         "refresh_token": token_data.get("refresh_token"),
         "expires_at": datetime.now(timezone.utc) + timedelta(seconds=expires_in),
+        "email": gmail_email,
     }
 
-    logger.info("Successfully connected Gmail for ScamShield user id=%s", user_id)
+    logger.info("Successfully connected Gmail for ScamShield user id=%s (email=%s)", user_id, gmail_email)
 
     response = RedirectResponse(
         url=f"{settings.frontend_url}/detect?gmail_connected=true",
@@ -235,23 +246,33 @@ async def gmail_callback(
     "/status",
     summary="Get current Gmail connection status",
 )
-def get_gmail_status(
+async def get_gmail_status(
     current_user: User = Depends(get_current_user),
 ) -> Dict[str, Any]:
-    """Checks whether the currently authenticated user has an active Gmail access token."""
+    """Checks whether the currently authenticated user has an active Gmail access token and returns connected email."""
     _clean_expired_tokens()
     token_data = _GMAIL_USER_TOKENS.get(current_user.id)
     if not token_data:
-        return {"connected": False, "expires_at": None}
+        return {"connected": False, "expires_at": None, "email": None}
 
     now = datetime.now(timezone.utc)
     if token_data.get("expires_at", now) <= now:
         _GMAIL_USER_TOKENS.pop(current_user.id, None)
-        return {"connected": False, "expires_at": None}
+        return {"connected": False, "expires_at": None, "email": None}
+
+    email = token_data.get("email")
+    if not email:
+        try:
+            profile = await get_gmail_profile(token_data["access_token"])
+            email = profile.get("emailAddress") or current_user.email
+            token_data["email"] = email
+        except Exception:
+            email = current_user.email
 
     return {
         "connected": True,
         "expires_at": token_data["expires_at"].isoformat(),
+        "email": email or current_user.email,
     }
 
 
@@ -277,10 +298,16 @@ def disconnect_gmail(
 # Background Analysis Engine & Job Management
 # ==============================================================================
 
-async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: str) -> None:
+async def _run_gmail_analysis_worker(
+    job_id: str,
+    user_id: int,
+    access_token: str,
+    selected_ids: Optional[List[str]] = None,
+) -> None:
     """
     Independent background worker task:
-    1. Connects to Gmail and fetches message IDs with pagination (never all bodies at once).
+    1. If selected_ids are provided, analyzes only those specific emails.
+       Otherwise, connects to Gmail and fetches message IDs with pagination.
     2. Sequentially fetches, parses, classifies, and saves each email immediately to PostgreSQL.
     3. Updates job status so the user can navigate anywhere in the app while analysis progresses.
     4. Handles individual message failures gracefully (skips and continues).
@@ -289,40 +316,49 @@ async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: st
     if not job:
         return
 
-    logger.info("Starting background Gmail analysis worker for job_id=%s, user_id=%s", job_id, user_id)
+    logger.info(
+        "Starting background Gmail analysis worker for job_id=%s, user_id=%s, selected_count=%s",
+        job_id,
+        user_id,
+        len(selected_ids) if selected_ids else "all",
+    )
     job["status"] = "processing"
 
     message_ids: List[str] = []
-    page_token: Optional[str] = None
-    max_to_collect = 1000  # Safe cap to process all available emails in controlled pages
 
-    try:
-        # Step 1: Collect message IDs using pagination (lightweight metadata only)
-        while len(message_ids) < max_to_collect:
-            if job.get("cancelled"):
-                job["status"] = "cancelled"
-                return
+    if selected_ids is not None:
+        message_ids = [mid.strip() for mid in selected_ids if mid and isinstance(mid, str) and mid.strip()]
+    else:
+        page_token: Optional[str] = None
+        max_to_collect = 1000  # Safe cap to process all available emails in controlled pages
 
-            res = await list_gmail_messages(
-                access_token=access_token,
-                max_results=min(100, max_to_collect - len(message_ids)),
-                page_token=page_token,
-            )
-            raw_msgs = res.get("messages", [])
-            for m in raw_msgs:
-                if m.get("id"):
-                    message_ids.append(m["id"])
+        try:
+            # Step 1: Collect message IDs using pagination (lightweight metadata only)
+            while len(message_ids) < max_to_collect:
+                if job.get("cancelled"):
+                    job["status"] = "cancelled"
+                    return
 
-            page_token = res.get("nextPageToken")
-            if not page_token or not raw_msgs:
-                break
+                res = await list_gmail_messages(
+                    access_token=access_token,
+                    max_results=min(100, max_to_collect - len(message_ids)),
+                    page_token=page_token,
+                )
+                raw_msgs = res.get("messages", [])
+                for m in raw_msgs:
+                    if m.get("id"):
+                        message_ids.append(m["id"])
 
-    except Exception as exc:
-        logger.error("Failed while collecting Gmail message IDs: %s", exc)
-        job["status"] = "failed"
-        job["error_message"] = f"Failed to retrieve email list from Gmail: {str(exc)}"
-        _USER_ACTIVE_JOBS.pop(user_id, None)
-        return
+                page_token = res.get("nextPageToken")
+                if not page_token or not raw_msgs:
+                    break
+
+        except Exception as exc:
+            logger.error("Failed while collecting Gmail message IDs: %s", exc)
+            job["status"] = "failed"
+            job["error_message"] = f"Failed to retrieve email list from Gmail: {str(exc)}"
+            _USER_ACTIVE_JOBS.pop(user_id, None)
+            return
 
     total_count = len(message_ids)
     job["total"] = total_count
@@ -333,7 +369,7 @@ async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: st
         job["progress_percent"] = 100.0
         job["completed_at"] = datetime.now(timezone.utc).isoformat()
         _USER_ACTIVE_JOBS.pop(user_id, None)
-        logger.info("Job %s completed: 0 emails found in mailbox.", job_id)
+        logger.info("Job %s completed: 0 emails found to analyze.", job_id)
         return
 
     logger.info("Found %d emails to analyze for job_id=%s", total_count, job_id)
@@ -367,6 +403,22 @@ async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: st
             # Run existing ScamShield ML Email detection pipeline
             result = detect_unified(content=text_to_analyze, content_type="email")
 
+            # Store latest analyzed email result for live frontend right-column inspection
+            job["latest_result"] = {
+                "input_type": "email",
+                "classification": result.get("classification"),
+                "predicted_label": result.get("predicted_label"),
+                "score": result.get("score"),
+                "score_type": result.get("score_type"),
+                "risk_percentage": result.get("risk_percentage", 0.0),
+                "is_phishing": result.get("is_phishing", False),
+                "is_spam": result.get("is_spam"),
+                "explanation": result.get("explanation"),
+                "sender": sender,
+                "subject": subject,
+                "message_id": msg_id,
+            }
+
             # Persist immediately to PostgreSQL so results appear live in Email History
             db: Session = SessionLocal()
             try:
@@ -395,6 +447,7 @@ async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: st
             job["remaining"] = max(0, total_count - job["processed"])
             job["progress_percent"] = round((job["processed"] / total_count) * 100, 1)
 
+
         except Exception as msg_err:
             # If one email fails, do NOT abort the entire analysis.
             logger.warning("Error processing message %s: %s", msg_id, msg_err)
@@ -420,13 +473,15 @@ async def _run_gmail_analysis_worker(job_id: str, user_id: int, access_token: st
 @router.post(
     "/analysis/start",
     summary="Start background Gmail email analysis",
-    description="Starts a persistent background job that paginates and analyzes all available emails one by one. Survives frontend route navigation.",
+    description="Starts a persistent background job that analyzes selected emails or paginates inbox emails one by one. Survives frontend route navigation.",
 )
 async def start_gmail_analysis(
+    payload: Optional[GmailStartAnalysisRequest] = None,
     current_user: User = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
     Launches or reconnects to an active Gmail analysis job.
+    If message_ids is provided, only those specific emails are analyzed.
     Includes multiple-job protection: returns existing job if one is already running.
     """
     _clean_expired_tokens()
@@ -437,6 +492,8 @@ async def start_gmail_analysis(
             detail="Gmail account is not connected. Please connect Gmail first.",
         )
 
+    selected_ids = payload.message_ids if payload and payload.message_ids else None
+
     # Check for active existing job for this user
     existing_job_id = _USER_ACTIVE_JOBS.get(current_user.id)
     if existing_job_id and existing_job_id in _GMAIL_JOBS:
@@ -445,16 +502,19 @@ async def start_gmail_analysis(
             logger.info("User id=%s reconnected to active job_id=%s", current_user.id, existing_job_id)
             return existing_job
 
+    initial_total = len(selected_ids) if selected_ids else 0
+
     # Create new background job
     job_id = secrets.token_urlsafe(16)
     job_payload = {
         "job_id": job_id,
         "user_id": current_user.id,
         "status": "starting",
-        "total": 0,
+        "total": initial_total,
         "processed": 0,
-        "remaining": 0,
+        "remaining": initial_total,
         "current_email": None,
+        "latest_result": None,
         "progress_percent": 0.0,
         "errors": 0,
         "started_at": datetime.now(timezone.utc).isoformat(),
@@ -462,12 +522,13 @@ async def start_gmail_analysis(
         "cancelled": False,
     }
 
+
     _GMAIL_JOBS[job_id] = job_payload
     _USER_ACTIVE_JOBS[current_user.id] = job_id
 
     # Spawn background task detached from request lifecycle
     task = asyncio.create_task(
-        _run_gmail_analysis_worker(job_id, current_user.id, token_data["access_token"])
+        _run_gmail_analysis_worker(job_id, current_user.id, token_data["access_token"], selected_ids=selected_ids)
     )
     _BACKGROUND_TASKS.add(task)
     task.add_done_callback(_BACKGROUND_TASKS.discard)
@@ -603,8 +664,8 @@ async def list_messages(
         if not msg_id:
             continue
         try:
-            full_msg = await get_gmail_message(access_token, msg_id)
-            parsed = parse_gmail_message(full_msg)
+            meta_msg = await get_gmail_message_metadata(access_token, msg_id)
+            parsed = parse_gmail_message(meta_msg)
             items.append({
                 "id": parsed["id"],
                 "subject": parsed["subject"],

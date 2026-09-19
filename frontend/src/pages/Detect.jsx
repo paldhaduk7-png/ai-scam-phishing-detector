@@ -33,6 +33,7 @@ export default function Detect() {
   // Sub-tab for Email Analysis: 'manual' | 'gmail'
   const [emailSource, setEmailSource] = useState('manual');
   const [activeGmailJob, setActiveGmailJob] = useState(null);
+  const [autoOpenGmailModal, setAutoOpenGmailModal] = useState(false);
 
   const [messageText, setMessageText] = useState('');
   const [emailSubject, setEmailSubject] = useState('');
@@ -40,10 +41,18 @@ export default function Detect() {
   const [urlInput, setUrlInput] = useState('');
   const [emailModel, setEmailModel] = useState('ml');
 
-  // Detection states: 'idle' | 'loading' | 'success' | 'error'
-  const [analysisStatus, setAnalysisStatus] = useState('idle');
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [errorMessage, setErrorMessage] = useState('');
+  // Isolated per-channel detection states: 'idle' | 'loading' | 'success' | 'error'
+  const [channelStates, setChannelStates] = useState({
+    message: { status: 'idle', result: null, error: '' },
+    email: { status: 'idle', result: null, error: '' },
+    url: { status: 'idle', result: null, error: '' },
+  });
+
+  const currentChannelState = channelStates[activeTab] || {
+    status: 'idle',
+    result: null,
+    error: '',
+  };
 
   // Handle OAuth redirect return from Google
   useEffect(() => {
@@ -65,19 +74,8 @@ export default function Detect() {
       setSearchParams(next, { replace: true });
 
       setEmailSource('gmail');
-
-      // Launch automated background analysis job
-      const launch = async () => {
-        try {
-          const job = await startGmailAnalysis();
-          setActiveGmailJob(job);
-          toast.success('Gmail connected! Email auto-analysis started in background.');
-        } catch (err) {
-          console.error('Failed to start Gmail analysis:', err);
-          toast.error('Failed to start Gmail analysis.');
-        }
-      };
-      launch();
+      setAutoOpenGmailModal(true);
+      toast.success('Gmail connected! Select emails from your inbox to analyze.');
     }
   }, [searchParams, setSearchParams]);
 
@@ -89,12 +87,29 @@ export default function Detect() {
         const res = await getActiveGmailAnalysis();
         if (res?.active && res.job) {
           setActiveGmailJob(res.job);
+          if (res.job.latest_result) {
+            setChannelStates((prev) => ({
+              ...prev,
+              email: { status: 'success', result: res.job.latest_result, error: '' },
+            }));
+          } else if (['starting', 'processing'].includes(res.job.status)) {
+            setChannelStates((prev) => ({
+              ...prev,
+              email: { status: 'loading', result: null, error: '' },
+            }));
+          }
           if (activeTab === 'email') {
             setEmailSource('gmail');
           }
         } else if (!res?.active && activeGmailJob?.status === 'processing') {
           // Job just finished while away
           setActiveGmailJob(res?.job || null);
+          if (res?.job?.latest_result) {
+            setChannelStates((prev) => ({
+              ...prev,
+              email: { status: 'success', result: res.job.latest_result, error: '' },
+            }));
+          }
         }
       } catch {
         // Backend not yet reached or guest user
@@ -151,8 +166,10 @@ export default function Detect() {
       content_type = 'url';
     }
 
-    setAnalysisStatus('loading');
-    setErrorMessage('');
+    setChannelStates((prev) => ({
+      ...prev,
+      [activeTab]: { status: 'loading', result: null, error: '' },
+    }));
 
     try {
       let response;
@@ -164,9 +181,10 @@ export default function Detect() {
           content_type,
         });
       }
-      setAnalysisResult(response);
-      setAnalysisStatus('success');
-      setErrorMessage('');
+      setChannelStates((prev) => ({
+        ...prev,
+        [activeTab]: { status: 'success', result: response, error: '' },
+      }));
     } catch (err) {
       console.warn('Backend API error:', err?.message);
       let message =
@@ -178,15 +196,18 @@ export default function Detect() {
         message = err.response.data.detail[0].msg;
       }
 
-      setErrorMessage(message);
-      setAnalysisStatus('error');
+      setChannelStates((prev) => ({
+        ...prev,
+        [activeTab]: { status: 'error', result: null, error: message },
+      }));
     }
   };
 
   const handleReset = () => {
-    setAnalysisStatus('idle');
-    setAnalysisResult(null);
-    setErrorMessage('');
+    setChannelStates((prev) => ({
+      ...prev,
+      [activeTab]: { status: 'idle', result: null, error: '' },
+    }));
     if (activeTab === 'message') setMessageText('');
     if (activeTab === 'email') {
       setEmailSubject('');
@@ -237,7 +258,7 @@ export default function Detect() {
                 value={messageText}
                 onChange={setMessageText}
                 onSubmit={handleAnalyze}
-                isLoading={analysisStatus === 'loading'}
+                isLoading={currentChannelState.status === 'loading'}
               />
             )}
 
@@ -284,23 +305,66 @@ export default function Detect() {
                     onSubjectChange={setEmailSubject}
                     onContentChange={setEmailContent}
                     onSubmit={handleAnalyze}
-                    isLoading={analysisStatus === 'loading'}
+                    isLoading={currentChannelState.status === 'loading'}
                     emailModel={emailModel}
                     onEmailModelChange={setEmailModel}
                   />
                 ) : activeGmailJob && ['starting', 'processing', 'completed'].includes(activeGmailJob.status) ? (
                   <GmailAnalysisProgress
                     initialJob={activeGmailJob}
+                    onProgressUpdate={(job) => {
+                      setActiveGmailJob(job);
+                      if (job?.latest_result) {
+                        setChannelStates((prev) => ({
+                          ...prev,
+                          email: { status: 'success', result: job.latest_result, error: '' },
+                        }));
+                      }
+                    }}
                     onCompleted={(job) => {
                       setActiveGmailJob(job);
-                      navigate('/history/email');
+                      if (job?.latest_result) {
+                        setChannelStates((prev) => ({
+                          ...prev,
+                          email: { status: 'success', result: job.latest_result, error: '' },
+                        }));
+                      }
                     }}
-                    onCancel={() => setActiveGmailJob(null)}
-                    onStartNew={() => setActiveGmailJob(null)}
+                    onCancel={() => {
+                      setActiveGmailJob(null);
+                      setChannelStates((prev) => ({
+                        ...prev,
+                        email: { status: 'idle', result: null, error: '' },
+                      }));
+                    }}
+                    onStartNew={() => {
+                      setActiveGmailJob(null);
+                      setChannelStates((prev) => ({
+                        ...prev,
+                        email: { status: 'idle', result: null, error: '' },
+                      }));
+                    }}
                   />
                 ) : (
-                  <GmailImportCard onJobStarted={(job) => setActiveGmailJob(job)} />
+                  <GmailImportCard
+                    onJobStarted={(job) => {
+                      setActiveGmailJob(job);
+                      setChannelStates((prev) => ({
+                        ...prev,
+                        email: {
+                          status: job?.latest_result ? 'success' : 'loading',
+                          result: job?.latest_result || null,
+                          error: '',
+                        },
+                      }));
+                    }}
+                    autoOpenModal={autoOpenGmailModal}
+                    onModalStateChange={(isOpen) => {
+                      if (!isOpen) setAutoOpenGmailModal(false);
+                    }}
+                  />
                 )}
+
               </div>
             )}
 
@@ -309,7 +373,7 @@ export default function Detect() {
                 value={urlInput}
                 onChange={setUrlInput}
                 onSubmit={handleAnalyze}
-                isLoading={analysisStatus === 'loading'}
+                isLoading={currentChannelState.status === 'loading'}
               />
             )}
 
@@ -340,9 +404,10 @@ export default function Detect() {
         {/* Right Column: Prominently Highlighted Result Card */}
         <div className="lg:col-span-6">
           <DetectionResult
-            status={analysisStatus}
-            result={analysisResult}
-            errorMessage={errorMessage}
+            status={currentChannelState.status}
+            result={currentChannelState.result}
+            channel={activeTab}
+            errorMessage={currentChannelState.error}
             onRetry={handleAnalyze}
             onReset={handleReset}
           />
@@ -372,11 +437,25 @@ export default function Detect() {
           <Button
             variant="primary"
             size="sm"
-            onClick={() => navigate('/history/email')}
+            onClick={() =>
+              navigate(
+                activeTab === 'email'
+                  ? '/history/email'
+                  : activeTab === 'url'
+                  ? '/history/url'
+                  : '/history/text'
+              )
+            }
             className="w-full sm:w-auto rounded-xl font-semibold text-xs px-5 py-2.5 shadow-sm shrink-0 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white"
           >
             <Clock className="w-3.5 h-3.5" />
-            <span>Go to Email History</span>
+            <span>
+              {activeTab === 'email'
+                ? 'Go to Email History'
+                : activeTab === 'url'
+                ? 'Go to URL History'
+                : 'Go to Message History'}
+            </span>
             <ArrowRight className="w-3.5 h-3.5" />
           </Button>
         </div>

@@ -187,3 +187,40 @@ def test_gmail_analysis_job_lifecycle():
     finally:
         app.dependency_overrides.pop(get_current_user, None)
 
+
+def test_gmail_selective_analysis():
+    """Tests starting Gmail analysis with specific selected message IDs."""
+    from app.services.auth_service import get_current_user
+    from app.routers.gmail import _GMAIL_USER_TOKENS, _USER_ACTIVE_JOBS
+
+    user_id = 777
+    mock_user = User(id=user_id, name="Selective Tester", email="selective@example.com")
+    _GMAIL_USER_TOKENS[user_id] = {
+        "access_token": "mock_token_selective",
+        "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
+        "email": "selective@gmail.com",
+    }
+    _USER_ACTIVE_JOBS.pop(user_id, None)
+
+    app.dependency_overrides[get_current_user] = lambda: mock_user
+    try:
+        selected_ids = ["msg_1", "msg_2", "msg_3", "msg_4", "msg_5"]
+        with patch("app.routers.gmail._run_gmail_analysis_worker", new=AsyncMock()) as mock_worker:
+            resp = client.post(
+                "/api/v1/gmail/analysis/start",
+                json={"message_ids": selected_ids},
+            )
+            assert resp.status_code == 200
+            data = resp.json()
+            assert data["total"] == 5
+            assert data["remaining"] == 5
+            assert data["status"] == "starting"
+
+            # Verify mock worker was called with selected_ids
+            mock_worker.assert_called_once()
+            args, kwargs = mock_worker.call_args
+            assert kwargs.get("selected_ids") == selected_ids
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+

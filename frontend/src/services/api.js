@@ -269,11 +269,25 @@ export const disconnectGmail = async () => {
 };
 
 /**
- * Starts background Gmail analysis job.
- * Multiple job protection ensures active job is returned if already running.
+ * Retrieves recent inbox email metadata from connected Gmail account.
+ * @param {Object} params - { max_results, q }
+ * @returns {Promise<{ count: number, messages: Array }>}
  */
-export const startGmailAnalysis = async () => {
-  const response = await api.post('/gmail/analysis/start');
+export const getGmailMessages = async (params = {}) => {
+  const response = await api.get('/gmail/messages', { params });
+  return response.data;
+};
+
+/**
+ * Starts background Gmail analysis job for selected message IDs or all inbox.
+ * Multiple job protection ensures active job is returned if already running.
+ * @param {Array<string>|null} messageIds - Optional array of message IDs to analyze
+ */
+export const startGmailAnalysis = async (messageIds = null) => {
+  const payload = messageIds && Array.isArray(messageIds) && messageIds.length > 0
+    ? { message_ids: messageIds }
+    : {};
+  const response = await api.post('/gmail/analysis/start', payload);
   return response.data;
 };
 
