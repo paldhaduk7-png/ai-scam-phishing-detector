@@ -128,6 +128,26 @@ class Settings:
         )
         self.google_redirect_uri: str = os.getenv("GOOGLE_REDIRECT_URI", default_redirect_uri)
 
+        default_gmail_redirect_uri = (
+            "https://ai-scam-phishing-detector.onrender.com/api/v1/gmail/callback"
+            if is_render
+            else "http://localhost:8000/api/v1/gmail/callback"
+        )
+        self.google_gmail_redirect_uri: str = os.getenv("GOOGLE_GMAIL_REDIRECT_URI", default_gmail_redirect_uri)
+
+        self.google_auth_base_url: str = os.getenv(
+            "GOOGLE_AUTH_BASE_URL", "https://accounts.google.com/o/oauth2/v2/auth"
+        ).strip()
+        self.google_token_url: str = os.getenv(
+            "GOOGLE_TOKEN_URL", "https://oauth2.googleapis.com/token"
+        ).strip()
+        self.gmail_api_base_url: str = os.getenv(
+            "GMAIL_API_BASE_URL", "https://gmail.googleapis.com/gmail/v1/users/me"
+        ).strip()
+        self.gmail_readonly_scope: str = os.getenv(
+            "GMAIL_READONLY_SCOPE", "https://www.googleapis.com/auth/gmail.readonly"
+        ).strip()
+
         # Deep Learning Model Control (set DISABLE_DL=true on memory-constrained platforms like Render Free tier)
         disable_dl_raw = os.getenv("DISABLE_DL", "false").strip().lower()
         self.disable_dl: bool = disable_dl_raw in ("true", "1", "yes")
