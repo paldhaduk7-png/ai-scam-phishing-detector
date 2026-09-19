@@ -6,6 +6,8 @@ import {
   Check,
   ArrowUpDown,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ShieldCheck,
   Loader2,
   RefreshCw,
@@ -113,6 +115,12 @@ export default function GmailEmailSelectionModal({
   const [connectedEmail, setConnectedEmail] = useState(initialEmail || '');
   const [selectedIds, setSelectedIds] = useState([]);
 
+  // Pagination state: exactly 10 emails per page
+  const [currentPage, setCurrentPage] = useState(1);
+  const [nextPageToken, setNextPageToken] = useState(null);
+  const [pageTokens, setPageTokens] = useState({ 1: null });
+  const [pageCache, setPageCache] = useState({});
+
   const connectedEmailRef = useRef(connectedEmail);
   useEffect(() => {
     connectedEmailRef.current = connectedEmail;
@@ -120,56 +128,163 @@ export default function GmailEmailSelectionModal({
 
   // Search, Filter & Sort states
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterType, setFilterType] = useState('all'); // 'all' | 'selected' | 'unselected'
   const [sortOrder, setSortOrder] = useState('newest'); // 'newest' | 'oldest' | 'sender'
 
   const [showFilterDropdown, setShowFilterDropdown] = useState(false);
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
-  // Fetch messages from real Gmail API when modal opens
-  const fetchInboxMessages = useCallback(async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const res = await getGmailMessages({ max_results: 25 });
-      setMessages(res?.messages || []);
+  // Debounce search query changes
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchQuery.trim());
+    }, 350);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
-      // If connectedEmail is missing, populate it quietly in the background
-      if (!connectedEmailRef.current) {
-        getGmailStatus()
-          .then((statusRes) => {
-            if (statusRes?.email) {
-              setConnectedEmail(statusRes.email);
-            }
-          })
-          .catch(() => {});
+  // Fetch a specific page of messages from real Gmail API
+  const fetchPage = useCallback(
+    async (pageNumber, token, query = '') => {
+      setLoading(true);
+      setError('');
+      try {
+        const params = {
+          max_results: 10,
+          maxResults: 10,
+        };
+        if (token) {
+          params.page_token = token;
+          params.pageToken = token;
+        }
+        if (query) {
+          params.q = query;
+        }
+
+        const res = await getGmailMessages(params);
+        const fetchedMessages = res?.messages || res?.emails || [];
+        const nextToken = res?.nextPageToken || null;
+
+        setMessages(fetchedMessages);
+        setNextPageToken(nextToken);
+        setCurrentPage(pageNumber);
+
+        // Cache page result to prevent duplicate calls and enable instant Previous navigation
+        setPageCache((prev) => ({
+          ...prev,
+          [pageNumber]: {
+            messages: fetchedMessages,
+            nextPageToken: nextToken,
+          },
+        }));
+
+        // Record token for the next page
+        if (nextToken) {
+          setPageTokens((prev) => ({
+            ...prev,
+            [pageNumber + 1]: nextToken,
+          }));
+        }
+
+        // If connectedEmail is missing, populate it quietly in the background
+        if (!connectedEmailRef.current) {
+          getGmailStatus()
+            .then((statusRes) => {
+              if (statusRes?.email) {
+                setConnectedEmail(statusRes.email);
+              }
+            })
+            .catch(() => {});
+        }
+      } catch (err) {
+        console.error('Failed to load Gmail messages for modal:', err);
+        const detail = err?.response?.data?.detail;
+        const errorMsg =
+          typeof detail === 'string'
+            ? detail
+            : Array.isArray(detail)
+            ? detail[0]?.msg || 'Validation error while loading messages.'
+            : err?.message === 'Network Error'
+            ? 'Network error: Cannot reach backend server. Please verify backend is accessible.'
+            : 'Failed to load inbox emails from Gmail. Please try again.';
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error('Failed to load Gmail messages for modal:', err);
-      const detail = err?.response?.data?.detail;
-      const errorMsg =
-        typeof detail === 'string'
-          ? detail
-          : Array.isArray(detail)
-          ? detail[0]?.msg || 'Validation error while loading messages.'
-          : err?.message === 'Network Error'
-          ? 'Network error: Cannot reach backend server. Please verify backend is accessible.'
-          : 'Failed to load inbox emails from Gmail. Please try again.';
-      setError(errorMsg);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
+  // Refresh current search or inbox: resets to page 1
+  const handleRefresh = useCallback(() => {
+    setCurrentPage(1);
+    setPageTokens({ 1: null });
+    setPageCache({});
+    setNextPageToken(null);
+    fetchPage(1, null, debouncedSearch);
+  }, [fetchPage, debouncedSearch]);
+
+  // Navigate to Next page using stored nextPageToken
+  const handleNextPage = () => {
+    if (!nextPageToken || loading) return;
+    const nextPage = currentPage + 1;
+
+    // Check if next page is already in local pageCache
+    if (pageCache[nextPage]) {
+      const cached = pageCache[nextPage];
+      setMessages(cached.messages);
+      setNextPageToken(cached.nextPageToken);
+      setCurrentPage(nextPage);
+      return;
+    }
+
+    fetchPage(nextPage, nextPageToken, debouncedSearch);
+  };
+
+  // Navigate to Previous page
+  const handlePrevPage = () => {
+    if (currentPage <= 1 || loading) return;
+    const prevPage = currentPage - 1;
+
+    // Check if previous page is already in local pageCache
+    if (pageCache[prevPage]) {
+      const cached = pageCache[prevPage];
+      setMessages(cached.messages);
+      setNextPageToken(cached.nextPageToken);
+      setCurrentPage(prevPage);
+      return;
+    }
+
+    const prevToken = pageTokens[prevPage] || null;
+    fetchPage(prevPage, prevToken, debouncedSearch);
+  };
+
+  // Reset pagination and fetch page 1 when modal opens or when debounced search query changes
+  const prevOpenRef = useRef(false);
   useEffect(() => {
     if (isOpen) {
-      fetchInboxMessages();
-      // Reset search/filter but keep selection clean
-      setSearchQuery('');
-      setFilterType('all');
-      setSortOrder('newest');
+      if (!prevOpenRef.current) {
+        // Modal just opened: reset search query, filters, and fetch page 1
+        setSearchQuery('');
+        setDebouncedSearch('');
+        setFilterType('all');
+        setSortOrder('newest');
+        setCurrentPage(1);
+        setPageTokens({ 1: null });
+        setPageCache({});
+        setNextPageToken(null);
+        fetchPage(1, null, '');
+      } else {
+        // Search query changed while modal is open
+        setCurrentPage(1);
+        setPageTokens({ 1: null });
+        setPageCache({});
+        setNextPageToken(null);
+        fetchPage(1, null, debouncedSearch);
+      }
     }
-  }, [isOpen, fetchInboxMessages]);
+    prevOpenRef.current = isOpen;
+  }, [isOpen, debouncedSearch, fetchPage]);
 
   useEffect(() => {
     if (initialEmail) {
@@ -188,27 +303,16 @@ export default function GmailEmailSelectionModal({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  // Toggle single email selection
+  // Toggle single email selection (preserved across pages)
   const toggleSelect = (id) => {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
     );
   };
 
-  // Filtered & Sorted messages
+  // Filtered & Sorted messages on current page
   const processedMessages = useMemo(() => {
     let list = [...messages];
-
-    // Search query filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter((m) => {
-        const sub = (m.subject || '').toLowerCase();
-        const from = (m.from || '').toLowerCase();
-        const snip = (m.snippet || '').toLowerCase();
-        return sub.includes(q) || from.includes(q) || snip.includes(q);
-      });
-    }
 
     // Category filter
     if (filterType === 'selected') {
@@ -228,8 +332,9 @@ export default function GmailEmailSelectionModal({
     }
 
     return list;
-  }, [messages, searchQuery, filterType, sortOrder, selectedIds]);
+  }, [messages, filterType, sortOrder, selectedIds]);
 
+  // Select all on current page only, preserving cross-page selections
   const allVisibleSelected = useMemo(() => {
     if (processedMessages.length === 0) return false;
     return processedMessages.every((m) => selectedIds.includes(m.id));
@@ -240,8 +345,8 @@ export default function GmailEmailSelectionModal({
       const visibleIds = new Set(processedMessages.map((m) => m.id));
       setSelectedIds((prev) => prev.filter((id) => !visibleIds.has(id)));
     } else {
-      const combined = new Set([...selectedIds, ...processedMessages.map((m) => m.id)]);
-      setSelectedIds(Array.from(combined));
+      const newIds = processedMessages.map((m) => m.id);
+      setSelectedIds((prev) => Array.from(new Set([...prev, ...newIds])));
     }
   };
 
@@ -520,7 +625,7 @@ export default function GmailEmailSelectionModal({
             {/* Refresh Button */}
             <button
               type="button"
-              onClick={fetchInboxMessages}
+              onClick={handleRefresh}
               disabled={loading}
               title="Refresh inbox"
               className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
@@ -543,7 +648,7 @@ export default function GmailEmailSelectionModal({
               <p className="text-xs sm:text-sm text-rose-400 max-w-md mx-auto">{error}</p>
               <button
                 type="button"
-                onClick={fetchInboxMessages}
+                onClick={handleRefresh}
                 className="px-4 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-lg cursor-pointer transition-colors"
               >
                 Retry
@@ -622,6 +727,47 @@ export default function GmailEmailSelectionModal({
               );
             })
           )}
+        </div>
+
+        {/* Pagination Controls Bar */}
+        <div className="px-5 sm:px-6 py-2.5 border-t border-slate-800/80 bg-[#0c1324] flex items-center justify-between gap-3 text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <span>
+              Page <strong className="text-white font-mono">{currentPage}</strong>
+            </span>
+            <span className="text-slate-600">•</span>
+            <span>
+              {processedMessages.length} {processedMessages.length === 1 ? 'email' : 'emails'} shown
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handlePrevPage}
+              disabled={currentPage <= 1 || loading}
+              className="px-2.5 py-1.5 rounded-lg bg-[#131d35] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              title="Previous page"
+            >
+              <ChevronLeft className="w-3.5 h-3.5" />
+              <span>Previous</span>
+            </button>
+
+            <div className="px-2.5 py-1 rounded-md bg-[#18233f] text-blue-400 font-bold font-mono min-w-[28px] text-center border border-blue-600/30">
+              {currentPage}
+            </div>
+
+            <button
+              type="button"
+              onClick={handleNextPage}
+              disabled={!nextPageToken || loading}
+              className="px-2.5 py-1.5 rounded-lg bg-[#131d35] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              title="Next page"
+            >
+              <span>Next</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
         </div>
 
         {/* Modal Footer */}

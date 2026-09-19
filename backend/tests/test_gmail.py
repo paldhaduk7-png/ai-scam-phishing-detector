@@ -224,3 +224,55 @@ def test_gmail_selective_analysis():
         app.dependency_overrides.pop(get_current_user, None)
 
 
+def test_gmail_list_messages_pagination():
+    """Tests /messages endpoint with pagination parameters and nextPageToken response."""
+    from app.services.auth_service import get_current_user
+    from app.routers.gmail import _GMAIL_USER_TOKENS
+
+    user_id = 888
+    mock_user = User(id=user_id, name="Pagination Tester", email="pagination@example.com")
+    _GMAIL_USER_TOKENS[user_id] = {
+        "access_token": "mock_token_pagination",
+        "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
+        "email": "pagination@gmail.com",
+    }
+
+    app.dependency_overrides[get_current_user] = lambda: mock_user
+    try:
+        mock_raw_list = {
+            "messages": [{"id": f"msg_{i}"} for i in range(10)],
+            "nextPageToken": "token_page_2_xyz",
+            "resultSizeEstimate": 45,
+        }
+        mock_parsed_msg = {
+            "id": "msg_0",
+            "subject": "Phishing Alert",
+            "from": "Alerts <alerts@security.com>",
+            "date": "2026-09-19",
+            "snippet": "Suspicious login detected",
+        }
+
+        with patch("app.routers.gmail.list_gmail_messages", new=AsyncMock(return_value=mock_raw_list)) as mock_list, \
+             patch("app.routers.gmail.get_gmail_message_metadata", new=AsyncMock(return_value={"id": "msg_0"})), \
+             patch("app.routers.gmail.parse_gmail_message", return_value=mock_parsed_msg):
+
+            resp = client.get("/api/v1/gmail/messages?max_results=10&page_token=token_page_1")
+            assert resp.status_code == 200
+            data = resp.json()
+            assert "messages" in data
+            assert "emails" in data
+            assert data["nextPageToken"] == "token_page_2_xyz"
+            assert data["count"] == 10
+
+            # Verify list_gmail_messages was called with limit=10 and page_token
+            mock_list.assert_called_once_with(
+                "mock_token_pagination",
+                max_results=10,
+                query=None,
+                page_token="token_page_1",
+            )
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+
+

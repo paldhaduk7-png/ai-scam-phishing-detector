@@ -616,15 +616,19 @@ def cancel_gmail_analysis(
 
 @router.get(
     "/messages",
-    summary="List recent inbox emails from connected Gmail",
+    summary="List recent inbox emails from connected Gmail with pagination support",
 )
 async def list_messages(
-    max_results: int = Query(default=10, ge=1, le=25),
+    max_results: Optional[int] = Query(default=None, ge=1, le=100),
+    maxResults: Optional[int] = Query(default=None, ge=1, le=100),
+    page_token: Optional[str] = Query(default=None),
+    pageToken: Optional[str] = Query(default=None),
     q: Optional[str] = Query(default=None, description="Optional Gmail search query"),
     current_user: User = Depends(get_current_user),
 ) -> Dict[str, Any]:
     """
-    Lists recent emails from the connected user's Gmail inbox.
+    Lists recent emails from the connected user's Gmail inbox with pagination support.
+    Accepts pageToken and maxResults, returning nextPageToken for subsequent pages.
     Returns preview metadata (id, snippet, subject, from, date) for each email.
     """
     _clean_expired_tokens()
@@ -636,9 +640,16 @@ async def list_messages(
         )
 
     access_token = token_data["access_token"]
+    limit = max_results if max_results is not None else (maxResults if maxResults is not None else 10)
+    token = page_token or pageToken or None
 
     try:
-        raw_list = await list_gmail_messages(access_token, max_results=max_results, query=q)
+        raw_list = await list_gmail_messages(
+            access_token,
+            max_results=limit,
+            query=q,
+            page_token=token,
+        )
     except httpx.HTTPStatusError as exc:
         if exc.response.status_code in (401, 403):
             _GMAIL_USER_TOKENS.pop(current_user.id, None)
@@ -690,10 +701,14 @@ async def list_messages(
         results = await asyncio.gather(*tasks)
         items = [r for r in results if r is not None]
 
+    next_page_token = raw_list.get("nextPageToken")
+
     return {
         "count": len(items),
         "resultSizeEstimate": raw_list.get("resultSizeEstimate", len(items)),
         "messages": items,
+        "emails": items,
+        "nextPageToken": next_page_token if next_page_token else None,
     }
 
 
