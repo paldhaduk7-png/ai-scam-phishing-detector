@@ -19,7 +19,12 @@ export default function AppLayout() {
       case '/detect':
         return 'Multi-Vector Threat Detection';
       case '/history':
-        return 'Audit & Scan History';
+      case '/history/email':
+        return 'Email Scan History';
+      case '/history/text':
+        return 'SMS & Text Threat History';
+      case '/history/url':
+        return 'Web & URL Threat History';
       case '/profile':
         return 'Account & Profile Settings';
       case '/about':

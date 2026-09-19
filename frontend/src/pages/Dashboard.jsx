@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import StatCard from '../components/dashboard/StatCard';
 import DetectionChart from '../components/dashboard/DetectionChart';
@@ -11,6 +12,7 @@ import {
   getRecentDetections,
   getDashboardChart,
   getDetectionHistory,
+  getActiveGmailAnalysis,
 } from '../services/api';
 import {
   FileText,
@@ -18,10 +20,15 @@ import {
   AlertCircle,
   AlertTriangle,
   Shield,
+  Loader2,
+  Mail,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const [activeGmailJob, setActiveGmailJob] = useState(null);
   const [stats, setStats] = useState({
     totalScans: '--',
     safeResults: '--',
@@ -85,6 +92,26 @@ export default function Dashboard() {
     fetchDashboard();
   }, []);
 
+  // Poll for background Gmail analysis jobs
+  useEffect(() => {
+    let jobInterval;
+    const checkJob = async () => {
+      try {
+        const res = await getActiveGmailAnalysis();
+        if (res?.active && res.job) {
+          setActiveGmailJob(res.job);
+        } else {
+          setActiveGmailJob(null);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    checkJob();
+    jobInterval = setInterval(checkJob, 3500);
+    return () => clearInterval(jobInterval);
+  }, []);
 
   return (
     <div className="space-y-6 animate-fadeIn">
@@ -112,6 +139,47 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Active Gmail Background Analysis Banner */}
+      {activeGmailJob && ['starting', 'processing'].includes(activeGmailJob.status) && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-blue-500/10 to-indigo-500/10 border border-emerald-500/30 dark:border-emerald-500/20 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fadeIn">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm shadow-emerald-500/20">
+              <Loader2 className="w-5 h-5 animate-spin" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                  Gmail Background Analysis Active
+                </h4>
+                <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300">
+                  {activeGmailJob.progress_percent || 0}% Complete
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
+                Processed {activeGmailJob.processed || 0} of {activeGmailJob.total || 0} emails. Results are being saved directly to PostgreSQL.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-end sm:self-center shrink-0">
+            <button
+              type="button"
+              onClick={() => navigate('/detect?tab=email')}
+              className="px-3.5 py-1.5 text-xs font-semibold text-blue-600 dark:text-blue-400 bg-white dark:bg-slate-900 hover:bg-blue-50 dark:hover:bg-blue-950/60 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors shadow-2xs cursor-pointer"
+            >
+              View Progress
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/history/email')}
+              className="px-3.5 py-1.5 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors shadow-2xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Email History</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. User Welcome & Security Awareness Row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
