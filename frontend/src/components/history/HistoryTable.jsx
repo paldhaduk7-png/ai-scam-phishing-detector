@@ -271,63 +271,74 @@ export default function HistoryTable({
               const displayIdx = (currentPage - 1) * 10 + (index + 1);
 
               return (
-                <div key={item.id || index} className="p-4 space-y-2.5">
+                <div key={item.id || index} className="p-3.5 space-y-2.5">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-mono text-xs text-slate-400">#{displayIdx}</span>
+                      <span className="font-mono text-xs text-slate-400 font-semibold">#{displayIdx}</span>
                       {channel === 'email' && renderSourceBadge(item)}
                       {channel === 'all' && (
-                        <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/90 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
                           {getTypeIcon(item.input_type || item.type)}
                           <span className="capitalize">{item.input_type || item.type}</span>
                         </div>
                       )}
                     </div>
-                    <Badge
-                      variant={
-                        item.is_phishing
-                          ? 'phishing'
-                          : item.risk_percentage >= 40.0
-                          ? 'suspicious'
-                          : 'safe'
-                      }
-                      size="sm"
-                    >
-                      {item.result || (item.is_phishing ? 'Phishing' : 'Safe')}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <Badge
+                        variant={
+                          item.is_phishing
+                            ? 'phishing'
+                            : item.risk_percentage >= 40.0
+                            ? 'suspicious'
+                            : 'safe'
+                        }
+                        size="sm"
+                      >
+                        {item.result || (item.is_phishing ? 'Phishing' : 'Safe')}
+                      </Badge>
+                      {riskVal > 0 && (
+                        <span className="text-[10px] font-mono font-bold text-slate-500 dark:text-slate-400">
+                          {typeof riskVal === 'number' ? riskVal.toFixed(1) : riskVal}%
+                        </span>
+                      )}
+                    </div>
                   </div>
 
                   {item.subject && (
-                    <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                    <div className="font-bold text-xs text-slate-900 dark:text-white truncate">
                       {item.subject}
                     </div>
                   )}
 
-                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                  <p className="text-xs text-slate-600 dark:text-slate-300 font-mono line-clamp-2 bg-slate-50/60 dark:bg-slate-900/40 p-2 rounded-lg border border-slate-100 dark:border-slate-800/80">
                     {item.preview || item.input_text || '--'}
                   </p>
 
-                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center justify-between text-[10.5px] text-slate-400 pt-1.5 border-t border-slate-100 dark:border-slate-800">
                     <span>{formatDateTime(item)}</span>
-                    <div className="flex items-center gap-1">
+                    {/* Ergonomic mobile touch buttons (minimum 36px touch zone) */}
+                    <div className="flex items-center gap-1.5">
                       <button
                         type="button"
                         onClick={() => onToggleStar?.(item)}
-                        className="p-1 text-amber-500"
+                        aria-label="Toggle star"
+                        className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 active:scale-90 transition-transform cursor-pointer"
                       >
                         <Star className="w-3.5 h-3.5" fill={item.is_starred ? 'currentColor' : 'none'} />
                       </button>
                       <button
                         type="button"
                         onClick={() => onView?.(item)}
-                        className="p-1 text-blue-600"
+                        aria-label="View details"
+                        className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 active:scale-90 transition-transform cursor-pointer"
                       >
                         <Eye className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete?.(item)}
-                        className="p-1 text-rose-600"
+                        aria-label="Delete item"
+                        className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40 active:scale-90 transition-transform cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>

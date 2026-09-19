@@ -319,7 +319,7 @@ export default function Detect() {
               3 Detection Channels
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight mt-1">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight mt-1">
             Threat Classification
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
@@ -329,10 +329,10 @@ export default function Detect() {
       </div>
 
       {/* Main Detection Workspace: Side-by-Side 2 Columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-start">
         {/* Left Column: Input Form */}
         <div className="lg:col-span-6 space-y-4">
-          <Card className="p-5 space-y-4 shadow-sm border border-slate-200/90 dark:border-slate-800">
+          <Card className="p-3.5 sm:p-5 space-y-4 shadow-sm border border-slate-200/90 dark:border-slate-800">
             {/* Segmented Channel Selection Tabs */}
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
               <DetectionTabs activeTab={activeTab} onChange={handleTabChange} />

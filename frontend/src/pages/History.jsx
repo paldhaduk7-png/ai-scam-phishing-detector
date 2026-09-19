@@ -232,7 +232,7 @@ export default function History({ channel: propChannel }) {
             </span>
           </div>
 
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight mt-1">
+          <h1 className="text-xl sm:text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight mt-1">
             {getPageTitle()}
           </h1>
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-400 mt-0.5">
@@ -241,7 +241,7 @@ export default function History({ channel: propChannel }) {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
             variant="primary"
             size="sm"
