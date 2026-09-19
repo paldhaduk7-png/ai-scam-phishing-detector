@@ -6,7 +6,6 @@ import RecentDetections from '../components/dashboard/RecentDetections';
 import QuickActions from '../components/dashboard/QuickActions';
 import SafetyTips from '../components/dashboard/SafetyTips';
 import Card from '../components/common/Card';
-import BottomPageNav from '../components/layout/BottomPageNav';
 import {
   getDashboardStats,
   getRecentDetections,
@@ -249,8 +248,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Bottom Navigation Hub */}
-      <BottomPageNav currentPage="dashboard" />
     </div>
   );
 }

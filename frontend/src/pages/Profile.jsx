@@ -1,6 +1,5 @@
 import React from 'react';
 import ProfileForm from '../components/profile/ProfileForm';
-import BottomPageNav from '../components/layout/BottomPageNav';
 import { UserCheck } from 'lucide-react';
 
 export default function Profile() {
@@ -26,8 +25,6 @@ export default function Profile() {
 
       <ProfileForm />
 
-      {/* Bottom Navigation Hub */}
-      <BottomPageNav currentPage="profile" />
     </div>
   );
 }

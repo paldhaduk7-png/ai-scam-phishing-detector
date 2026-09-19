@@ -9,7 +9,6 @@ import DetectionResult from '../components/detection/DetectionResult';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
-import BottomPageNav from '../components/layout/BottomPageNav';
 import { Clock, ArrowRight } from 'lucide-react';
 import { detectScam, detectEmailDL } from '../services/api';
 
@@ -230,8 +229,6 @@ export default function Detect() {
         </Button>
       </div>
 
-      {/* Bottom Navigation Hub: Navigate to Other Pages */}
-      <BottomPageNav currentPage="detect" />
     </div>
   );
 }
