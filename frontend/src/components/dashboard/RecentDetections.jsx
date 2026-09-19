@@ -9,8 +9,8 @@ import {
   Mail,
   Link as LinkIcon,
   FileSearch,
-  ExternalLink,
   ChevronRight,
+  ExternalLink,
 } from 'lucide-react';
 
 export default function RecentDetections({ detections = [] }) {
@@ -73,7 +73,7 @@ export default function RecentDetections({ detections = [] }) {
             Recent Detections
           </h2>
           {hasRecords && (
-            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-full font-mono">
+            <span className="text-[10px] sm:text-[11px] font-semibold text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 px-2.5 py-0.5 rounded-full font-mono">
               {detections.length} {detections.length === 1 ? 'record' : 'records'}
             </span>
           )}
@@ -82,13 +82,13 @@ export default function RecentDetections({ detections = [] }) {
           to="/history"
           className="inline-flex items-center gap-1 text-[11px] sm:text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors group"
         >
-          <span>View All History</span>
+          <span>View All Audit History</span>
           <ChevronRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
         </Link>
       </div>
 
       {/* Content */}
-      <div className="flex-1 mt-2.5 sm:mt-3">
+      <div className="flex-1 mt-2 sm:mt-3">
         {hasRecords ? (
           <div>
             {/* Desktop / Tablet Table View (hidden on very small screens) */}
@@ -96,16 +96,17 @@ export default function RecentDetections({ detections = [] }) {
               <table className="w-full text-left text-sm">
                 <thead>
                   <tr className="border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
-                    <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Analyzed Payload</th>
-                    <th className="py-2.5 px-3">Threat Result</th>
-                    <th className="py-2.5 px-3 text-right">Timestamp</th>
+                    <th className="py-3 px-3.5">Type</th>
+                    <th className="py-3 px-3.5">Analyzed Payload / Subject</th>
+                    <th className="py-3 px-3.5">Threat Verdict</th>
+                    <th className="py-3 px-3.5 text-right">Timestamp</th>
+                    <th className="py-3 px-3 text-right">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                   {detections.map((item, index) => {
                     const type = item.type || item.input_type || '';
-                    const preview = item.preview || item.input || item.input_text || '';
+                    const preview = item.preview || item.input || item.input_text || item.subject || '';
                     const result =
                       item.result ||
                       (item.is_phishing
@@ -126,21 +127,21 @@ export default function RecentDetections({ detections = [] }) {
                         onClick={() => navigate('/history')}
                         className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
                       >
-                        <td className="py-3 px-3">
-                          <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-100/80 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/80 dark:bg-slate-800/70 border border-slate-200/50 dark:border-slate-700/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
                             {getTypeIcon(type)}
                             <span>{getTypeLabel(type)}</span>
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-slate-600 dark:text-slate-300 max-w-[220px] md:max-w-[280px]">
+                        <td className="py-3.5 px-3.5 text-slate-600 dark:text-slate-300 max-w-xs md:max-w-md lg:max-w-xl">
                           <p
-                            className="text-xs font-mono truncate"
+                            className="text-xs font-mono truncate text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors"
                             title={typeof preview === 'string' ? preview : ''}
                           >
                             {preview || 'Content payload analyzed'}
                           </p>
                         </td>
-                        <td className="py-3 px-3">
+                        <td className="py-3.5 px-3.5 whitespace-nowrap">
                           <div className="flex items-center gap-2">
                             <Badge status={result} size="sm">
                               {result}
@@ -152,8 +153,14 @@ export default function RecentDetections({ detections = [] }) {
                             )}
                           </div>
                         </td>
-                        <td className="py-3 px-3 text-right text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap">
+                        <td className="py-3.5 px-3.5 text-right text-xs font-medium text-slate-400 dark:text-slate-500 whitespace-nowrap font-mono">
                           {formatDateTime(item)}
+                        </td>
+                        <td className="py-3.5 px-3 text-right whitespace-nowrap">
+                          <span className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 dark:text-blue-400 group-hover:translate-x-0.5 transition-transform">
+                            <span>Details</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </span>
                         </td>
                       </tr>
                     );
@@ -166,7 +173,7 @@ export default function RecentDetections({ detections = [] }) {
             <div className="sm:hidden space-y-2.5">
               {detections.map((item, index) => {
                 const type = item.type || item.input_type || '';
-                const preview = item.preview || item.input || item.input_text || '';
+                const preview = item.preview || item.input || item.input_text || item.subject || '';
                 const result =
                   item.result ||
                   (item.is_phishing
@@ -240,7 +247,7 @@ export default function RecentDetections({ detections = [] }) {
             </div>
           </div>
         ) : (
-          <div className="py-6">
+          <div className="py-8">
             <EmptyState
               icon={FileSearch}
               title="No Recent Detections"

@@ -7,6 +7,7 @@ import {
   Link as LinkIcon,
   Clock,
   ArrowUpRight,
+  Zap,
 } from 'lucide-react';
 
 export default function QuickActions() {
@@ -15,7 +16,7 @@ export default function QuickActions() {
   const actions = [
     {
       label: 'Detect Message',
-      description: 'SMS & chat scams',
+      description: 'SMS, chat & fraud text scans',
       icon: MessageSquare,
       path: '/detect?tab=message',
       color:
@@ -23,7 +24,7 @@ export default function QuickActions() {
     },
     {
       label: 'Detect Email',
-      description: 'ML & Bi-LSTM neural filter',
+      description: 'Neural filter & Gmail inbox sync',
       icon: Mail,
       path: '/detect?tab=email',
       color:
@@ -31,15 +32,15 @@ export default function QuickActions() {
     },
     {
       label: 'Scan URL',
-      description: 'Lexical link analyzer',
+      description: 'Lexical spoofing & domain audit',
       icon: LinkIcon,
       path: '/detect?tab=url',
       color:
         'text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 border-sky-200/60 dark:border-sky-800/40',
     },
     {
-      label: 'View History',
-      description: 'Audit logs & scan records',
+      label: 'Audit History',
+      description: 'Search & export threat records',
       icon: Clock,
       path: '/history',
       color:
@@ -48,45 +49,55 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card className="flex flex-col p-4 sm:p-6">
-      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-3 sm:mb-4">
-        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
-          Quick Actions
-        </h2>
-        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-          Shortcuts
-        </span>
+    <Card className="flex flex-col justify-between p-4 sm:p-6 h-full">
+      <div>
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-3 sm:mb-4">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-500 fill-amber-500/20" />
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
+              Quick Launchers
+            </h2>
+          </div>
+          <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+            Shortcuts
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2.5">
+          {actions.map((action, idx) => {
+            const Icon = action.icon;
+            return (
+              <button
+                key={idx}
+                type="button"
+                onClick={() => navigate(action.path)}
+                className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-xs active:scale-[0.98] transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              >
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 shadow-2xs ${action.color}`}
+                >
+                  <Icon className="w-4.5 h-4.5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-1">
+                    <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                      {action.label}
+                    </span>
+                    <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+                  </div>
+                  <p className="text-[10.5px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                    {action.description}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-        {actions.map((action, idx) => {
-          const Icon = action.icon;
-          return (
-            <button
-              key={idx}
-              type="button"
-              onClick={() => navigate(action.path)}
-              className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-2.5 sm:p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-xs active:scale-95 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
-            >
-              <div
-                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 shadow-2xs ${action.color}`}
-              >
-                <Icon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
-              </div>
-              <div className="min-w-0 flex-1 w-full">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
-                    {action.label}
-                  </span>
-                  <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
-                </div>
-                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5 hidden xs:block sm:block">
-                  {action.description}
-                </p>
-              </div>
-            </button>
-          );
-        })}
+      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+        <span>ScamShield Engine</span>
+        <span className="font-medium text-blue-600 dark:text-blue-400">Ready</span>
       </div>
     </Card>
   );
