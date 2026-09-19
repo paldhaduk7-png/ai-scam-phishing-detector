@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, Suspense, lazy } from 'react';
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { Toaster } from 'sonner';
@@ -8,14 +8,31 @@ import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import GuestRoute from './components/common/GuestRoute';
 import Home from './pages/Home';
-import Detect from './pages/Detect';
-import Dashboard from './pages/Dashboard';
-import History from './pages/History';
-import Profile from './pages/Profile';
-import About from './pages/About';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
+
+// Lazy-loaded secondary route pages
+const Detect = lazy(() => import('./pages/Detect'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const History = lazy(() => import('./pages/History'));
+const Profile = lazy(() => import('./pages/Profile'));
+const About = lazy(() => import('./pages/About'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+
+function PageFallback() {
+  return (
+    <div
+      className="min-h-[50vh] flex flex-col items-center justify-center p-6"
+      role="status"
+      aria-label="Loading page"
+    >
+      <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 border border-blue-100 dark:border-blue-900/60 flex items-center justify-center shadow-xs">
+        <div className="w-5 h-5 border-2 border-blue-600 dark:border-blue-400 border-t-transparent rounded-full animate-spin" />
+      </div>
+      <span className="sr-only">Loading...</span>
+    </div>
+  );
+}
 
 const router = createBrowserRouter([
   // Public Landing & About Pages
@@ -25,7 +42,11 @@ const router = createBrowserRouter([
   },
   {
     path: '/about',
-    element: <About />,
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <About />
+      </Suspense>
+    ),
   },
   // Public Auth Pages (Guarded by GuestRoute: logged-in users redirected to /dashboard)
   {
@@ -33,19 +54,35 @@ const router = createBrowserRouter([
     children: [
       {
         path: '/login',
-        element: <Login />,
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <Login />
+          </Suspense>
+        ),
       },
       {
         path: '/register',
-        element: <Register />,
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <Register />
+          </Suspense>
+        ),
       },
       {
         path: '/signup',
-        element: <Register />,
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <Register />
+          </Suspense>
+        ),
       },
       {
         path: '/forgot-password',
-        element: <ForgotPassword />,
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <ForgotPassword />
+          </Suspense>
+        ),
       },
       {
         path: '/reset-password',
@@ -53,14 +90,18 @@ const router = createBrowserRouter([
       },
     ],
   },
-  // Main Application Layout
+  // Main Application Layout (eagerly imported)
   {
     element: <AppLayout />,
     children: [
       // Public App Pages (Guest accessible)
       {
         path: 'detect',
-        element: <Detect />,
+        element: (
+          <Suspense fallback={<PageFallback />}>
+            <Detect />
+          </Suspense>
+        ),
       },
       // Protected Pages (Authentication strictly required)
       {
@@ -68,7 +109,11 @@ const router = createBrowserRouter([
         children: [
           {
             path: 'dashboard',
-            element: <Dashboard />,
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <Dashboard />
+              </Suspense>
+            ),
           },
           {
             path: 'history',
@@ -76,19 +121,35 @@ const router = createBrowserRouter([
           },
           {
             path: 'history/email',
-            element: <History channel="email" />,
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <History channel="email" />
+              </Suspense>
+            ),
           },
           {
             path: 'history/text',
-            element: <History channel="sms" />,
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <History channel="sms" />
+              </Suspense>
+            ),
           },
           {
             path: 'history/url',
-            element: <History channel="url" />,
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <History channel="url" />
+              </Suspense>
+            ),
           },
           {
             path: 'profile',
-            element: <Profile />,
+            element: (
+              <Suspense fallback={<PageFallback />}>
+                <Profile />
+              </Suspense>
+            ),
           },
         ],
       },

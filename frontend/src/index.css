@@ -117,13 +117,4 @@ html.dark .bg-grid-pattern {
                     linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
 }
 
-/* Subtle dot pattern for modern SaaS aesthetic */
-.bg-dots-pattern {
-  background-image: radial-gradient(rgba(148, 163, 184, 0.2) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
 
-html.dark .bg-dots-pattern {
-  background-image: radial-gradient(rgba(56, 189, 248, 0.12) 1px, transparent 1px);
-  background-size: 24px 24px;
-}
