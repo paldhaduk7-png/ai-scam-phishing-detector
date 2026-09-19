@@ -61,6 +61,8 @@ function aggregate7Days(items = []) {
 }
 
 export default function DetectionChart({ data = null }) {
+  const [selectedDay, setSelectedDay] = React.useState(null);
+
   let points = [];
   if (Array.isArray(data) && data.length > 0) {
     if (data[0] && typeof data[0].day === 'string' && ('safe' in data[0] || 'total' in data[0])) {
@@ -79,47 +81,64 @@ export default function DetectionChart({ data = null }) {
   const maxTotal = Math.max(...points.map((d) => d.total || 0), 1);
 
   return (
-    <Card className="flex flex-col p-6">
+    <Card className="flex flex-col p-4 sm:p-6">
       {/* Chart Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+            <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
               Detection Activity Overview
             </h2>
             {hasActivity && (
-              <span className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/40 px-2 py-0.5 rounded-full font-mono">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/40 px-2 py-0.5 rounded-full font-mono">
                 {totalScans} Total
               </span>
             )}
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-[11px] sm:text-xs text-slate-500 dark:text-slate-400 mt-0.5">
             Real 7-day scan breakdown across Safe, Suspicious, and Phishing categories
           </p>
         </div>
 
         {/* Legend with counts */}
-        <div className="flex items-center gap-3.5 text-xs font-medium text-slate-600 dark:text-slate-300 flex-wrap">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 shadow-2xs" />
+        <div className="flex items-center gap-2.5 sm:gap-3.5 text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-300 flex-wrap">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-emerald-500 shadow-2xs" />
             <span>Safe</span>
-            {hasActivity && <span className="text-[11px] text-slate-400 font-mono">({totalSafe})</span>}
+            {hasActivity && <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">({totalSafe})</span>}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shadow-2xs" />
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-amber-500 shadow-2xs" />
             <span>Suspicious</span>
-            {hasActivity && <span className="text-[11px] text-slate-400 font-mono">({totalSusp})</span>}
+            {hasActivity && <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">({totalSusp})</span>}
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-2xs" />
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className="w-2 sm:w-2.5 h-2 sm:h-2.5 rounded-full bg-red-500 shadow-2xs" />
             <span>Phishing</span>
-            {hasActivity && <span className="text-[11px] text-slate-400 font-mono">({totalPhish})</span>}
+            {hasActivity && <span className="text-[10px] sm:text-[11px] text-slate-400 font-mono">({totalPhish})</span>}
           </div>
         </div>
       </div>
 
+      {/* Mobile Tap-to-Inspect Selected Day Card (Shown on mobile when a bar is tapped) */}
+      {selectedDay && (
+        <div className="sm:hidden mt-3 p-2.5 rounded-xl bg-blue-50/70 dark:bg-blue-950/40 border border-blue-200/60 dark:border-blue-800/50 flex items-center justify-between text-xs animate-fadeIn">
+          <div>
+            <span className="font-bold text-slate-900 dark:text-white">{selectedDay.day}</span>
+            <span className="text-[10px] text-slate-500 dark:text-slate-400 font-mono ml-1.5">{selectedDay.date}</span>
+          </div>
+          <div className="flex items-center gap-2 font-mono text-[11px]">
+            <span className="text-emerald-600 dark:text-emerald-400 font-semibold">{selectedDay.safe} safe</span>
+            <span>•</span>
+            <span className="text-amber-600 dark:text-amber-400 font-semibold">{selectedDay.suspicious} susp</span>
+            <span>•</span>
+            <span className="text-red-600 dark:text-red-400 font-semibold">{selectedDay.phishing} phish</span>
+          </div>
+        </div>
+      )}
+
       {/* Chart Body */}
-      <div className="flex-1 flex items-center justify-center min-h-[240px] pt-6 overflow-x-auto">
+      <div className="flex-1 flex items-center justify-center min-h-[220px] sm:min-h-[240px] pt-4 sm:pt-6 overflow-x-auto">
         {hasActivity ? (
           <div className="w-full flex flex-col justify-between h-[230px] min-w-[260px]">
             <div className="flex-1 flex items-end justify-between gap-1 sm:gap-4 px-1 sm:px-2 pb-2">
@@ -135,13 +154,16 @@ export default function DetectionChart({ data = null }) {
                 const suspPct = total > 0 ? (susp / total) * 100 : 0;
                 const phishPct = total > 0 ? (phish / total) * 100 : 0;
 
+                const isSelected = selectedDay?.date === pt.date;
+
                 return (
                   <div
                     key={pt.date || idx}
-                    className="flex-1 flex flex-col items-center gap-2 group relative"
+                    onClick={() => setSelectedDay(isSelected ? null : pt)}
+                    className="flex-1 flex flex-col items-center gap-1.5 sm:gap-2 group relative cursor-pointer select-none"
                   >
-                    {/* Tooltip on hover */}
-                    <div className="absolute -top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none z-30 bg-slate-900/95 dark:bg-slate-950 text-white text-[11px] px-3 py-2 rounded-xl shadow-xl border border-slate-800/80 whitespace-nowrap backdrop-blur-md">
+                    {/* Tooltip on desktop hover */}
+                    <div className="hidden sm:block absolute -top-14 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-all duration-150 pointer-events-none z-30 bg-slate-900/95 dark:bg-slate-950 text-white text-[11px] px-3 py-2 rounded-xl shadow-xl border border-slate-800/80 whitespace-nowrap backdrop-blur-md">
                       <div className="flex items-center justify-between gap-3 border-b border-slate-700/60 pb-1 mb-1">
                         <span className="font-bold text-slate-200">{pt.day}</span>
                         <span className="text-[10px] text-slate-400 font-mono">{pt.date}</span>
@@ -156,12 +178,14 @@ export default function DetectionChart({ data = null }) {
                     </div>
 
                     {/* Total label above bar */}
-                    <span className="text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 h-4 flex items-center">
+                    <span className="text-[10px] sm:text-[11px] font-mono font-bold text-slate-500 dark:text-slate-400 h-4 flex items-center">
                       {total > 0 ? total : ''}
                     </span>
 
                     {/* Stacked Bar Container */}
-                    <div className="w-full max-w-[42px] bg-slate-100/90 dark:bg-slate-800/50 rounded-t-xl overflow-hidden flex flex-col justify-end h-[140px] border border-slate-200/50 dark:border-slate-800/40">
+                    <div className={`w-full max-w-[32px] sm:max-w-[42px] bg-slate-100/90 dark:bg-slate-800/50 rounded-t-lg sm:rounded-t-xl overflow-hidden flex flex-col justify-end h-[125px] sm:h-[140px] border border-slate-200/50 dark:border-slate-800/40 transition-all ${
+                      isSelected ? 'ring-2 ring-blue-500 shadow-md scale-105' : 'group-hover:scale-105'
+                    }`}>
                       <div
                         style={{ height: `${heightPercent}%` }}
                         className="w-full flex flex-col justify-end transition-all duration-500 rounded-t-lg overflow-hidden"
@@ -191,7 +215,11 @@ export default function DetectionChart({ data = null }) {
                     </div>
 
                     {/* Day label */}
-                    <span className="text-xs font-bold text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                    <span className={`text-[11px] sm:text-xs font-bold transition-colors ${
+                      isSelected
+                        ? 'text-blue-600 dark:text-blue-400 font-extrabold'
+                        : 'text-slate-700 dark:text-slate-300 group-hover:text-blue-600 dark:group-hover:text-blue-400'
+                    }`}>
                       {pt.day}
                     </span>
                   </div>
