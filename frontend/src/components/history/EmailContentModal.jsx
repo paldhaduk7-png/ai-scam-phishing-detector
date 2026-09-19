@@ -41,11 +41,7 @@ export default function EmailContentModal({ item, onClose }) {
             </span>
             {isGmail && (
               <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border border-red-200/80 dark:border-red-900/40">
-                <img
-                  src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png"
-                  className="w-3 h-3 object-contain"
-                  alt=""
-                />
+                <span className="inline-flex items-center justify-center w-3 h-3 rounded-full bg-gradient-to-br from-blue-500 via-red-500 to-yellow-400 text-white text-[7px] font-black leading-none shrink-0">G</span>
                 Gmail
               </span>
             )}

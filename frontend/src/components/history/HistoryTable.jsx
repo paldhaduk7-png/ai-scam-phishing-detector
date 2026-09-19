@@ -98,26 +98,26 @@ export default function HistoryTable({
     <Card className="p-0 overflow-hidden border border-slate-200/90 dark:border-slate-800">
       {hasItems ? (
         <>
-          {/* Desktop & Tablet Table — always shown, scrolls horizontally */}
-          <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full min-w-[720px] text-left text-sm">
+          {/* Desktop & Tablet Table — fits full width, no horizontal scroll */}
+          <div className="hidden sm:block w-full">
+            <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  <th className="py-3 px-4 w-12 text-center">#</th>
-                  {channel === 'email' && <th className="py-3 px-4 w-24">Source</th>}
-                  {channel === 'all' && <th className="py-3 px-4 w-28">Channel</th>}
-                  <th className="py-3 px-4">
+                  <th className="py-2.5 px-2 w-8 text-center">#</th>
+                  {channel === 'email' && <th className="py-2.5 px-2 w-16">Source</th>}
+                  {channel === 'all' && <th className="py-2.5 px-2 w-20">Channel</th>}
+                  <th className="py-2.5 px-2">
                     {channel === 'email'
                       ? 'Subject / Preview'
                       : channel === 'url'
                       ? 'URL'
                       : 'Message Preview'}
                   </th>
-                  {channel === 'email' && <th className="py-3 px-4 w-40">Sender</th>}
-                  <th className="py-3 px-4 w-28">Verdict</th>
-                  <th className="py-3 px-4 w-32">Risk Severity</th>
-                  <th className="py-3 px-4 w-36">Date</th>
-                  <th className="py-3 px-4 text-right w-24">Actions</th>
+                  {channel === 'email' && <th className="py-2.5 px-2 w-28">Sender</th>}
+                  <th className="py-2.5 px-2 w-20">Verdict</th>
+                  <th className="py-2.5 px-2 w-16 text-center">Risk</th>
+                  <th className="py-2.5 px-2 w-28">Date</th>
+                  <th className="py-2.5 px-2 text-right w-14">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
@@ -136,19 +136,19 @@ export default function HistoryTable({
                       onClick={channel === 'email' ? () => onView?.(item) : undefined}
                     >
                       {/* Row Index */}
-                      <td className="py-3 px-4 text-center font-mono text-xs text-slate-400 dark:text-slate-500">
+                      <td className="py-2.5 px-2 text-center font-mono text-xs text-slate-400 dark:text-slate-500">
                         {displayIdx}
                       </td>
 
                       {/* Source Badge for Email Channel */}
                       {channel === 'email' && (
-                        <td className="py-3 px-4">{renderSourceBadge(item)}</td>
+                        <td className="py-2.5 px-2">{renderSourceBadge(item)}</td>
                       )}
 
                       {/* Channel Badge for All Channels */}
                       {channel === 'all' && (
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-1.5">
+                        <td className="py-2.5 px-2">
+                          <div className="flex items-center gap-1">
                             {getTypeIcon(item.input_type || item.type)}
                             <span className="text-xs font-semibold capitalize text-slate-700 dark:text-slate-300">
                               {item.input_type || item.type || 'Scan'}
@@ -158,8 +158,8 @@ export default function HistoryTable({
                       )}
 
                       {/* Payload Preview / Subject */}
-                      <td className="py-3 px-4">
-                        <div className="max-w-md">
+                      <td className="py-2.5 px-2 max-w-0">
+                        <div className="w-full">
                           {item.subject && (
                             <span className="block font-semibold text-xs text-slate-900 dark:text-white truncate">
                               {item.subject}
@@ -179,13 +179,13 @@ export default function HistoryTable({
 
                       {/* Sender for Email Channel */}
                       {channel === 'email' && (
-                        <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-300 truncate max-w-[160px]">
-                          {item.sender || 'Unknown'}
+                        <td className="py-2.5 px-2 text-xs text-slate-600 dark:text-slate-300 max-w-[112px]">
+                          <span className="block truncate">{item.sender || 'Unknown'}</span>
                         </td>
                       )}
 
                       {/* Verdict Badge */}
-                      <td className="py-3 px-4">
+                      <td className="py-2.5 px-2">
                         <Badge
                           variant={
                             item.is_phishing
@@ -200,35 +200,29 @@ export default function HistoryTable({
                         </Badge>
                       </td>
 
-                      {/* Risk Severity Bar */}
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                            <div
-                              className={`h-full rounded-full ${
-                                riskVal >= 70
-                                  ? 'bg-rose-500'
-                                  : riskVal >= 40
-                                  ? 'bg-amber-500'
-                                  : 'bg-emerald-500'
-                              }`}
-                              style={{ width: `${Math.min(100, Math.max(5, riskVal))}%` }}
-                            />
-                          </div>
-                          <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
-                            {riskVal}%
-                          </span>
-                        </div>
+                      {/* Risk % only (no bar) to save space */}
+                      <td className="py-2.5 px-2 text-center">
+                        <span
+                          className={`font-mono text-xs font-bold ${
+                            riskVal >= 70
+                              ? 'text-rose-600 dark:text-rose-400'
+                              : riskVal >= 40
+                              ? 'text-amber-600 dark:text-amber-400'
+                              : 'text-emerald-600 dark:text-emerald-400'
+                          }`}
+                        >
+                          {riskVal}%
+                        </span>
                       </td>
 
                       {/* Date */}
-                      <td className="py-3 px-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
+                      <td className="py-2.5 px-2 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {formatDateTime(item)}
                       </td>
 
                       {/* Actions */}
-                      <td className="py-3 px-4 text-right">
-                        <div className="flex items-center justify-end gap-1">
+                      <td className="py-2.5 px-2 text-right">
+                        <div className="flex items-center justify-end gap-0.5">
                           <button
                             type="button"
                             onClick={(e) => { e.stopPropagation(); onToggleStar?.(item); }}
