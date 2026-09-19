@@ -152,7 +152,7 @@ export default function DetectionChart({ data = null }) {
   return (
     <Card className="flex flex-col p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/70">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
@@ -331,7 +331,7 @@ export default function DetectionChart({ data = null }) {
             {/* Interactive Tooltip Card */}
             {hovered && hovered.total > 0 && hoverIdx !== null && (
               <div
-                className="pointer-events-none absolute z-30 top-1 bg-slate-900/95 dark:bg-slate-950/95 text-white text-[11px] px-3.5 py-2.5 rounded-xl shadow-xl border border-slate-700/60 backdrop-blur-md whitespace-nowrap animate-fadeIn"
+                className="pointer-events-none absolute z-30 top-1 bg-[#0b111e]/98 text-white text-[11px] px-3.5 py-2.5 rounded-xl shadow-xl border border-slate-700/50 backdrop-blur-md whitespace-nowrap animate-fadeIn"
                 style={{
                   left: `${(xPos(hoverIdx) / W) * 100}%`,
                   transform:

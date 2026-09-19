@@ -213,7 +213,7 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* Top Branding Navigation Header - Full width white bar (height ~54px) */}
-      <header className="w-full h-14 bg-white dark:bg-[#0b101b] border-b border-slate-200/80 dark:border-slate-800 shrink-0 flex items-center">
+      <header className="w-full h-14 bg-[#0b101b] border-b border-slate-800/60 shrink-0 flex items-center">
         <div className="w-full px-4 sm:px-6 lg:px-8 xl:px-10 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
             <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
@@ -253,7 +253,7 @@ export default function Login() {
 
             <Link
               to="/register"
-              className="px-3.5 py-1.5 rounded-lg border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50/70 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs transition-all"
+              className="px-3.5 py-1.5 rounded-lg border border-slate-700/60 bg-slate-800/50 text-blue-400 hover:bg-slate-700/60 text-xs font-semibold shadow-sm transition-all"
             >
               Create Account
             </Link>
@@ -285,7 +285,7 @@ export default function Login() {
             {/* 3 WIDE Security Feature Cards (450–500px) */}
             <div className="space-y-3 pt-1">
               {/* Card 1: Comprehensive Detection Audit Log */}
-              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                   <FileText className="w-5 h-5" />
                 </div>
@@ -300,7 +300,7 @@ export default function Login() {
               </div>
 
               {/* Card 2: Real-Time 7-Day Dashboard Trends */}
-              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <BarChart3 className="w-5 h-5" />
                 </div>
@@ -315,7 +315,7 @@ export default function Login() {
               </div>
 
               {/* Card 3: Relational PostgreSQL Persistence */}
-              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-4 p-3.5 rounded-xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
                   <Database className="w-5 h-5" />
                 </div>
@@ -340,7 +340,7 @@ export default function Login() {
           <div
             className="w-full max-w-[460px] lg:w-[460px] shrink-0 relative flex items-center justify-center mx-auto lg:mx-0"
           >
-            <div className="w-full bg-white dark:bg-[#0f172a] rounded-2xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 p-5 sm:p-8">
+            <div className="w-full bg-[#0d1424] rounded-2xl shadow-xl border border-slate-800/60 p-5 sm:p-8">
               {/* Top Lock Badge */}
               <div className="w-11 h-11 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-3">
                 <Lock className="w-5 h-5 stroke-[2.2]" />

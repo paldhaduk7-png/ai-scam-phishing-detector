@@ -67,7 +67,7 @@ export default function RecentDetections({ detections = [] }) {
   return (
     <Card className="flex flex-col p-4 sm:p-6">
       {/* Header */}
-      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80">
+      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800/70">
         <div className="flex items-center gap-2 sm:gap-2.5">
           <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
             Recent Detections
@@ -95,7 +95,7 @@ export default function RecentDetections({ detections = [] }) {
             <div className="hidden sm:block overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-100 dark:border-slate-800/80 text-[11px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <tr className="border-b border-slate-800/60 text-[11px] font-bold uppercase tracking-wider text-slate-500">
                     <th className="py-3 px-3.5">Type</th>
                     <th className="py-3 px-3.5">Analyzed Payload / Subject</th>
                     <th className="py-3 px-3.5">Threat Verdict</th>
@@ -103,7 +103,7 @@ export default function RecentDetections({ detections = [] }) {
                     <th className="py-3 px-3 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
+                <tbody className="divide-y divide-slate-800/50">
                   {detections.map((item, index) => {
                     const type = item.type || item.input_type || '';
                     const preview = item.preview || item.input || item.input_text || item.subject || '';
@@ -125,10 +125,10 @@ export default function RecentDetections({ detections = [] }) {
                       <tr
                         key={item.id || index}
                         onClick={() => navigate('/history')}
-                        className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors cursor-pointer group"
+                        className="hover:bg-slate-800/30 transition-colors cursor-pointer group"
                       >
                         <td className="py-3.5 px-3.5 whitespace-nowrap">
-                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/80 dark:bg-slate-800/70 border border-slate-200/50 dark:border-slate-700/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-800/60 border border-slate-700/50 text-xs font-semibold text-slate-300">
                             {getTypeIcon(type)}
                             <span>{getTypeLabel(type)}</span>
                           </div>
@@ -193,10 +193,10 @@ export default function RecentDetections({ detections = [] }) {
                   <div
                     key={item.id || index}
                     onClick={() => navigate('/history')}
-                    className="p-3 rounded-xl border border-slate-200/70 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700 active:scale-[0.98] transition-all shadow-2xs"
+                    className="p-3 rounded-xl border border-slate-800/60 bg-slate-900/40 space-y-2 cursor-pointer hover:border-slate-700/60 active:scale-[0.98] transition-all shadow-sm"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-100/90 dark:bg-slate-800 border border-slate-200/60 dark:border-slate-700 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800/60 border border-slate-700/50 text-xs font-semibold text-slate-300">
                         {getTypeIcon(type)}
                         <span>{getTypeLabel(type)}</span>
                       </div>
@@ -235,7 +235,7 @@ export default function RecentDetections({ detections = [] }) {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[10.5px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800/60">
+                    <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-1 border-t border-slate-800/50">
                       <span>{formatDateTime(item)}</span>
                       <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 font-semibold">
                         Details <ExternalLink className="w-3 h-3" />

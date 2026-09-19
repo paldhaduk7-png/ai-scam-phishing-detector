@@ -95,32 +95,32 @@ export default function HistoryTable({
   };
 
   return (
-    <Card className="p-0 overflow-hidden border border-slate-200/90 dark:border-slate-800">
+    <Card className="p-0 overflow-hidden border border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-[#0b111e]">
       {hasItems ? (
         <>
           {/* Desktop & Tablet Table — fits full width, no horizontal scroll */}
           <div className="hidden sm:block w-full">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
-                  <th className="py-2.5 px-2 w-8 text-center">#</th>
-                  {channel === 'email' && <th className="py-2.5 px-2 w-16">Source</th>}
-                  {channel === 'all' && <th className="py-2.5 px-2 w-20">Channel</th>}
-                  <th className="py-2.5 px-2">
+                <tr className="border-b border-slate-200/80 dark:border-slate-800/80 bg-slate-50/80 dark:bg-[#070b13] text-[11px] font-semibold uppercase tracking-wider text-slate-400 dark:text-slate-500">
+                  <th className="py-2.5 px-2.5 w-8 text-center">#</th>
+                  {channel === 'email' && <th className="py-2.5 px-2.5 w-16">Source</th>}
+                  {channel === 'all' && <th className="py-2.5 px-2.5 w-20">Channel</th>}
+                  <th className="py-2.5 px-2.5">
                     {channel === 'email'
                       ? 'Subject / Preview'
                       : channel === 'url'
                       ? 'URL'
                       : 'Message Preview'}
                   </th>
-                  {channel === 'email' && <th className="py-2.5 px-2 w-28">Sender</th>}
-                  <th className="py-2.5 px-2 w-20">Verdict</th>
-                  <th className="py-2.5 px-2 w-16 text-center">Risk</th>
-                  <th className="py-2.5 px-2 w-28">Date</th>
-                  <th className="py-2.5 px-2 text-right w-14">Actions</th>
+                  {channel === 'email' && <th className="py-2.5 px-2.5 w-28">Sender</th>}
+                  <th className="py-2.5 px-2.5 w-20">Verdict</th>
+                  <th className="py-2.5 px-2.5 w-16 text-center">Risk</th>
+                  <th className="py-2.5 px-2.5 w-28">Date</th>
+                  <th className="py-2.5 px-2.5 text-right w-14">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                 {items.map((item, index) => {
                   const riskVal = item.risk_percentage ?? item.riskScore ?? item.confidence ?? 0;
                   const displayIdx = (currentPage - 1) * 10 + (index + 1);
@@ -130,8 +130,8 @@ export default function HistoryTable({
                       key={item.id || index}
                       className={`transition-colors ${
                         channel === 'email'
-                          ? 'hover:bg-indigo-50/60 dark:hover:bg-indigo-950/20 cursor-pointer'
-                          : 'hover:bg-slate-50/80 dark:hover:bg-slate-900/40'
+                          ? 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40 cursor-pointer'
+                          : 'hover:bg-slate-50/80 dark:hover:bg-slate-800/40'
                       }`}
                       onClick={channel === 'email' ? () => onView?.(item) : undefined}
                     >
@@ -364,7 +364,7 @@ export default function HistoryTable({
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="px-4 py-3 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+            <div className="px-4 py-3 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50/50 dark:bg-[#070b13] flex items-center justify-between">
               <span className="text-xs text-slate-500 dark:text-slate-400">
                 Page {currentPage} of {totalPages}
               </span>

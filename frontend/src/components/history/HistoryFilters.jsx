@@ -41,14 +41,14 @@ export default function HistoryFilters({
     <Card className="p-3.5 sm:p-5 space-y-2.5 sm:space-y-3">
       {/* Email Source Switcher Pills (All / Manual / Gmail) when in Email History */}
       {channel === 'email' && (
-        <div className="flex items-center gap-1.5 p-1 bg-slate-100 dark:bg-slate-900/80 rounded-xl max-w-xs border border-slate-200/60 dark:border-slate-800">
+        <div className="flex items-center gap-1 p-1 bg-[#0b111e] dark:bg-[#0b111e] rounded-xl max-w-xs border border-slate-800/80">
           <button
             type="button"
             onClick={() => setSourceFilter?.('all')}
             className={`flex-1 py-1.5 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               sourceFilter === 'all'
-                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-slate-700/60 text-blue-400 shadow-sm'
+                : 'text-slate-500 hover:text-slate-200'
             }`}
           >
             All
@@ -58,8 +58,8 @@ export default function HistoryFilters({
             onClick={() => setSourceFilter?.('manual')}
             className={`flex-1 py-1.5 px-3 text-xs font-semibold rounded-lg transition-all cursor-pointer ${
               sourceFilter === 'manual'
-                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-slate-700/60 text-blue-400 shadow-sm'
+                : 'text-slate-500 hover:text-slate-200'
             }`}
           >
             Manual
@@ -69,8 +69,8 @@ export default function HistoryFilters({
             onClick={() => setSourceFilter?.('gmail')}
             className={`flex-1 py-1.5 px-3 text-xs font-semibold rounded-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
               sourceFilter === 'gmail'
-                ? 'bg-white dark:bg-slate-800 text-blue-600 dark:text-blue-400 shadow-xs'
-                : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                ? 'bg-slate-700/60 text-blue-400 shadow-sm'
+                : 'text-slate-500 hover:text-slate-200'
             }`}
           >
             <img
@@ -86,13 +86,13 @@ export default function HistoryFilters({
       <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5 sm:gap-3 w-full">
         {/* Search Input */}
         <div className="relative flex-1 min-w-0">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
           <input
             type="text"
             placeholder={getSearchPlaceholder()}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 dark:placeholder-slate-500 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 bg-[#0b111e] border border-slate-800/80 rounded-xl text-xs sm:text-sm text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600/50 transition-all"
           />
         </div>
 
@@ -104,14 +104,14 @@ export default function HistoryFilters({
               <select
                 value={typeFilter}
                 onChange={(e) => setTypeFilter?.(e.target.value)}
-                className="w-full appearance-none pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all cursor-pointer"
+                className="w-full appearance-none pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 bg-[#0b111e] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600/50 transition-all cursor-pointer"
               >
                 <option value="all">All Channels</option>
                 <option value="message">SMS / Message</option>
                 <option value="email">Email</option>
                 <option value="url">Web URL</option>
               </select>
-              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+              <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
             </div>
           )}
 
@@ -120,24 +120,24 @@ export default function HistoryFilters({
             <select
               value={resultFilter}
               onChange={(e) => setResultFilter(e.target.value)}
-              className="w-full appearance-none pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all cursor-pointer"
+              className="w-full appearance-none pl-2.5 sm:pl-3 pr-7 sm:pr-8 py-2 bg-[#0b111e] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600/50 transition-all cursor-pointer"
             >
               <option value="all">All Verdicts</option>
               <option value="safe">Safe</option>
               <option value="suspicious">Suspicious</option>
               <option value="phishing">Phishing</option>
             </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
           </div>
 
           {/* Date Filter */}
           <div className={`relative sm:w-36 ${channel === 'all' ? 'col-span-2 sm:col-span-1' : 'col-span-1'}`}>
-            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-400 dark:text-slate-500 pointer-events-none" />
+            <Calendar className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 pointer-events-none" />
             <input
               type="date"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
-              className="w-full pl-8 pr-2 py-1.5 bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-xs font-semibold text-slate-700 dark:text-slate-200 focus:outline-hidden focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all cursor-pointer"
+              className="w-full pl-8 pr-2 py-1.5 bg-[#0b111e] border border-slate-800/80 rounded-xl text-xs font-semibold text-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-600/50 transition-all cursor-pointer"
             />
           </div>
 
@@ -146,7 +146,7 @@ export default function HistoryFilters({
             <button
               type="button"
               onClick={handleReset}
-              className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-xl transition-all cursor-pointer"
+              className="col-span-2 sm:col-span-1 inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-semibold text-slate-400 hover:text-white bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/60 rounded-xl transition-all cursor-pointer"
             >
               <RotateCcw className="w-3.5 h-3.5" />
               <span>Reset</span>

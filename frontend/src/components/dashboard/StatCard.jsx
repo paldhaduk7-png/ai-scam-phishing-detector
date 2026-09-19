@@ -44,7 +44,7 @@ export default function StatCard({
 
   return (
     <Card
-      className={`relative p-3.5 sm:p-5 transition-all duration-200 hover:shadow-md ${scheme.hoverBorder} group overflow-hidden`}
+      className={`relative p-3.5 sm:p-5 transition-all duration-200 hover:shadow-lg ${scheme.hoverBorder} group overflow-hidden`}
     >
       {/* Subtle top indicator bar for mobile accent */}
       <div className={`sm:hidden absolute top-0 left-0 right-0 h-0.5 ${scheme.dot} opacity-70`} />
@@ -76,7 +76,7 @@ export default function StatCard({
 
         {Icon && (
           <div
-            className={`w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${scheme.bg} ${scheme.border} border flex items-center justify-center ${scheme.text} shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+            className={`w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${scheme.bg} ${scheme.border} border flex items-center justify-center ${scheme.text} shrink-0 shadow-sm group-hover:scale-105 transition-transform`}
           >
             <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>

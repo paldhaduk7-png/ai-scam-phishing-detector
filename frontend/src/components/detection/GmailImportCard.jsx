@@ -128,7 +128,7 @@ export default function GmailImportCard({
 
   if (checkingStatus) {
     return (
-      <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-8 bg-white dark:bg-[#0b101b] shadow-2xs flex flex-col items-center justify-center min-h-[220px] text-center">
+      <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-8 bg-white dark:bg-[#0b111e] shadow-xs flex flex-col items-center justify-center min-h-[220px] text-center">
         <Loader2 className="w-6 h-6 animate-spin text-blue-600 dark:text-blue-400 mb-2" />
         <p className="text-xs text-slate-500 dark:text-slate-400">Verifying Gmail connection status...</p>
       </div>
@@ -139,7 +139,7 @@ export default function GmailImportCard({
   if (isConnected) {
     return (
       <>
-        <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b101b] shadow-2xs space-y-5 animate-fadeIn">
+        <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b111e] shadow-xs space-y-5 animate-fadeIn">
           {/* Header Bar */}
           <div className="flex items-start justify-between gap-3 pb-3 border-b border-slate-100 dark:border-slate-800/80">
             <div className="flex items-center gap-3">
@@ -152,7 +152,7 @@ export default function GmailImportCard({
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200/70 dark:border-emerald-800/50 px-2.5 py-0.5 rounded-full font-mono">
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-mono">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Connected ✓
                   </span>
@@ -178,7 +178,7 @@ export default function GmailImportCard({
           </div>
 
           {/* Action Callout */}
-          <div className="bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100/80 dark:border-blue-900/40 rounded-xl p-4 sm:p-5 space-y-3">
+          <div className="bg-blue-50/50 dark:bg-[#070b13] border border-blue-100/80 dark:border-slate-800/80 rounded-xl p-4 sm:p-5 space-y-3">
             <div className="flex items-center gap-2 text-blue-950 dark:text-blue-100 font-bold text-xs sm:text-sm">
               <Sparkles className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               <span>Selective Threat Analysis</span>
@@ -193,7 +193,7 @@ export default function GmailImportCard({
             type="button"
             onClick={handleOpenModal}
             disabled={actionLoading}
-            className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-md shadow-blue-600/20 hover:shadow-lg transition-all duration-150 cursor-pointer disabled:opacity-75"
+            className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold rounded-xl shadow-sm shadow-blue-500/25 transition-all duration-150 cursor-pointer disabled:opacity-75"
           >
             <Mail className="w-4 h-4" />
             <span>Choose Gmail Emails to Analyze</span>
@@ -218,7 +218,7 @@ export default function GmailImportCard({
 
   // State: Disconnected -> Connect Gmail
   return (
-    <div className="border border-slate-200/90 dark:border-slate-800/90 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b101b] shadow-2xs space-y-5 animate-fadeIn">
+    <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b111e] shadow-xs space-y-5 animate-fadeIn">
       {/* Header: Gmail Icon + Title & Description */}
       <div className="flex items-start gap-3.5 sm:gap-4">
         <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/60 flex items-center justify-center shrink-0 p-2.5 shadow-2xs">

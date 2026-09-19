@@ -66,7 +66,7 @@ export default function TopHeader({ onToggleSidebar, title: _title }) {
 
   return (
     <>
-      <header className="sticky top-0 z-30 bg-white/85 dark:bg-[#0b101b]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-colors">
+      <header className="sticky top-0 z-30 bg-white/80 dark:bg-[#080d17]/85 backdrop-blur-xl border-b border-slate-200/80 dark:border-slate-800/80 px-3 sm:px-6 lg:px-8 py-2.5 sm:py-3 transition-colors">
         <div className="flex items-center justify-between gap-2 sm:gap-4 max-w-7xl mx-auto w-full">
           {/* Left Section: Mobile Menu Toggle + System Status Indicator */}
           <div className="flex items-center gap-2 sm:gap-4">
@@ -160,7 +160,7 @@ export default function TopHeader({ onToggleSidebar, title: _title }) {
 
                 {/* Dropdown Card */}
                 {menuOpen && (
-                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#0f172a] rounded-2xl border border-slate-200/90 dark:border-slate-800 shadow-xl py-2 z-50 animate-scaleUp">
+                  <div className="absolute right-0 mt-2 w-56 max-w-[calc(100vw-1.5rem)] bg-white dark:bg-[#0b111e] rounded-2xl border border-slate-200/80 dark:border-slate-800/80 shadow-2xl py-2 z-50 animate-scaleUp">
                     {/* User Header */}
                     <div className="px-4 py-2.5 border-b border-slate-100 dark:border-slate-800">
                       <p className="text-xs font-bold text-slate-900 dark:text-white truncate">

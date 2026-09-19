@@ -27,7 +27,7 @@ export default function EmailContentModal({ item, onClose }) {
       onClick={onClose}
     >
       <div
-        className="bg-white dark:bg-[#0b101b] border border-slate-200 dark:border-slate-800 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+        className="bg-white dark:bg-[#0b111e] border border-slate-200/80 dark:border-slate-800/80 w-full max-w-2xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* ── Header ── */}
@@ -125,7 +125,7 @@ export default function EmailContentModal({ item, onClose }) {
               Email Body
             </span>
           </div>
-          <div className="flex-1 overflow-y-auto rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 p-4 text-xs text-slate-800 dark:text-slate-200 font-mono whitespace-pre-wrap break-words leading-relaxed min-h-[120px]">
+          <div className="flex-1 overflow-y-auto rounded-xl bg-slate-50 dark:bg-[#070b13] border border-slate-200/80 dark:border-slate-800/80 p-4 text-xs text-slate-800 dark:text-slate-200 font-mono whitespace-pre-wrap break-words leading-relaxed min-h-[120px]">
             {item.input_text || item.input || (
               <span className="text-slate-400 dark:text-slate-500 italic font-sans">
                 No email content available.

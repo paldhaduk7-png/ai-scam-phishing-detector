@@ -53,7 +53,7 @@ export default function ConfirmModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="confirm-modal-title"
-        className="relative z-10 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto bg-white dark:bg-[#11192e] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp"
+        className="relative z-10 w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto bg-white dark:bg-[#0b111e] border border-slate-200/80 dark:border-slate-800/80 rounded-2xl shadow-2xl p-6 sm:p-7 text-left transform transition-all animate-scaleUp"
       >
         {/* Subtle decorative glow */}
         <div

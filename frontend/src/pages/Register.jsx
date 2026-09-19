@@ -211,7 +211,7 @@ export default function Register() {
   return (
     <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       {/* 1. Full-Width White Header with clean left/right margins */}
-      <header className="w-full h-14 bg-white dark:bg-[#0b101b] border-b border-slate-200/80 dark:border-slate-800 shrink-0 flex items-center">
+      <header className="w-full h-14 bg-[#0b101b] border-b border-slate-800/60 shrink-0 flex items-center">
         <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
             <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
@@ -251,7 +251,7 @@ export default function Register() {
 
             <Link
               to="/login"
-              className="px-3.5 py-1.5 rounded-lg border border-blue-200 dark:border-slate-700 bg-white dark:bg-slate-900 text-blue-600 dark:text-blue-400 hover:bg-blue-50/70 dark:hover:bg-slate-800 text-xs font-semibold shadow-2xs transition-all"
+              className="px-3.5 py-1.5 rounded-lg border border-slate-700/60 bg-slate-800/50 text-blue-400 hover:bg-slate-700/60 text-xs font-semibold shadow-sm transition-all"
             >
               Sign In
             </Link>
@@ -283,7 +283,7 @@ export default function Register() {
             {/* Three Wide Horizontal Feature Cards (~500px wide) */}
             <div className="space-y-2.5 pt-0.5">
               {/* Card 1: Automated Scan History Persistence */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                   <History className="w-5 h-5" />
                 </div>
@@ -298,7 +298,7 @@ export default function Register() {
               </div>
 
               {/* Card 2: 7-Day Security Operations Trends */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                   <Activity className="w-5 h-5" />
                 </div>
@@ -313,7 +313,7 @@ export default function Register() {
               </div>
 
               {/* Card 3: Profile Personalization & Avatar */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-white dark:bg-[#0f172a] border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-md transition-shadow">
+              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
                 <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
                   <Database className="w-5 h-5" />
                 </div>
@@ -336,7 +336,7 @@ export default function Register() {
 
           {/* RIGHT COLUMN: Wide & Vertically Compact Registration Card */}
           <div className="w-full max-w-[540px] lg:w-[480px] xl:w-[510px] 2xl:w-[540px] shrink-0 mx-auto lg:mx-0">
-            <div className="w-full bg-white dark:bg-[#0f172a] rounded-3xl shadow-xl shadow-slate-200/50 dark:shadow-none border border-slate-100 dark:border-slate-800 px-4 sm:px-8 py-5 sm:py-6">
+            <div className="w-full bg-[#0d1424] rounded-3xl shadow-xl border border-slate-800/60 px-4 sm:px-8 py-5 sm:py-6">
               {/* 1. Blue Account Icon */}
               <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-1.5">
                 <User className="w-5 h-5 stroke-[2.2]" />
@@ -371,7 +371,7 @@ export default function Register() {
               {/* Registration Form with 100% Full-Width 44px Inputs & Compact Vertical Spacing */}
               <form onSubmit={handleSubmit} className="space-y-2.5">
                 {/* 4. Profile Photo (Optional) Upload Box - Full width, compact */}
-                <div className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-slate-50/70 dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800">
+                <div className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-slate-900/50 border border-slate-800/60">
                   {photoPreview ? (
                     <div className="relative shrink-0">
                       <img

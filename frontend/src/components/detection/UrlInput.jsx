@@ -43,7 +43,7 @@ export default function UrlInput({
             placeholder="e.g. google.com or http://scam-offer.com/claim-prize"
             autoComplete="off"
             spellCheck="false"
-            className="w-full pl-10 pr-4 py-3 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-mono text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all duration-150"
+            className="w-full pl-10 pr-4 py-2.5 bg-slate-50/80 dark:bg-[#070b13] border border-slate-200/90 dark:border-slate-800/90 rounded-xl text-sm font-mono text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:border-blue-500 transition-all duration-150"
           />
         </div>
       </div>

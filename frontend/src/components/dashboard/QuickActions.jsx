@@ -51,7 +51,7 @@ export default function QuickActions() {
   return (
     <Card className="flex flex-col justify-between p-4 sm:p-6 h-full">
       <div>
-        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-3 sm:mb-4">
+        <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-800/70 mb-3 sm:mb-4">
           <div className="flex items-center gap-2">
             <Zap className="w-4 h-4 text-amber-500 fill-amber-500/20" />
             <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
@@ -71,7 +71,7 @@ export default function QuickActions() {
                 key={idx}
                 type="button"
                 onClick={() => navigate(action.path)}
-                className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl border border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-xs active:scale-[0.98] transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl border border-slate-800/60 bg-slate-900/30 hover:bg-slate-800/60 hover:border-slate-700/60 hover:shadow-sm active:scale-[0.98] transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
               >
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 shadow-2xs ${action.color}`}
@@ -95,7 +95,7 @@ export default function QuickActions() {
         </div>
       </div>
 
-      <div className="mt-3.5 pt-3 border-t border-slate-100 dark:border-slate-800/80 flex items-center justify-between text-[11px] text-slate-400 dark:text-slate-500">
+      <div className="mt-3.5 pt-3 border-t border-slate-800/70 flex items-center justify-between text-[11px] text-slate-500">
         <span>ScamShield Engine</span>
         <span className="font-medium text-blue-600 dark:text-blue-400">Ready</span>
       </div>

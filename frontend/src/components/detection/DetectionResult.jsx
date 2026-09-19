@@ -267,38 +267,38 @@ export default function DetectionResult({
       }
     }
 
-    // High-impact styling tailored to verdict
+    // High-impact styling tailored to verdict inspired by MailSentry SaaS aesthetic
     let verdictStyles = {
-      card: 'border-2 border-emerald-500/80 bg-emerald-50/90 dark:bg-emerald-950/40 shadow-lg shadow-emerald-500/10',
+      card: 'border border-emerald-500/30 dark:border-emerald-500/20 bg-white dark:bg-[#0b111e] shadow-sm shadow-black/10',
       badgeStatus: 'safe',
       badgeLabel: 'Safe / Benign',
-      iconBox: 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30',
-      titleColor: 'text-emerald-950 dark:text-emerald-100',
+      iconBox: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30',
+      titleColor: 'text-slate-900 dark:text-white',
       barColor: 'bg-emerald-500',
-      scoreColor: 'text-emerald-700 dark:text-emerald-300',
+      scoreColor: 'text-emerald-600 dark:text-emerald-400',
       icon: ShieldCheck,
     };
 
     if (isPhishing) {
       verdictStyles = {
-        card: 'border-2 border-red-500/90 bg-red-50/90 dark:bg-red-950/40 shadow-lg shadow-red-500/15 animate-pulseGlow',
+        card: 'border border-rose-500/40 dark:border-rose-500/25 bg-white dark:bg-[#0b111e] shadow-sm shadow-rose-500/5',
         badgeStatus: 'phishing',
         badgeLabel: 'Critical Threat',
-        iconBox: 'bg-red-600 text-white shadow-md shadow-red-600/30',
-        titleColor: 'text-red-950 dark:text-red-100',
-        barColor: 'bg-red-600',
-        scoreColor: 'text-red-700 dark:text-red-300',
+        iconBox: 'bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/30',
+        titleColor: 'text-slate-900 dark:text-white',
+        barColor: 'bg-rose-500',
+        scoreColor: 'text-rose-600 dark:text-rose-400',
         icon: AlertTriangle,
       };
     } else if (isSuspicious) {
       verdictStyles = {
-        card: 'border-2 border-amber-500/80 bg-amber-50/90 dark:bg-amber-950/40 shadow-lg shadow-amber-500/10',
+        card: 'border border-amber-500/35 dark:border-amber-500/20 bg-white dark:bg-[#0b111e] shadow-sm shadow-amber-500/5',
         badgeStatus: 'suspicious',
         badgeLabel: 'Suspicious Lure',
-        iconBox: 'bg-amber-500 text-white shadow-md shadow-amber-500/30',
-        titleColor: 'text-amber-950 dark:text-amber-100',
+        iconBox: 'bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30',
+        titleColor: 'text-slate-900 dark:text-white',
         barColor: 'bg-amber-500',
-        scoreColor: 'text-amber-700 dark:text-amber-300',
+        scoreColor: 'text-amber-600 dark:text-amber-400',
         icon: AlertCircle,
       };
     }
@@ -406,7 +406,7 @@ export default function DetectionResult({
 
           {/* Email Specific Header (Subject & Sender metadata if available) */}
           {(result.subject || result.sender) && (
-            <div className="p-3 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 text-xs space-y-1">
+            <div className="p-3 rounded-xl bg-slate-50/90 dark:bg-[#070b13] border border-slate-200/80 dark:border-slate-800/80 text-xs space-y-1">
               {result.subject && (
                 <div className="flex items-baseline gap-2 truncate">
                   <span className="font-semibold text-slate-500 dark:text-slate-400 shrink-0">Subject:</span>
@@ -423,9 +423,9 @@ export default function DetectionResult({
           )}
 
           {/* Prominent Threat Severity Score Gauge */}
-          <div className="p-3.5 rounded-xl bg-white/80 dark:bg-slate-900/80 border border-slate-200/80 dark:border-slate-800 space-y-2">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50/90 dark:bg-[#070b13] border border-slate-200/80 dark:border-slate-800/80 space-y-2.5">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-400">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                 Threat Severity Score
               </span>
               <span className={`text-2xl font-black font-mono tracking-tight ${verdictStyles.scoreColor}`}>
@@ -433,7 +433,7 @@ export default function DetectionResult({
               </span>
             </div>
 
-            <div className="w-full h-2.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
+            <div className="w-full h-2 rounded-full bg-slate-200 dark:bg-slate-800/80 overflow-hidden">
               <div
                 className={`h-full rounded-full transition-all duration-700 ease-out ${verdictStyles.barColor}`}
                 style={{ width: `${riskPercentage}%` }}
@@ -442,7 +442,7 @@ export default function DetectionResult({
 
             <div className="flex items-center justify-between text-[10px] font-semibold text-slate-400 dark:text-slate-500 pt-0.5">
               <span>0% Safe</span>
-              <span>40% Threshold</span>
+              <span>40% Caution</span>
               <span>100% Critical Threat</span>
             </div>
           </div>

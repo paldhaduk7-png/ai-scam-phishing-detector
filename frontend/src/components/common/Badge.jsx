@@ -1,8 +1,8 @@
 import React from 'react';
 
 /**
- * Enhanced Badge component with clear cybersecurity status indicators,
- * subtle threat severity dots, and crisp light/dark mode contrast.
+ * Enhanced Badge component with compact pill style,
+ * subtle translucent tints, and crisp status dot indicators inspired by MailSentry.
  */
 export default function Badge({
   children,
@@ -14,7 +14,7 @@ export default function Badge({
   const normalized = String(children || status).toLowerCase().trim();
 
   let styles =
-    'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700';
+    'bg-slate-100/90 dark:bg-slate-800/60 text-slate-700 dark:text-slate-300 border-slate-200 dark:border-slate-700/60';
   let dotColor = 'bg-slate-400';
   let isAnimated = false;
 
@@ -25,8 +25,8 @@ export default function Badge({
     normalized.includes('malicious')
   ) {
     styles =
-      'bg-red-50/90 dark:bg-red-950/40 text-red-700 dark:text-red-300 border-red-200/80 dark:border-red-900/60';
-    dotColor = 'bg-red-500';
+      'bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/25 dark:border-rose-500/20';
+    dotColor = 'bg-rose-500';
     isAnimated = true;
   } else if (
     normalized.includes('suspicious') ||
@@ -34,7 +34,7 @@ export default function Badge({
     normalized.includes('medium')
   ) {
     styles =
-      'bg-amber-50/90 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 border-amber-200/80 dark:border-amber-900/60';
+      'bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/25 dark:border-amber-500/20';
     dotColor = 'bg-amber-500';
   } else if (
     normalized.includes('safe') ||
@@ -43,7 +43,7 @@ export default function Badge({
     normalized.includes('low')
   ) {
     styles =
-      'bg-emerald-50/90 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 border-emerald-200/80 dark:border-emerald-900/60';
+      'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/25 dark:border-emerald-500/20';
     dotColor = 'bg-emerald-500';
   } else if (
     normalized.includes('info') ||
@@ -53,14 +53,14 @@ export default function Badge({
     normalized.includes('url')
   ) {
     styles =
-      'bg-blue-50/90 dark:bg-blue-950/40 text-blue-700 dark:text-blue-300 border-blue-200/80 dark:border-blue-900/60';
+      'bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/25 dark:border-blue-500/20';
     dotColor = 'bg-blue-500';
   }
 
   const sizes = {
     sm: 'text-[11px] px-2 py-0.5 gap-1.5 font-medium',
-    md: 'text-xs px-2.5 py-1 gap-1.5 font-medium',
-    lg: 'text-sm px-3 py-1.5 gap-2 font-semibold',
+    md: 'text-xs px-2.5 py-0.5 gap-1.5 font-semibold',
+    lg: 'text-sm px-3 py-1 gap-2 font-semibold',
   };
 
   return (

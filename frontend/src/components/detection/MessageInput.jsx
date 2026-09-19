@@ -42,7 +42,7 @@ export default function MessageInput({
             value={value}
             onChange={(e) => onChange(e.target.value)}
             placeholder="Paste or type suspicious text message, prize notification, or banking alert here..."
-            className="w-full p-3.5 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-50 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
+            className="w-full p-3.5 bg-slate-50/80 dark:bg-[#070b13] border border-slate-200/90 dark:border-slate-800/90 rounded-2xl text-sm text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/20 focus-visible:border-blue-500 resize-none transition-all duration-150 leading-relaxed"
           />
         </div>
       </div>
