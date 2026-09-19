@@ -18,6 +18,7 @@ import {
 
 export default function HistoryTable({
   items = [],
+  channel = 'all',
   onView,
   onDelete,
   onToggleStar,
@@ -45,15 +46,6 @@ export default function HistoryTable({
     }
   };
 
-  const getTypeLabel = (type) => {
-    const t = type?.toLowerCase();
-    if (t === 'sms') return 'SMS';
-    if (t === 'message') return 'Message';
-    if (t === 'email') return 'Email';
-    if (t === 'url') return 'URL';
-    return type || 'Scan';
-  };
-
   const formatDateTime = (item) => {
     if (!item) return '--';
     if (item.date_time) return item.date_time;
@@ -78,132 +70,188 @@ export default function HistoryTable({
     return raw;
   };
 
+  const renderSourceBadge = (item) => {
+    const isGmail = item.source === 'gmail';
+    return (
+      <span
+        className={`inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md border ${
+          isGmail
+            ? 'bg-red-50 dark:bg-red-950/50 text-red-700 dark:text-red-300 border-red-200/80 dark:border-red-900/40'
+            : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border-slate-200/80 dark:border-slate-700'
+        }`}
+      >
+        {isGmail ? (
+          <img
+            src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png"
+            className="w-3 h-3 object-contain"
+            alt=""
+          />
+        ) : (
+          <span className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+        )}
+        <span>{isGmail ? 'Gmail' : 'Manual'}</span>
+      </span>
+    );
+  };
+
   return (
-    <Card className="p-0 overflow-hidden">
+    <Card className="p-0 overflow-hidden border border-slate-200/90 dark:border-slate-800">
       {hasItems ? (
         <>
-          {/* Desktop & Tablet Table (sm and up) */}
+          {/* Desktop & Tablet Table */}
           <div className="hidden sm:block overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <th className="py-3 px-4 w-12 text-center">#</th>
-                  <th className="py-3 px-4">Channel</th>
-                  <th className="py-3 px-4">Payload Preview</th>
-                  <th className="py-3 px-4">Verdict</th>
-                  <th className="py-3 px-4">Risk Severity</th>
-                  <th className="py-3 px-4">Logged At</th>
-                  <th className="py-3 px-4 text-right">Actions</th>
+                  {channel === 'email' && <th className="py-3 px-4 w-24">Source</th>}
+                  {channel === 'all' && <th className="py-3 px-4 w-28">Channel</th>}
+                  <th className="py-3 px-4">
+                    {channel === 'email'
+                      ? 'Subject / Preview'
+                      : channel === 'url'
+                      ? 'URL'
+                      : 'Message Preview'}
+                  </th>
+                  {channel === 'email' && <th className="py-3 px-4 w-40">Sender</th>}
+                  <th className="py-3 px-4 w-28">Verdict</th>
+                  <th className="py-3 px-4 w-32">Risk Severity</th>
+                  <th className="py-3 px-4 w-36">Date</th>
+                  <th className="py-3 px-4 text-right w-24">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800/80">
                 {items.map((item, index) => {
-                  const type = item.type || item.input_type || '';
-                  const preview = item.preview || item.input || item.input_text || '';
-                  const result =
-                    item.result ||
-                    (item.is_phishing
-                      ? 'Phishing'
-                      : (item.risk_percentage >= 40
-                      ? 'Suspicious'
-                      : 'Safe')) ||
-                    item.classification ||
-                    'Unknown';
-                  const confidence =
-                    item.confidence != null ? item.confidence : item.risk_percentage;
-                  const numRisk =
-                    typeof confidence === 'number' && !isNaN(confidence)
-                      ? Math.max(0, Math.min(100, confidence))
-                      : null;
-
-                  const isPhish =
-                    item.is_phishing || String(result).toLowerCase().includes('phish');
-                  const isSusp = !isPhish && numRisk !== null && numRisk >= 40.0;
+                  const riskVal = item.risk_percentage ?? item.riskScore ?? item.confidence ?? 0;
+                  const displayIdx = (currentPage - 1) * 10 + (index + 1);
 
                   return (
                     <tr
                       key={item.id || index}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-800/40 transition-colors text-xs text-slate-700 dark:text-slate-300"
+                      className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
                     >
-                      <td className="py-3.5 px-4 font-medium text-slate-400 dark:text-slate-500 text-center font-mono">
-                        {(currentPage - 1) * 10 + (index + 1)}
+                      {/* Row Index */}
+                      <td className="py-3 px-4 text-center font-mono text-xs text-slate-400 dark:text-slate-500">
+                        {displayIdx}
                       </td>
-                      <td className="py-3.5 px-4">
-                        <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-100/80 dark:bg-slate-800/80 border border-slate-200/60 dark:border-slate-700/60 font-semibold text-slate-700 dark:text-slate-300">
-                          {getTypeIcon(type)}
-                          <span>{getTypeLabel(type)}</span>
-                        </div>
-                      </td>
-                      <td
-                        className="py-3.5 px-4 font-mono text-slate-600 dark:text-slate-300 max-w-xs truncate cursor-help"
-                        title={typeof preview === 'string' ? preview : ''}
-                      >
-                        {preview || 'Payload record'}
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <Badge status={result}>{result}</Badge>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        {numRisk !== null ? (
-                          <div className="flex items-center gap-2 max-w-[120px]">
-                            <div className="w-16 h-1.5 rounded-full bg-slate-200 dark:bg-slate-800 overflow-hidden">
-                              <div
-                                style={{ width: `${numRisk}%` }}
-                                className={`h-full rounded-full ${
-                                  isPhish
-                                    ? 'bg-red-500'
-                                    : isSusp
-                                    ? 'bg-amber-500'
-                                    : 'bg-emerald-500'
-                                }`}
-                              />
-                            </div>
-                            <span className="font-mono font-bold text-slate-700 dark:text-slate-300">
-                              {numRisk.toFixed(1)}%
+
+                      {/* Source Badge for Email Channel */}
+                      {channel === 'email' && (
+                        <td className="py-3 px-4">{renderSourceBadge(item)}</td>
+                      )}
+
+                      {/* Channel Badge for All Channels */}
+                      {channel === 'all' && (
+                        <td className="py-3 px-4">
+                          <div className="flex items-center gap-1.5">
+                            {getTypeIcon(item.input_type || item.type)}
+                            <span className="text-xs font-semibold capitalize text-slate-700 dark:text-slate-300">
+                              {item.input_type || item.type || 'Scan'}
                             </span>
                           </div>
-                        ) : (
-                          <span className="text-slate-400 font-mono">--</span>
-                        )}
+                        </td>
+                      )}
+
+                      {/* Payload Preview / Subject */}
+                      <td className="py-3 px-4">
+                        <div className="max-w-md">
+                          {item.subject && (
+                            <span className="block font-semibold text-xs text-slate-900 dark:text-white truncate">
+                              {item.subject}
+                            </span>
+                          )}
+                          <span
+                            className={`block truncate ${
+                              item.subject
+                                ? 'text-[11px] text-slate-500 dark:text-slate-400 mt-0.5'
+                                : 'text-xs text-slate-800 dark:text-slate-200'
+                            }`}
+                          >
+                            {item.preview || item.input_text || item.input || '--'}
+                          </span>
+                        </div>
                       </td>
-                      <td className="py-3.5 px-4 text-slate-500 dark:text-slate-400 whitespace-nowrap">
+
+                      {/* Sender for Email Channel */}
+                      {channel === 'email' && (
+                        <td className="py-3 px-4 text-xs text-slate-600 dark:text-slate-300 truncate max-w-[160px]">
+                          {item.sender || 'Unknown'}
+                        </td>
+                      )}
+
+                      {/* Verdict Badge */}
+                      <td className="py-3 px-4">
+                        <Badge
+                          variant={
+                            item.is_phishing
+                              ? 'phishing'
+                              : item.risk_percentage >= 40.0
+                              ? 'suspicious'
+                              : 'safe'
+                          }
+                          size="sm"
+                        >
+                          {item.result || (item.is_phishing ? 'Phishing' : 'Safe')}
+                        </Badge>
+                      </td>
+
+                      {/* Risk Severity Bar */}
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <div className="w-16 h-1.5 rounded-full bg-slate-100 dark:bg-slate-800 overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${
+                                riskVal >= 70
+                                  ? 'bg-rose-500'
+                                  : riskVal >= 40
+                                  ? 'bg-amber-500'
+                                  : 'bg-emerald-500'
+                              }`}
+                              style={{ width: `${Math.min(100, Math.max(5, riskVal))}%` }}
+                            />
+                          </div>
+                          <span className="font-mono text-xs font-semibold text-slate-600 dark:text-slate-400">
+                            {riskVal}%
+                          </span>
+                        </div>
+                      </td>
+
+                      {/* Date */}
+                      <td className="py-3 px-4 text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">
                         {formatDateTime(item)}
                       </td>
-                      <td className="py-3.5 px-4 text-right whitespace-nowrap">
-                        <div className="inline-flex items-center gap-1.5">
+
+                      {/* Actions */}
+                      <td className="py-3 px-4 text-right">
+                        <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
                             onClick={() => onToggleStar?.(item)}
-                            className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                            aria-label={item.is_starred ? 'Unstar record' : 'Star record'}
+                            className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                               item.is_starred
-                                ? 'text-amber-700 dark:text-amber-300 bg-amber-100/80 dark:bg-amber-950/70 border border-amber-300 dark:border-amber-700/60 shadow-sm'
-                                : 'text-slate-600 dark:text-slate-300 hover:text-amber-600 dark:hover:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/60'
+                                ? 'text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-950/60'
+                                : 'text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800'
                             }`}
-                            title={item.is_starred ? 'Remove from Starred History' : 'Move to Starred History'}
                           >
                             <Star
-                              className={`w-3.5 h-3.5 ${
-                                item.is_starred
-                                  ? 'fill-amber-400 text-amber-500'
-                                  : 'text-slate-400 group-hover:text-amber-500'
-                              }`}
+                              className="w-3.5 h-3.5"
+                              fill={item.is_starred ? 'currentColor' : 'none'}
                             />
-                            <span>{item.is_starred ? 'Starred' : 'Star'}</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => onView?.(item)}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-950/60 transition-colors cursor-pointer"
-                            title="Inspect scan details"
+                            aria-label="View details"
+                            className="p-1.5 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
                           >
                             <Eye className="w-3.5 h-3.5" />
-                            <span>Inspect</span>
                           </button>
                           <button
                             type="button"
                             onClick={() => onDelete?.(item)}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-lg text-xs font-semibold text-red-600 dark:text-red-400 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/60 transition-colors cursor-pointer"
-                            title="Delete this record"
+                            aria-label="Delete record"
+                            className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -216,92 +264,70 @@ export default function HistoryTable({
             </table>
           </div>
 
-          {/* Mobile Stacked Card View (screens < 640px) */}
-          <div className="sm:hidden p-4 space-y-3">
+          {/* Mobile Card List (< sm) */}
+          <div className="block sm:hidden divide-y divide-slate-100 dark:divide-slate-800/80">
             {items.map((item, index) => {
-              const type = item.type || item.input_type || '';
-              const preview = item.preview || item.input || item.input_text || '';
-              const result =
-                item.result ||
-                (item.is_phishing
-                  ? 'Phishing'
-                  : (item.risk_percentage >= 40
-                  ? 'Suspicious'
-                  : 'Safe')) ||
-                item.classification ||
-                'Unknown';
-              const confidence =
-                item.confidence != null ? item.confidence : item.risk_percentage;
-              const numRisk =
-                typeof confidence === 'number' && !isNaN(confidence)
-                  ? Math.max(0, Math.min(100, confidence))
-                  : null;
+              const riskVal = item.risk_percentage ?? item.confidence ?? 0;
+              const displayIdx = (currentPage - 1) * 10 + (index + 1);
 
               return (
-                <div
-                  key={item.id || index}
-                  className="p-3.5 rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 space-y-2.5 shadow-sm"
-                >
-                  <div className="flex items-center justify-between gap-2">
+                <div key={item.id || index} className="p-4 space-y-2.5">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="p-1.5 rounded-lg bg-slate-100 dark:bg-slate-800">
-                        {getTypeIcon(type)}
-                      </span>
-                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300 capitalize">
-                        {getTypeLabel(type)}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Badge status={result} size="sm">
-                        {result}
-                      </Badge>
-                      {numRisk !== null && (
-                        <span className="text-xs font-mono font-bold text-slate-700 dark:text-slate-300">
-                          {numRisk.toFixed(1)}%
-                        </span>
+                      <span className="font-mono text-xs text-slate-400">#{displayIdx}</span>
+                      {channel === 'email' && renderSourceBadge(item)}
+                      {channel === 'all' && (
+                        <div className="flex items-center gap-1 text-xs font-semibold text-slate-700 dark:text-slate-300">
+                          {getTypeIcon(item.input_type || item.type)}
+                          <span className="capitalize">{item.input_type || item.type}</span>
+                        </div>
                       )}
                     </div>
+                    <Badge
+                      variant={
+                        item.is_phishing
+                          ? 'phishing'
+                          : item.risk_percentage >= 40.0
+                          ? 'suspicious'
+                          : 'safe'
+                      }
+                      size="sm"
+                    >
+                      {item.result || (item.is_phishing ? 'Phishing' : 'Safe')}
+                    </Badge>
                   </div>
 
-                  <p
-                    className="text-xs font-mono text-slate-700 dark:text-slate-300 truncate"
-                    title={typeof preview === 'string' ? preview : ''}
-                  >
-                    {preview || 'Payload record'}
+                  {item.subject && (
+                    <div className="font-semibold text-xs text-slate-900 dark:text-white truncate">
+                      {item.subject}
+                    </div>
+                  )}
+
+                  <p className="text-xs text-slate-600 dark:text-slate-300 line-clamp-2">
+                    {item.preview || item.input_text || '--'}
                   </p>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 dark:border-slate-800/80 text-xs text-slate-500 dark:text-slate-400">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400 pt-1 border-t border-slate-100 dark:border-slate-800">
                     <span>{formatDateTime(item)}</span>
-                    <div className="inline-flex items-center gap-2">
+                    <div className="flex items-center gap-1">
                       <button
                         type="button"
                         onClick={() => onToggleStar?.(item)}
-                        className={`font-semibold inline-flex items-center gap-1 py-1 ${
-                          item.is_starred
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-slate-500 dark:text-slate-400 hover:text-amber-600'
-                        }`}
-                        title={item.is_starred ? 'Remove from Starred History' : 'Move to Starred History'}
+                        className="p-1 text-amber-500"
                       >
-                        <Star
-                          className={`w-3.5 h-3.5 ${
-                            item.is_starred ? 'fill-amber-400 text-amber-500' : ''
-                          }`}
-                        />
-                        <span>{item.is_starred ? 'Starred' : 'Star'}</span>
+                        <Star className="w-3.5 h-3.5" fill={item.is_starred ? 'currentColor' : 'none'} />
                       </button>
                       <button
                         type="button"
                         onClick={() => onView?.(item)}
-                        className="text-blue-600 dark:text-blue-400 font-semibold inline-flex items-center gap-1 py-1"
+                        className="p-1 text-blue-600"
                       >
                         <Eye className="w-3.5 h-3.5" />
-                        <span>Inspect</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete?.(item)}
-                        className="text-red-600 dark:text-red-400 font-semibold inline-flex items-center gap-1 py-1"
+                        className="p-1 text-rose-600"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -314,58 +340,39 @@ export default function HistoryTable({
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between px-4 sm:px-6 py-3.5 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/40">
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
-                Page <span className="font-bold text-slate-900 dark:text-white">{currentPage}</span> of{' '}
-                <span className="font-bold text-slate-900 dark:text-white">{totalPages}</span>
+            <div className="px-4 py-3 border-t border-slate-200/80 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 flex items-center justify-between">
+              <span className="text-xs text-slate-500 dark:text-slate-400">
+                Page {currentPage} of {totalPages}
               </span>
-
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <button
                   type="button"
-                  disabled={currentPage <= 1}
                   onClick={() => onPageChange?.(currentPage - 1)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  disabled={currentPage <= 1}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <ChevronLeft className="w-3.5 h-3.5" />
-                  <span>Previous</span>
+                  <ChevronLeft className="w-4 h-4" />
                 </button>
-
                 <button
                   type="button"
-                  disabled={currentPage >= totalPages}
                   onClick={() => onPageChange?.(currentPage + 1)}
-                  className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                  disabled={currentPage >= totalPages}
+                  className="p-1.5 rounded-lg border border-slate-200 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                 >
-                  <span>Next</span>
-                  <ChevronRight className="w-3.5 h-3.5" />
+                  <ChevronRight className="w-4 h-4" />
                 </button>
               </div>
             </div>
           )}
         </>
       ) : (
-        <div className="py-14">
-          {isStarredView ? (
-            <EmptyState
-              icon={Star}
-              title="No Starred Scans Yet"
-              description="Click the Star button on any scan in your Scan History to save it here for quick access."
-              actionText="Browse Scan History"
-              onAction={() => {
-                if (onSwitchToScanHistory) onSwitchToScanHistory();
-                else navigate('/history');
-              }}
-            />
-          ) : (
-            <EmptyState
-              icon={Clock}
-              title="No Detection Records Found"
-              description="No past scan records matched your criteria. Analyze an email, SMS, or URL to record audit history."
-              actionText="Start New Threat Scan"
-              onAction={() => navigate('/detect')}
-            />
-          )}
+        <div className="py-12">
+          <EmptyState
+            title={`No ${channel === 'email' ? 'Email' : channel === 'sms' ? 'Text' : channel === 'url' ? 'URL' : ''} Detections Yet`}
+            description={`Scan ${channel === 'email' ? 'emails or connect Gmail' : channel === 'sms' ? 'messages' : 'URLs'} in the Detect Threats scanner to review past results here.`}
+            actionLabel="Detect Threats"
+            onAction={() => navigate(`/detect?tab=${channel === 'sms' ? 'message' : channel}`)}
+          />
         </div>
       )}
     </Card>
