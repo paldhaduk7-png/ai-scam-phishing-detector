@@ -37,7 +37,10 @@ export default function BottomNav() {
       <div className="max-w-md mx-auto px-2 py-1.5 flex items-center justify-around">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = location.pathname === item.path;
+          const isActive =
+            item.path === '/history'
+              ? location.pathname.startsWith('/history')
+              : location.pathname === item.path;
 
           return (
             <NavLink

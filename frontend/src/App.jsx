@@ -72,7 +72,19 @@ const router = createBrowserRouter([
           },
           {
             path: 'history',
-            element: <History />,
+            element: <Navigate to="/history/email" replace />,
+          },
+          {
+            path: 'history/email',
+            element: <History channel="email" />,
+          },
+          {
+            path: 'history/text',
+            element: <History channel="sms" />,
+          },
+          {
+            path: 'history/url',
+            element: <History channel="url" />,
           },
           {
             path: 'profile',

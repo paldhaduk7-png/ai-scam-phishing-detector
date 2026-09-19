@@ -6,6 +6,9 @@ import {
   LayoutDashboard,
   Search,
   Clock,
+  Mail,
+  MessageSquare,
+  Link as LinkIcon,
   User,
   Info,
   LogOut,
@@ -14,6 +17,8 @@ import {
   X,
   Sun,
   Moon,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { logoutUser } from '../../store/slices/authSlice';
 import { useTheme } from '../../context/ThemeContext';
@@ -28,20 +33,14 @@ export default function Sidebar({ isOpen, onClose }) {
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [isHistoryExpanded, setIsHistoryExpanded] = useState(true);
 
-  // Dynamic nav items depending on auth state
-  const navItems = [
-    ...(isAuthenticated
-      ? [{ name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard }]
-      : []),
-    { name: 'Detect Threats', path: '/detect', icon: Search },
-    ...(isAuthenticated
-      ? [
-          { name: 'Detection History', path: '/history', icon: Clock },
-          { name: 'My Profile', path: '/profile', icon: User },
-        ]
-      : []),
-    { name: 'About Platform', path: '/about', icon: Info },
+  const isHistoryActive = location.pathname.startsWith('/history');
+
+  const historySubItems = [
+    { name: 'Email History', path: '/history/email', icon: Mail },
+    { name: 'Text History', path: '/history/text', icon: MessageSquare },
+    { name: 'URL History', path: '/history/url', icon: LinkIcon },
   ];
 
   const handleConfirmLogout = async () => {
@@ -99,47 +98,168 @@ export default function Sidebar({ isOpen, onClose }) {
           <button
             type="button"
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden cursor-pointer"
             aria-label="Close menu"
+            className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Navigation Section */}
+        {/* Navigation Links */}
         <nav className="flex-1 px-3 py-5 space-y-1 overflow-y-auto">
           <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
             Navigation
           </p>
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = location.pathname === item.path;
 
-            return (
-              <NavLink
-                key={item.path}
-                to={item.path}
-                onClick={onClose}
-                className={`relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+          {/* Dashboard */}
+          {isAuthenticated && (
+            <NavLink
+              to="/dashboard"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
                   isActive
                     ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 shadow-2xs font-semibold'
                     : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
-                }`}
-              >
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                  )}
+                  <LayoutDashboard className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                  <span className="truncate">Dashboard</span>
+                </>
+              )}
+            </NavLink>
+          )}
+
+          {/* Detect Threats */}
+          <NavLink
+            to="/detect"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
                 {isActive && (
                   <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-600 dark:bg-blue-400" />
                 )}
-                <Icon
-                  className={`w-4.5 h-4.5 shrink-0 transition-colors ${
-                    isActive
-                      ? 'text-blue-600 dark:text-blue-400'
-                      : 'text-slate-400 dark:text-slate-500'
-                  }`}
-                />
-                <span className="truncate">{item.name}</span>
-              </NavLink>
-            );
-          })}
+                <Search className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                <span className="truncate">Detect Threats</span>
+              </>
+            )}
+          </NavLink>
+
+          {/* Detection History Dropdown / Group */}
+          {isAuthenticated && (
+            <div className="space-y-1 pt-1">
+              <button
+                type="button"
+                onClick={() => setIsHistoryExpanded(!isHistoryExpanded)}
+                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 cursor-pointer ${
+                  isHistoryActive
+                    ? 'text-blue-700 dark:text-blue-300 font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <Clock className={`w-4.5 h-4.5 shrink-0 ${isHistoryActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                  <span>Detection History</span>
+                </div>
+                {isHistoryExpanded ? (
+                  <ChevronDown className="w-4 h-4 text-slate-400" />
+                ) : (
+                  <ChevronRight className="w-4 h-4 text-slate-400" />
+                )}
+              </button>
+
+              {/* Sub-items for Email, Text, URL */}
+              {isHistoryExpanded && (
+                <div className="pl-6 space-y-1">
+                  {historySubItems.map((sub) => {
+                    const SubIcon = sub.icon;
+                    const isSubActive = location.pathname === sub.path;
+
+                    return (
+                      <NavLink
+                        key={sub.path}
+                        to={sub.path}
+                        onClick={onClose}
+                        className={`relative flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition-all duration-150 ${
+                          isSubActive
+                            ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 font-semibold border border-blue-200/80 dark:border-blue-800/60 shadow-2xs'
+                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100/60 dark:hover:bg-slate-800/40'
+                        }`}
+                      >
+                        {isSubActive && (
+                          <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-3.5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                        )}
+                        <SubIcon className={`w-3.5 h-3.5 shrink-0 ${isSubActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400'}`} />
+                        <span className="truncate">{sub.name}</span>
+                      </NavLink>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Profile */}
+          {isAuthenticated && (
+            <NavLink
+              to="/profile"
+              onClick={onClose}
+              className={({ isActive }) =>
+                `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                  isActive
+                    ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 shadow-2xs font-semibold'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
+                }`
+              }
+            >
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                  )}
+                  <User className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                  <span className="truncate">My Profile</span>
+                </>
+              )}
+            </NavLink>
+          )}
+
+          {/* About Platform */}
+          <NavLink
+            to="/about"
+            onClick={onClose}
+            className={({ isActive }) =>
+              `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                isActive
+                  ? 'bg-blue-50/90 dark:bg-blue-950/50 text-blue-700 dark:text-blue-300 border border-blue-200/80 dark:border-blue-800/60 shadow-2xs font-semibold'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-100/80 dark:hover:bg-slate-800/50'
+              }`
+            }
+          >
+            {({ isActive }) => (
+              <>
+                {isActive && (
+                  <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-blue-600 dark:bg-blue-400" />
+                )}
+                <Info className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                <span className="truncate">About Platform</span>
+              </>
+            )}
+          </NavLink>
         </nav>
 
         {/* Bottom User / Session / Theme Section */}
@@ -183,25 +303,25 @@ export default function Sidebar({ isOpen, onClose }) {
                 onClose?.();
                 navigate('/login');
               }}
-              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 shadow-xs shadow-blue-600/20 transition-all cursor-pointer"
+              className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50/80 dark:hover:bg-blue-950/30 transition-colors cursor-pointer"
             >
-              <LogIn className="w-3.5 h-3.5" />
-              <span>Sign In / Register</span>
+              <LogIn className="w-4 h-4 shrink-0" />
+              <span>Sign In</span>
             </button>
           )}
         </div>
       </aside>
 
-      {/* Sign Out Confirmation Modal */}
+      {/* Logout Confirmation Modal */}
       <ConfirmModal
         isOpen={showLogoutModal}
         onClose={() => !loggingOut && setShowLogoutModal(false)}
         onConfirm={handleConfirmLogout}
         loading={loggingOut}
         title="Sign Out Confirmation"
-        message="Are you sure you want to sign out? You will need to sign back in to access your personal dashboard and saved history."
+        message="Are you sure you want to end your current session? You will need to log in again to access protected history and threat analytics."
         confirmText="Sign Out"
-        cancelText="Cancel"
+        cancelText="Stay Signed In"
       />
     </>
   );
