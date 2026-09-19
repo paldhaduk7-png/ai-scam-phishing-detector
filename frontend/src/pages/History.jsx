@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import HistoryFilters from '../components/history/HistoryFilters';
 import HistoryTable from '../components/history/HistoryTable';
+import EmailContentModal from '../components/history/EmailContentModal';
 import ConfirmModal from '../components/common/ConfirmModal';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
@@ -60,6 +61,7 @@ export default function History({ channel: propChannel }) {
   const [showClearAllModal, setShowClearAllModal] = useState(false);
   const [clearAllLoading, setClearAllLoading] = useState(false);
   const [viewItem, setViewItem] = useState(null);
+  const [emailViewItem, setEmailViewItem] = useState(null);
   const [copied, setCopied] = useState(false);
 
   // Poll for active background analysis job
@@ -192,8 +194,14 @@ export default function History({ channel: propChannel }) {
   };
 
   const handleView = (item) => {
-    setViewItem(item);
-    setCopied(false);
+    // Email items open the dedicated email content popup
+    const isEmail = (item.input_type || item.type || '').toLowerCase() === 'email';
+    if (isEmail) {
+      setEmailViewItem(item);
+    } else {
+      setViewItem(item);
+      setCopied(false);
+    }
   };
 
   const handleCopy = (text) => {
@@ -382,6 +390,12 @@ export default function History({ channel: propChannel }) {
         message="Are you sure you want to permanently delete ALL detection records? This action cannot be undone."
         confirmText="Clear All Records"
         cancelText="Cancel"
+      />
+
+      {/* Email Content Popup (email channel only) */}
+      <EmailContentModal
+        item={emailViewItem}
+        onClose={() => setEmailViewItem(null)}
       />
 
       {/* View Item Detail Modal */}
