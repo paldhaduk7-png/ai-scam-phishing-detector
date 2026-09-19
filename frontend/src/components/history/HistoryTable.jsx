@@ -98,9 +98,9 @@ export default function HistoryTable({
     <Card className="p-0 overflow-hidden border border-slate-200/90 dark:border-slate-800">
       {hasItems ? (
         <>
-          {/* Desktop & Tablet Table */}
+          {/* Desktop & Tablet Table — always shown, scrolls horizontally */}
           <div className="hidden sm:block overflow-x-auto">
-            <table className="w-full text-left text-sm">
+            <table className="w-full min-w-[720px] text-left text-sm">
               <thead>
                 <tr className="border-b border-slate-200/80 dark:border-slate-800 bg-slate-50/70 dark:bg-slate-900/80 text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   <th className="py-3 px-4 w-12 text-center">#</th>
@@ -128,7 +128,12 @@ export default function HistoryTable({
                   return (
                     <tr
                       key={item.id || index}
-                      className="hover:bg-slate-50/80 dark:hover:bg-slate-900/40 transition-colors"
+                      className={`transition-colors ${
+                        channel === 'email'
+                          ? 'hover:bg-indigo-50/60 dark:hover:bg-indigo-950/20 cursor-pointer'
+                          : 'hover:bg-slate-50/80 dark:hover:bg-slate-900/40'
+                      }`}
+                      onClick={channel === 'email' ? () => onView?.(item) : undefined}
                     >
                       {/* Row Index */}
                       <td className="py-3 px-4 text-center font-mono text-xs text-slate-400 dark:text-slate-500">
@@ -226,7 +231,7 @@ export default function HistoryTable({
                         <div className="flex items-center justify-end gap-1">
                           <button
                             type="button"
-                            onClick={() => onToggleStar?.(item)}
+                            onClick={(e) => { e.stopPropagation(); onToggleStar?.(item); }}
                             aria-label={item.is_starred ? 'Unstar record' : 'Star record'}
                             className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                               item.is_starred
@@ -239,17 +244,20 @@ export default function HistoryTable({
                               fill={item.is_starred ? 'currentColor' : 'none'}
                             />
                           </button>
+                          {/* Eye button — only for non-email rows; email rows open modal on row click */}
+                          {channel !== 'email' && (
+                            <button
+                              type="button"
+                              onClick={(e) => { e.stopPropagation(); onView?.(item); }}
+                              aria-label="View details"
+                              className="p-1.5 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
+                            >
+                              <Eye className="w-3.5 h-3.5" />
+                            </button>
+                          )}
                           <button
                             type="button"
-                            onClick={() => onView?.(item)}
-                            aria-label="View details"
-                            className="p-1.5 text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors cursor-pointer"
-                          >
-                            <Eye className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => onDelete?.(item)}
+                            onClick={(e) => { e.stopPropagation(); onDelete?.(item); }}
                             aria-label="Delete record"
                             className="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-lg transition-colors cursor-pointer"
                           >
@@ -271,7 +279,15 @@ export default function HistoryTable({
               const displayIdx = (currentPage - 1) * 10 + (index + 1);
 
               return (
-                <div key={item.id || index} className="p-3.5 space-y-2.5">
+                <div
+                  key={item.id || index}
+                  className={`p-3.5 space-y-2.5 ${
+                    channel === 'email'
+                      ? 'cursor-pointer hover:bg-indigo-50/40 dark:hover:bg-indigo-950/10 active:bg-indigo-50/60 dark:active:bg-indigo-950/20 transition-colors'
+                      : ''
+                  }`}
+                  onClick={channel === 'email' ? () => onView?.(item) : undefined}
+                >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-slate-400 font-semibold">#{displayIdx}</span>
@@ -320,23 +336,26 @@ export default function HistoryTable({
                     <div className="flex items-center gap-1.5">
                       <button
                         type="button"
-                        onClick={() => onToggleStar?.(item)}
+                        onClick={(e) => { e.stopPropagation(); onToggleStar?.(item); }}
                         aria-label="Toggle star"
                         className="p-1.5 rounded-lg bg-amber-50 dark:bg-amber-950/40 text-amber-500 border border-amber-200/50 dark:border-amber-800/40 active:scale-90 transition-transform cursor-pointer"
                       >
                         <Star className="w-3.5 h-3.5" fill={item.is_starred ? 'currentColor' : 'none'} />
                       </button>
+                      {/* Eye button only for non-email; email tap whole card */}
+                      {channel !== 'email' && (
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); onView?.(item); }}
+                          aria-label="View details"
+                          className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 active:scale-90 transition-transform cursor-pointer"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                        </button>
+                      )}
                       <button
                         type="button"
-                        onClick={() => onView?.(item)}
-                        aria-label="View details"
-                        className="p-1.5 rounded-lg bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200/50 dark:border-blue-800/40 active:scale-90 transition-transform cursor-pointer"
-                      >
-                        <Eye className="w-3.5 h-3.5" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => onDelete?.(item)}
+                        onClick={(e) => { e.stopPropagation(); onDelete?.(item); }}
                         aria-label="Delete item"
                         className="p-1.5 rounded-lg bg-rose-50 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 border border-rose-200/50 dark:border-rose-800/40 active:scale-90 transition-transform cursor-pointer"
                       >
