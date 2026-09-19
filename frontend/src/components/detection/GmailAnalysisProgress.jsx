@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Mail,
@@ -25,9 +25,30 @@ export default function GmailAnalysisProgress({
   const [job, setJob] = useState(initialJob);
   const [cancelling, setCancelling] = useState(false);
 
+  const onCompletedRef = useRef(onCompleted);
+  const onProgressUpdateRef = useRef(onProgressUpdate);
+  const notifiedCompletedJobId = useRef(null);
+
   useEffect(() => {
-    if (initialJob) {
-      setJob(initialJob);
+    onCompletedRef.current = onCompleted;
+  }, [onCompleted]);
+
+  useEffect(() => {
+    onProgressUpdateRef.current = onProgressUpdate;
+  }, [onProgressUpdate]);
+
+  useEffect(() => {
+    if (initialJob?.job_id) {
+      setJob((prev) => {
+        if (
+          prev?.job_id === initialJob.job_id &&
+          prev?.status === initialJob.status &&
+          prev?.processed === initialJob.processed
+        ) {
+          return prev;
+        }
+        return initialJob;
+      });
     }
   }, [initialJob]);
 
@@ -35,25 +56,36 @@ export default function GmailAnalysisProgress({
     if (!job?.job_id) return;
 
     // Do not poll if already completed, failed, or cancelled
-    if (['completed', 'failed', 'cancelled'].includes(job.status)) {
-      if (job.status === 'completed' && onCompleted) {
-        onCompleted(job);
+    if (job.status === 'completed') {
+      if (notifiedCompletedJobId.current !== job.job_id) {
+        notifiedCompletedJobId.current = job.job_id;
+        onCompletedRef.current?.(job);
       }
       return;
     }
 
+    if (['failed', 'cancelled'].includes(job.status)) {
+      return;
+    }
+
+    let isSubscribed = true;
     const intervalId = setInterval(async () => {
       try {
         const updated = await getGmailAnalysisProgress(job.job_id);
+        if (!isSubscribed) return;
+
         setJob(updated);
-        onProgressUpdate?.(updated);
+        onProgressUpdateRef.current?.(updated);
 
         if (updated.status === 'completed') {
           clearInterval(intervalId);
-          if (onCompleted) {
-            onCompleted(updated);
-          } else {
-            navigate('/history/email');
+          if (notifiedCompletedJobId.current !== updated.job_id) {
+            notifiedCompletedJobId.current = updated.job_id;
+            if (onCompletedRef.current) {
+              onCompletedRef.current(updated);
+            } else {
+              navigate('/history/email');
+            }
           }
         } else if (['failed', 'cancelled'].includes(updated.status)) {
           clearInterval(intervalId);
@@ -63,8 +95,11 @@ export default function GmailAnalysisProgress({
       }
     }, 1500);
 
-    return () => clearInterval(intervalId);
-  }, [job?.job_id, job?.status, navigate, onCompleted, onProgressUpdate]);
+    return () => {
+      isSubscribed = false;
+      clearInterval(intervalId);
+    };
+  }, [job?.job_id, job?.status, navigate]);
 
   const handleCancel = async () => {
     if (!job?.job_id || cancelling) return;

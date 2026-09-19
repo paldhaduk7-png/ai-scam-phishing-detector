@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import DetectionTabs from '../components/detection/DetectionTabs';
@@ -15,7 +15,6 @@ import { Clock, ArrowRight, Shield } from 'lucide-react';
 import {
   detectScam,
   detectEmailDL,
-  startGmailAnalysis,
   getActiveGmailAnalysis,
 } from '../services/api';
 
@@ -82,33 +81,47 @@ export default function Detect() {
   // Discover any currently running background job on mount or tab change
   useEffect(() => {
     let checkInterval;
+    let isSubscribed = true;
+
     const checkActiveJob = async () => {
       try {
         const res = await getActiveGmailAnalysis();
+        if (!isSubscribed) return;
+
         if (res?.active && res.job) {
-          setActiveGmailJob(res.job);
+          setActiveGmailJob((prev) => {
+            if (
+              prev?.job_id === res.job.job_id &&
+              prev?.status === res.job.status &&
+              prev?.processed === res.job.processed
+            ) {
+              return prev;
+            }
+            return res.job;
+          });
+
           if (res.job.latest_result) {
-            setChannelStates((prev) => ({
-              ...prev,
-              email: { status: 'success', result: res.job.latest_result, error: '' },
-            }));
+            setChannelStates((prev) => {
+              if (prev.email.status === 'success' && prev.email.result === res.job.latest_result) {
+                return prev;
+              }
+              return {
+                ...prev,
+                email: { status: 'success', result: res.job.latest_result, error: '' },
+              };
+            });
           } else if (['starting', 'processing'].includes(res.job.status)) {
-            setChannelStates((prev) => ({
-              ...prev,
-              email: { status: 'loading', result: null, error: '' },
-            }));
+            setChannelStates((prev) => {
+              if (prev.email.status === 'loading') return prev;
+              return {
+                ...prev,
+                email: { status: 'loading', result: null, error: '' },
+              };
+            });
           }
+
           if (activeTab === 'email') {
             setEmailSource('gmail');
-          }
-        } else if (!res?.active && activeGmailJob?.status === 'processing') {
-          // Job just finished while away
-          setActiveGmailJob(res?.job || null);
-          if (res?.job?.latest_result) {
-            setChannelStates((prev) => ({
-              ...prev,
-              email: { status: 'success', result: res.job.latest_result, error: '' },
-            }));
           }
         }
       } catch {
@@ -117,14 +130,18 @@ export default function Detect() {
     };
 
     checkActiveJob();
-    // Poll periodically while on email tab to keep in sync
-    if (activeTab === 'email') {
+
+    const activeJobStatus = activeGmailJob?.status;
+    // Only poll periodically if currently on email tab and job is actively processing
+    if (activeTab === 'email' && ['starting', 'processing'].includes(activeJobStatus)) {
       checkInterval = setInterval(checkActiveJob, 3500);
     }
+
     return () => {
+      isSubscribed = false;
       if (checkInterval) clearInterval(checkInterval);
     };
-  }, [activeTab, emailSource]);
+  }, [activeTab, emailSource, activeGmailJob?.status]);
 
   const handleTabChange = (tab) => {
     setSearchParams({ tab });
@@ -215,6 +232,78 @@ export default function Detect() {
     }
     if (activeTab === 'url') setUrlInput('');
   };
+
+  const handleJobProgressUpdate = useCallback((job) => {
+    setActiveGmailJob((prev) => {
+      if (
+        prev?.job_id === job?.job_id &&
+        prev?.status === job?.status &&
+        prev?.processed === job?.processed
+      ) {
+        return prev;
+      }
+      return job;
+    });
+
+    if (job?.latest_result) {
+      setChannelStates((prev) => {
+        if (prev.email.status === 'success' && prev.email.result === job.latest_result) {
+          return prev;
+        }
+        return {
+          ...prev,
+          email: { status: 'success', result: job.latest_result, error: '' },
+        };
+      });
+    }
+  }, []);
+
+  const handleJobCompleted = useCallback((job) => {
+    setActiveGmailJob((prev) => {
+      if (
+        prev?.job_id === job?.job_id &&
+        prev?.status === job?.status &&
+        prev?.processed === job?.processed
+      ) {
+        return prev;
+      }
+      return job;
+    });
+
+    if (job?.latest_result) {
+      setChannelStates((prev) => {
+        if (prev.email.status === 'success' && prev.email.result === job.latest_result) {
+          return prev;
+        }
+        return {
+          ...prev,
+          email: { status: 'success', result: job.latest_result, error: '' },
+        };
+      });
+    }
+  }, []);
+
+  const handleJobCancel = useCallback(() => {
+    setActiveGmailJob(null);
+    setChannelStates((prev) => {
+      if (prev.email.status === 'idle' && prev.email.result === null) return prev;
+      return {
+        ...prev,
+        email: { status: 'idle', result: null, error: '' },
+      };
+    });
+  }, []);
+
+  const handleStartNew = useCallback(() => {
+    setActiveGmailJob(null);
+    setChannelStates((prev) => {
+      if (prev.email.status === 'idle' && prev.email.result === null) return prev;
+      return {
+        ...prev,
+        email: { status: 'idle', result: null, error: '' },
+      };
+    });
+  }, []);
 
   return (
     <div className="space-y-6">
@@ -312,38 +401,10 @@ export default function Detect() {
                 ) : activeGmailJob && ['starting', 'processing', 'completed'].includes(activeGmailJob.status) ? (
                   <GmailAnalysisProgress
                     initialJob={activeGmailJob}
-                    onProgressUpdate={(job) => {
-                      setActiveGmailJob(job);
-                      if (job?.latest_result) {
-                        setChannelStates((prev) => ({
-                          ...prev,
-                          email: { status: 'success', result: job.latest_result, error: '' },
-                        }));
-                      }
-                    }}
-                    onCompleted={(job) => {
-                      setActiveGmailJob(job);
-                      if (job?.latest_result) {
-                        setChannelStates((prev) => ({
-                          ...prev,
-                          email: { status: 'success', result: job.latest_result, error: '' },
-                        }));
-                      }
-                    }}
-                    onCancel={() => {
-                      setActiveGmailJob(null);
-                      setChannelStates((prev) => ({
-                        ...prev,
-                        email: { status: 'idle', result: null, error: '' },
-                      }));
-                    }}
-                    onStartNew={() => {
-                      setActiveGmailJob(null);
-                      setChannelStates((prev) => ({
-                        ...prev,
-                        email: { status: 'idle', result: null, error: '' },
-                      }));
-                    }}
+                    onProgressUpdate={handleJobProgressUpdate}
+                    onCompleted={handleJobCompleted}
+                    onCancel={handleJobCancel}
+                    onStartNew={handleStartNew}
                   />
                 ) : (
                   <GmailImportCard
