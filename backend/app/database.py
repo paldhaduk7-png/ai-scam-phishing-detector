@@ -43,6 +43,10 @@ with engine.connect() as _conn:
         _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_user_id ON detections(user_id);"))
         _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS is_starred BOOLEAN DEFAULT FALSE;"))
         _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_is_starred ON detections(is_starred);"))
+        _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS source VARCHAR(50) DEFAULT 'manual';"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_source ON detections(source);"))
+        _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS sender VARCHAR(255);"))
+        _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS subject VARCHAR(500);"))
         _conn.commit()
     except Exception:
-        _conn.rollback()
+        _conn.rollback()

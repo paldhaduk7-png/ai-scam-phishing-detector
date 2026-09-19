@@ -303,6 +303,9 @@ class DetectionHistoryItem(BaseModel):
     is_spam: Optional[bool] = None
     is_starred: bool = False
     model_used: str
+    source: str = "manual"
+    sender: Optional[str] = None
+    subject: Optional[str] = None
     created_at: str
     date_time: str
     timestamp: str
