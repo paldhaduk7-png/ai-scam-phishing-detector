@@ -248,4 +248,58 @@ export const toggleStarDetection = async (id) => {
   return response.data;
 };
 
+// ==============================================================================
+// Gmail Integration Endpoints
+// ==============================================================================
+
+/**
+ * Checks current user's Gmail connection status.
+ */
+export const getGmailStatus = async () => {
+  const response = await api.get('/gmail/status');
+  return response.data;
+};
+
+/**
+ * Disconnects Gmail integration and clears session tokens.
+ */
+export const disconnectGmail = async () => {
+  const response = await api.post('/gmail/disconnect');
+  return response.data;
+};
+
+/**
+ * Starts background Gmail analysis job.
+ * Multiple job protection ensures active job is returned if already running.
+ */
+export const startGmailAnalysis = async () => {
+  const response = await api.post('/gmail/analysis/start');
+  return response.data;
+};
+
+/**
+ * Discovers any active or recently completed Gmail analysis job.
+ */
+export const getActiveGmailAnalysis = async () => {
+  const response = await api.get('/gmail/analysis/active');
+  return response.data;
+};
+
+/**
+ * Polls live progress of a Gmail analysis job by ID.
+ */
+export const getGmailAnalysisProgress = async (jobId) => {
+  const response = await api.get(`/gmail/analysis/progress/${jobId}`);
+  return response.data;
+};
+
+/**
+ * Explicitly cancels an ongoing Gmail analysis job.
+ */
+export const cancelGmailAnalysis = async (jobId) => {
+  const response = await api.post(`/gmail/analysis/cancel/${jobId}`);
+  return response.data;
+};
+
 export default api;
+

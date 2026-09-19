@@ -12,6 +12,7 @@ from app.database import get_db
 from app.models import Detection, User
 from app.routers import auth as auth_router
 from app.routers import detections as detections_router
+from app.routers import gmail as gmail_router
 from app.schemas import DetectionRequest, DetectionResponse
 from app.services.auth_service import get_optional_current_user
 from app.services.unified_detector import detect_unified
@@ -51,6 +52,10 @@ TAGS_METADATA = [
     {
         "name": "Detection History & Dashboard",
         "description": "Authenticated user scan history and personal analytics dashboard.",
+    },
+    {
+        "name": "Gmail Integration",
+        "description": "Secure Gmail OAuth 2.0 connection and read-only email import for threat analysis.",
     },
 ]
 
@@ -112,6 +117,7 @@ app.add_middleware(
 # Include modular routers
 app.include_router(auth_router.router)
 app.include_router(detections_router.router)
+app.include_router(gmail_router.router)
 
 
 @app.exception_handler(Exception)
@@ -262,6 +268,10 @@ def detect_threat(
         result = detect_unified(request.content, request.content_type)
 
         try:
+            subject_val = None
+            if request.content_type == "email" and request.content.startswith("Subject:"):
+                subject_val = request.content.split("\n", 1)[0].replace("Subject:", "").strip()[:500]
+
             record = Detection(
                 user_id=current_user.id if current_user else None,
                 input_type=request.content_type,
@@ -274,6 +284,8 @@ def detect_threat(
                 is_phishing=result.get("is_phishing"),
                 is_spam=result.get("is_spam"),
                 model_used="ML",
+                source="manual",
+                subject=subject_val,
             )
             db.add(record)
             db.commit()
@@ -409,6 +421,10 @@ def detect_threat_dl(
         result = detect_email_dl(request.content)
 
         try:
+            subject_val = None
+            if request.content.startswith("Subject:"):
+                subject_val = request.content.split("\n", 1)[0].replace("Subject:", "").strip()[:500]
+
             record = Detection(
                 user_id=current_user.id if current_user else None,
                 input_type=request.content_type,
@@ -421,6 +437,8 @@ def detect_threat_dl(
                 is_phishing=result.get("is_phishing"),
                 is_spam=result.get("is_spam"),
                 model_used="Bi-LSTM",
+                source="manual",
+                subject=subject_val,
             )
             db.add(record)
             db.commit()
