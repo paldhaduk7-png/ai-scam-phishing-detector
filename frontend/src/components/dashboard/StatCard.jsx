@@ -44,38 +44,41 @@ export default function StatCard({
 
   return (
     <Card
-      className={`relative p-5 transition-all duration-200 hover:shadow-md ${scheme.hoverBorder} group overflow-hidden`}
+      className={`relative p-3.5 sm:p-5 transition-all duration-200 hover:shadow-md ${scheme.hoverBorder} group overflow-hidden`}
     >
-      <div className="flex items-start justify-between gap-3">
-        <div className="space-y-1.5 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${scheme.dot} shrink-0`} />
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
+      {/* Subtle top indicator bar for mobile accent */}
+      <div className={`sm:hidden absolute top-0 left-0 right-0 h-0.5 ${scheme.dot} opacity-70`} />
+
+      <div className="flex items-start justify-between gap-2 sm:gap-3">
+        <div className="space-y-1 sm:space-y-1.5 min-w-0 flex-1">
+          <div className="flex items-center gap-1 sm:gap-1.5">
+            <span className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${scheme.dot} shrink-0`} />
+            <p className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 truncate">
               {title}
             </p>
           </div>
 
-          <div className="flex items-baseline gap-2 pt-0.5">
-            <span className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white font-mono tracking-tight">
+          <div className="flex items-baseline gap-1.5 sm:gap-2 pt-0.5">
+            <span className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-slate-900 dark:text-white font-mono tracking-tight">
               {value}
             </span>
             {change && (
-              <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/40">
+              <span className="text-[10px] sm:text-xs font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/60 px-1 sm:px-1.5 py-0.5 rounded-md border border-emerald-200/60 dark:border-emerald-800/40">
                 {change}
               </span>
             )}
           </div>
 
-          <p className="text-xs text-slate-500 dark:text-slate-400 leading-snug truncate pt-0.5">
+          <p className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 leading-snug truncate pt-0.5">
             {subtext}
           </p>
         </div>
 
         {Icon && (
           <div
-            className={`w-11 h-11 rounded-xl ${scheme.bg} ${scheme.border} border flex items-center justify-center ${scheme.text} shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
+            className={`w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl ${scheme.bg} ${scheme.border} border flex items-center justify-center ${scheme.text} shrink-0 shadow-2xs group-hover:scale-105 transition-transform`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
           </div>
         )}
       </div>

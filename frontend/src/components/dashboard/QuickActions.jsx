@@ -48,17 +48,17 @@ export default function QuickActions() {
   ];
 
   return (
-    <Card className="flex flex-col p-6">
-      <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-4">
-        <h2 className="text-base font-bold text-slate-900 dark:text-white tracking-tight">
+    <Card className="flex flex-col p-4 sm:p-6">
+      <div className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-100 dark:border-slate-800/80 mb-3 sm:mb-4">
+        <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
           Quick Actions
         </h2>
-        <span className="text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+        <span className="text-[10px] sm:text-[11px] font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider">
           Shortcuts
         </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
         {actions.map((action, idx) => {
           const Icon = action.icon;
           return (
@@ -66,21 +66,21 @@ export default function QuickActions() {
               key={idx}
               type="button"
               onClick={() => navigate(action.path)}
-              className="flex items-start gap-3 p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-xs transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+              className="flex flex-col sm:flex-row items-start gap-2 sm:gap-3 p-2.5 sm:p-3.5 rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 hover:bg-white dark:hover:bg-slate-800/80 hover:border-slate-200 dark:hover:border-slate-700 hover:shadow-xs active:scale-95 transition-all text-left cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
             >
               <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 shadow-2xs ${action.color}`}
+                className={`w-7 h-7 sm:w-9 sm:h-9 rounded-lg sm:rounded-xl flex items-center justify-center shrink-0 border transition-transform group-hover:scale-105 shadow-2xs ${action.color}`}
               >
-                <Icon className="w-4.5 h-4.5" />
+                <Icon className="w-3.5 h-3.5 sm:w-4.5 sm:h-4.5" />
               </div>
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 flex-1 w-full">
                 <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
+                  <span className="text-[11px] sm:text-xs font-bold text-slate-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors truncate">
                     {action.label}
                   </span>
-                  <ArrowUpRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
+                  <ArrowUpRight className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-slate-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
                 </div>
-                <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5">
+                <p className="text-[10px] sm:text-[11px] text-slate-500 dark:text-slate-400 truncate mt-0.5 hidden xs:block sm:block">
                   {action.description}
                 </p>
               </div>
