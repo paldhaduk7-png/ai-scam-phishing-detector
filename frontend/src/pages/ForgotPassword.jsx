@@ -282,7 +282,7 @@ export default function ForgotPassword() {
                       htmlFor="forgot-email"
                       className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                     >
-                      Registered Email Address
+                      Registered Email Address <span className="text-red-500 font-bold">*</span>
                     </label>
                     <div className="relative">
                       <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -347,7 +347,7 @@ export default function ForgotPassword() {
                       htmlFor="otp-input"
                       className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5 text-center"
                     >
-                      6-Digit Code (Valid for 10 minutes)
+                      6-Digit Code (Valid for 10 minutes) <span className="text-red-500 font-bold">*</span>
                     </label>
                     <input
                       id="otp-input"
@@ -425,7 +425,7 @@ export default function ForgotPassword() {
                       htmlFor="new-password"
                       className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                     >
-                      New Password
+                      New Password <span className="text-red-500 font-bold">*</span>
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -459,7 +459,7 @@ export default function ForgotPassword() {
                       htmlFor="confirm-new-password"
                       className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1.5"
                     >
-                      Confirm New Password
+                      Confirm New Password <span className="text-red-500 font-bold">*</span>
                     </label>
                     <div className="relative">
                       <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
