@@ -334,13 +334,34 @@ export default function GmailEmailSelectionModal({
     return list;
   }, [messages, filterType, sortOrder, selectedIds]);
 
-  // Select all on current page only, preserving cross-page selections
+  // All uniquely known messages across all loaded/cached pages
+  const allLoadedMessages = useMemo(() => {
+    const map = new Map();
+    Object.values(pageCache).forEach((page) => {
+      (page.messages || []).forEach((m) => {
+        if (m && m.id) map.set(m.id, m);
+      });
+    });
+    (messages || []).forEach((m) => {
+      if (m && m.id) map.set(m.id, m);
+    });
+    return Array.from(map.values());
+  }, [pageCache, messages]);
+
+  // Option 1: Are all visible messages on the CURRENT page selected?
   const allVisibleSelected = useMemo(() => {
     if (processedMessages.length === 0) return false;
     return processedMessages.every((m) => selectedIds.includes(m.id));
   }, [processedMessages, selectedIds]);
 
-  const toggleSelectAll = () => {
+  // Option 2: Are all messages across ALL known pages selected?
+  const allPagesSelected = useMemo(() => {
+    if (allLoadedMessages.length === 0) return false;
+    return allLoadedMessages.every((m) => selectedIds.includes(m.id));
+  }, [allLoadedMessages, selectedIds]);
+
+  // Toggle selection for current page only (Option 1)
+  const toggleSelectCurrentPage = () => {
     if (allVisibleSelected) {
       const visibleIds = new Set(processedMessages.map((m) => m.id));
       setSelectedIds((prev) => prev.filter((id) => !visibleIds.has(id)));
@@ -350,11 +371,71 @@ export default function GmailEmailSelectionModal({
     }
   };
 
+  // State to indicate background loading when fetching all remaining pages
+  const [isFetchingAllPages, setIsFetchingAllPages] = useState(false);
+
+  // Toggle selection for ALL pages (Option 2: previous, current, next)
+  const toggleSelectAllPages = async () => {
+    // If all loaded messages are already selected and no remaining pages, deselect all
+    if (allPagesSelected && !nextPageToken) {
+      setSelectedIds([]);
+      return;
+    }
+
+    // 1. Immediately select all currently loaded messages across all pages
+    const loadedIds = allLoadedMessages.map((m) => m.id);
+    setSelectedIds((prev) => Array.from(new Set([...prev, ...loadedIds])));
+
+    // 2. If there are more pages in Gmail inbox, fetch them in background so all pages are selected
+    if (nextPageToken && !isFetchingAllPages) {
+      setIsFetchingAllPages(true);
+      try {
+        let currentToken = nextPageToken;
+        const existingPageNumbers = Object.keys(pageCache).map(Number);
+        let pNum = (existingPageNumbers.length > 0 ? Math.max(...existingPageNumbers) : currentPage) + 1;
+
+        // Fetch up to 10 additional pages (up to 100 emails)
+        for (let i = 0; i < 10 && currentToken; i++) {
+          const res = await getGmailMessages({
+            max_results: 10,
+            maxResults: 10,
+            page_token: currentToken,
+            pageToken: currentToken,
+            ...(debouncedSearch ? { q: debouncedSearch } : {}),
+          });
+
+          const fetched = res?.messages || res?.emails || [];
+          const token = res?.nextPageToken || null;
+
+          if (fetched.length > 0) {
+            setPageCache((prev) => ({
+              ...prev,
+              [pNum]: { messages: fetched, nextPageToken: token },
+            }));
+            const ids = fetched.map((m) => m.id);
+            setSelectedIds((prev) => Array.from(new Set([...prev, ...ids])));
+            pNum++;
+          }
+
+          currentToken = token;
+          if (!currentToken) break;
+        }
+
+        setNextPageToken(currentToken);
+      } catch (err) {
+        console.error('Failed to fetch all remaining Gmail pages:', err);
+      } finally {
+        setIsFetchingAllPages(false);
+      }
+    }
+  };
+
   const handleStartAnalysis = () => {
     if (selectedIds.length === 0) return;
     onAnalyze(selectedIds);
     onClose();
   };
+
 
   useEffect(() => {
     if (isOpen) {
@@ -635,6 +716,34 @@ export default function GmailEmailSelectionModal({
           </div>
         </div>
 
+
+        {/* Banner when all on this page are selected but not all pages */}
+        {allVisibleSelected && !allPagesSelected && (
+          <div className="px-5 sm:px-6 py-2 bg-gradient-to-r from-blue-950/60 to-indigo-950/50 border-b border-blue-900/40 flex items-center justify-between gap-3 text-xs text-blue-200 animate-fadeIn">
+            <span className="flex items-center gap-1.5 truncate">
+              <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <span>
+                All <strong className="text-white font-mono">{processedMessages.length}</strong> emails on Page {currentPage} are selected.
+              </span>
+            </span>
+            <button
+              type="button"
+              onClick={toggleSelectAllPages}
+              disabled={isFetchingAllPages}
+              className="text-blue-400 hover:text-blue-300 font-semibold underline shrink-0 cursor-pointer transition-colors"
+            >
+              {isFetchingAllPages ? (
+                <span className="inline-flex items-center gap-1">
+                  <Loader2 className="w-3 h-3 animate-spin text-blue-400" />
+                  <span>Loading all pages...</span>
+                </span>
+              ) : (
+                `Select all ${allLoadedMessages.length}${nextPageToken ? '+' : ''} emails across all pages`
+              )}
+            </button>
+          </div>
+        )}
+
         {/* Scrollable Email List Container */}
         <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-2 divide-y divide-slate-800/80 min-h-[260px] max-h-[380px] sm:max-h-[420px]">
           {loading ? (
@@ -771,34 +880,87 @@ export default function GmailEmailSelectionModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 border-t border-slate-800/90 flex flex-col sm:flex-row items-center justify-between gap-3 bg-[#0a0f1d]">
-          {/* Select All & Selection Counter */}
-          <div className="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-start">
+        <div className="p-4 sm:p-5 border-t border-slate-800/90 flex flex-col md:flex-row items-center justify-between gap-3 bg-[#0a0f1d]">
+          {/* Two Selection Options (This Page vs All Pages) & Selection Counter */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto flex-wrap">
+            {/* Option 1: Select This Page Only */}
             <button
               type="button"
-              onClick={toggleSelectAll}
+              onClick={toggleSelectCurrentPage}
               disabled={processedMessages.length === 0}
-              className="flex items-center gap-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors cursor-pointer disabled:opacity-50"
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border select-none disabled:opacity-40 disabled:cursor-not-allowed ${
+                allVisibleSelected
+                  ? 'bg-blue-600/25 text-blue-300 border-blue-500/60 shadow-xs'
+                  : 'bg-[#131d35] text-slate-300 hover:text-white border-slate-700/70 hover:border-slate-500'
+              }`}
+              title="Select or deselect only emails on the current page"
             >
               <div
-                className={`w-4 h-4 rounded flex items-center justify-center ${
+                className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
                   allVisibleSelected
                     ? 'bg-blue-600 text-white'
-                    : 'border border-slate-600 hover:border-slate-400'
+                    : 'border border-slate-500'
                 }`}
               >
-                {allVisibleSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                {allVisibleSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
               </div>
-              <span>Select All</span>
+              <span>This Page ({processedMessages.length})</span>
             </button>
 
-            <div className="text-xs text-slate-400">
-              Selected:{' '}
-              <span className="text-blue-400 font-bold font-mono">
-                {selectedIds.length} {selectedIds.length === 1 ? 'email' : 'emails'}
+            {/* Option 2: Select All Pages (Previous, Current, Next) */}
+            <button
+              type="button"
+              onClick={toggleSelectAllPages}
+              disabled={allLoadedMessages.length === 0 || isFetchingAllPages}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border select-none disabled:opacity-40 disabled:cursor-not-allowed ${
+                allPagesSelected
+                  ? 'bg-indigo-600/25 text-indigo-300 border-indigo-500/60 shadow-xs'
+                  : 'bg-[#131d35] text-slate-300 hover:text-white border-slate-700/70 hover:border-slate-500'
+              }`}
+              title="Select all emails across all pages (previous, current, and next)"
+            >
+              <div
+                className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
+                  allPagesSelected
+                    ? 'bg-indigo-600 text-white'
+                    : 'border border-slate-500'
+                }`}
+              >
+                {allPagesSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+              </div>
+              <span>
+                {isFetchingAllPages ? (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
+                    <span>Loading all pages...</span>
+                  </span>
+                ) : (
+                  `All Pages (${allLoadedMessages.length}${nextPageToken ? '+' : ''})`
+                )}
               </span>
+            </button>
+
+            {/* Selection Counter & Clear Action */}
+            <div className="flex items-center gap-1.5 text-xs text-slate-400 pl-1">
+              <span>
+                Selected:{' '}
+                <strong className="text-blue-400 font-bold font-mono">
+                  {selectedIds.length}
+                </strong>{' '}
+                {selectedIds.length === 1 ? 'email' : 'emails'}
+              </span>
+              {selectedIds.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setSelectedIds([])}
+                  className="text-[11px] text-slate-400 hover:text-rose-400 underline cursor-pointer ml-1 transition-colors"
+                >
+                  Clear
+                </button>
+              )}
             </div>
           </div>
+
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
