@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useTheme } from '../context/ThemeContext';
@@ -6,6 +6,7 @@ import {
   Shield,
   User,
   Mail,
+  Phone,
   Lock,
   Eye,
   EyeOff,
@@ -15,18 +16,19 @@ import {
   Upload,
   Sun,
   Moon,
-  History,
-  Activity,
-  Database,
+  Home,
+  Info,
+  Sparkles,
+  Zap,
+  ArrowRight,
+  Camera,
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { RegisterProfileIllustration } from '../components/auth/AuthIllustrations';
-
 import { getApiBaseUrl } from '../services/api';
 
 const API_BASE_URL = getApiBaseUrl();
 
-function GoogleIcon({ className = 'w-5 h-5' }) {
+function GoogleIcon({ className = 'w-4 h-4' }) {
   return (
     <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path
@@ -61,6 +63,7 @@ export default function Register() {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -75,6 +78,27 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  // Password Strength Calculation
+  const passwordStrength = useMemo(() => {
+    if (!password) return { score: 0, label: '', color: 'bg-slate-200 dark:bg-slate-700', width: '0%' };
+    let score = 0;
+    if (password.length >= 8) score += 1;
+    if (/[A-Z]/.test(password) && /[a-z]/.test(password)) score += 1;
+    if (/[0-9]/.test(password)) score += 1;
+    if (/[^A-Za-z0-9]/.test(password)) score += 1;
+
+    if (password.length < 6) {
+      return { score: 1, label: 'Too short', color: 'bg-red-500', width: '25%' };
+    }
+    if (score <= 1) {
+      return { score: 1, label: 'Weak', color: 'bg-amber-500', width: '35%' };
+    }
+    if (score === 2 || score === 3) {
+      return { score: 2, label: 'Medium', color: 'bg-yellow-500', width: '65%' };
+    }
+    return { score: 3, label: 'Strong', color: 'bg-emerald-500', width: '100%' };
+  }, [password]);
 
   // Process image file
   const handlePhotoChange = (e) => {
@@ -107,16 +131,16 @@ export default function Register() {
     reader.readAsDataURL(file);
   };
 
-  const handleRemovePhoto = () => {
+  const handleRemovePhoto = (e) => {
+    e.stopPropagation();
     setPhotoFile(null);
     setPhotoPreview(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
-    toast.info('Selected photo cleared');
   };
 
-  // Form Submission with Axios
+  // Form Submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -209,25 +233,55 @@ export default function Register() {
   };
 
   return (
-    <div className="min-h-screen bg-[#f4f7fb] dark:bg-[#090d16] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      {/* 1. Full-Width White Header with clean left/right margins */}
-      <header className="w-full h-14 bg-[#0b101b] border-b border-slate-800/60 shrink-0 flex items-center">
-        <div className="w-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+    <div className="min-h-screen bg-[#f8fafc] dark:bg-[#080d17] text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+      {/* Top Branding Navigation Header */}
+      <header className="w-full h-16 bg-white/90 dark:bg-[#090d16]/90 backdrop-blur-md border-b border-slate-200/80 dark:border-slate-800/80 shrink-0 sticky top-0 z-40 transition-colors">
+        <div className="max-w-7xl mx-auto h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
+          {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-2.5 group focus-visible:outline-none">
-            <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-sm shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
-              <Shield className="w-4.5 h-4.5 fill-white stroke-blue-600 stroke-[1.5]" />
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center text-white shadow-md shadow-blue-600/25 group-hover:scale-105 transition-transform shrink-0">
+              <Shield className="w-5 h-5 fill-white/20 stroke-white stroke-[2.2]" />
             </div>
             <div className="flex flex-col">
-              <span className="text-base font-bold tracking-tight text-slate-900 dark:text-white leading-none">
+              <span className="text-lg font-extrabold tracking-tight text-slate-900 dark:text-white leading-none">
                 ScamShield
               </span>
-              <span className="text-[9px] uppercase font-bold tracking-widest text-blue-600 dark:text-blue-400 mt-0.5">
-                Cybersecurity
+              <span className="text-[10px] uppercase font-bold tracking-wider text-blue-600 dark:text-blue-400 mt-0.5">
+                AI Defense
               </span>
             </div>
           </Link>
 
+          {/* Center Links */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <Home className="w-3.5 h-3.5" />
+              <span>Home</span>
+            </Link>
+            <Link
+              to="/about"
+              className="flex items-center gap-1.5 text-xs font-medium text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
+            >
+              <Info className="w-3.5 h-3.5" />
+              <span>About</span>
+            </Link>
+          </nav>
+
+          {/* Right Action Items */}
           <div className="flex items-center gap-3 sm:gap-4">
+            {/* Guest Run Detector Button */}
+            <Link
+              to="/detect"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-200/80 dark:border-blue-900/60 hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-all shadow-xs"
+              title="Run threat detection immediately without signing in"
+            >
+              <Zap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 fill-blue-600/20" />
+              <span>Try Guest Detector</span>
+            </Link>
+
             {/* Theme Toggle Button */}
             <button
               type="button"
@@ -235,7 +289,7 @@ export default function Register() {
                 toggleTheme();
                 toast.info(`Switched to ${isDark ? 'Light' : 'Dark'} Mode`);
               }}
-              className="p-1.5 rounded-lg text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="Toggle theme"
             >
               {isDark ? (
@@ -245,13 +299,10 @@ export default function Register() {
               )}
             </button>
 
-            <span className="hidden sm:inline text-xs text-slate-500 dark:text-slate-400 font-medium">
-              Already have an account?
-            </span>
-
+            {/* Sign In Link Button */}
             <Link
               to="/login"
-              className="px-3.5 py-1.5 rounded-lg border border-slate-700/60 bg-slate-800/50 text-blue-400 hover:bg-slate-700/60 text-xs font-semibold shadow-sm transition-all"
+              className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-600/25 transition-all"
             >
               Sign In
             </Link>
@@ -259,102 +310,136 @@ export default function Register() {
         </div>
       </header>
 
-      {/* 2. Main Content Shifted Left with Small Outer Margin */}
-      <main className="w-full px-4 sm:px-6 lg:px-8 pt-4 sm:pt-5 pb-8 flex-1">
-        <div className="w-full flex flex-col lg:flex-row items-start justify-between gap-6 xl:gap-8 2xl:gap-10">
-          {/* LEFT COLUMN: Large Left Content Area */}
-          <div className="w-full lg:w-[440px] xl:w-[490px] 2xl:w-[520px] space-y-4 text-left shrink-0">
-            {/* Personal Security Suite Green Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-100 dark:border-emerald-900/60 text-emerald-600 dark:text-emerald-400 text-xs font-semibold">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <span>Personal Security Suite</span>
-            </div>
+      {/* Main Centered Split-Card Layout with Fixed-Height Frame */}
+      <main className="flex-1 flex items-center justify-center p-3 sm:p-5 lg:p-6 min-h-0">
+        <div className="w-full max-w-5xl bg-white dark:bg-[#0d1424] rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 shadow-xl shadow-slate-200/40 dark:shadow-none p-3 sm:p-4 flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch lg:h-[630px] xl:h-[650px] lg:max-h-[calc(100vh-100px)] overflow-hidden">
+          
+          {/* LEFT HERO GRADIENT CARD - Fixed / Static, never scrolls */}
+          <div className="w-full lg:w-[44%] xl:w-[45%] rounded-[22px] bg-gradient-to-br from-[#0f1d3f] via-[#1d4ed8] to-[#3b82f6] p-6 lg:p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-inner shrink-0 h-full">
+            {/* Background subtle decoration rings */}
+            <div className="absolute -top-16 -right-16 w-56 h-56 rounded-full bg-cyan-400/15 blur-2xl pointer-events-none" />
+            <div className="absolute -bottom-20 -left-12 w-64 h-64 rounded-full bg-blue-900/40 blur-3xl pointer-events-none" />
 
-            {/* Large Heading */}
-            <h1 className="text-2xl sm:text-3xl xl:text-[34px] font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.18]">
-              Create Your ScamShield<br />Account
-            </h1>
-
-            {/* Subtitle Description */}
-            <p className="text-xs sm:text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-lg">
-              Create a personal workspace to persist your threat detection history, unlock 7-day activity metrics, and customize your profile.
-            </p>
-
-            {/* Three Wide Horizontal Feature Cards (~500px wide) */}
-            <div className="space-y-2.5 pt-0.5">
-              {/* Card 1: Automated Scan History Persistence */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-                  <History className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100">
-                    Automated Scan History Persistence
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">
-                    Save every message, email, or URL scan to your private PostgreSQL log.
-                  </p>
-                </div>
+            {/* Top Logo Badge */}
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-white/15 backdrop-blur-md border border-white/20 text-white font-bold text-xs shadow-xs">
+                <Shield className="w-4 h-4 fill-white/30 stroke-white stroke-[2]" />
+                <span>ScamShield</span>
               </div>
 
-              {/* Card 2: 7-Day Security Operations Trends */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100">
-                    7-Day Security Operations Trends
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">
-                    Monitor your personal daily encounter metrics (Safe vs. Phishing).
-                  </p>
-                </div>
+              {/* Sparkle Tag */}
+              <div className="inline-flex items-center gap-1.5 text-xs font-medium text-blue-100 mt-5 tracking-wide">
+                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <span>Join the Defense Network</span>
               </div>
 
-              {/* Card 3: Profile Personalization & Avatar */}
-              <div className="w-full flex items-center gap-3.5 p-3 rounded-2xl bg-[#0d1424] border border-slate-800/60 shadow-sm hover:shadow-md hover:border-slate-700/60 transition-all">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 dark:bg-purple-950/60 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
-                  <Database className="w-5 h-5" />
+              {/* Headline */}
+              <h1 className="text-2xl sm:text-3xl lg:text-[30px] font-extrabold tracking-tight text-white leading-tight mt-2.5">
+                Start your journey. Protect your workspace.
+              </h1>
+
+              {/* Sub-description */}
+              <p className="text-xs sm:text-sm text-blue-100/90 mt-2.5 leading-relaxed">
+                Create your security account to detect phishing emails, analyze fraudulent URLs, and protect your digital assets.
+              </p>
+
+              {/* Feature Checklist */}
+              <div className="space-y-3 mt-5 pt-4 border-t border-white/15">
+                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-blue-50">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span>Real-time multi-vector scam & phishing inspection</span>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-[13px] font-bold text-slate-900 dark:text-slate-100">
-                    Profile Personalization &amp; Avatar
-                  </p>
-                  <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5 leading-normal">
-                    Optional cloud avatar image management powered by Cloudinary.
-                  </p>
+
+                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-blue-50">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span>Instant fraud score with explainable AI breakdown</span>
+                </div>
+
+                <div className="flex items-start gap-2.5 text-xs sm:text-sm text-blue-50">
+                  <div className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center shrink-0 mt-0.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-white" />
+                  </div>
+                  <span>Persistent audit trail and 7-day threat telemetry</span>
                 </div>
               </div>
             </div>
+
+            {/* Bottom Footnote */}
+            <div className="relative z-10 pt-3 mt-4 border-t border-white/15">
+              <p className="text-[11px] text-blue-200/80">
+                Individual and organizational defense. One unified platform.
+              </p>
+            </div>
           </div>
 
-          {/* CENTER COLUMN: Large Profile/Account + Blue Shield Illustration */}
-          <div className="hidden lg:flex flex-1 items-center justify-center shrink-0 min-w-[260px] max-w-[360px] pt-2">
-            <RegisterProfileIllustration />
-          </div>
-
-          {/* RIGHT COLUMN: Wide & Vertically Compact Registration Card */}
-          <div className="w-full max-w-[540px] lg:w-[480px] xl:w-[510px] 2xl:w-[540px] shrink-0 mx-auto lg:mx-0">
-            <div className="w-full bg-[#0d1424] rounded-3xl shadow-xl border border-slate-800/60 px-4 sm:px-8 py-5 sm:py-6">
-              {/* 1. Blue Account Icon */}
-              <div className="w-10 h-10 rounded-2xl bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-900/50 flex items-center justify-center mx-auto mb-1.5">
-                <User className="w-5 h-5 stroke-[2.2]" />
-              </div>
-
-              {/* 2. Create Account Heading & Subtitle */}
+          {/* RIGHT REGISTRATION FORM - ONLY this side is scrollable */}
+          <div className="flex-1 h-full overflow-y-auto px-3 sm:px-6 lg:px-7 py-2 sm:py-3 overscroll-contain">
+            <div className="max-w-md w-full mx-auto pb-4">
+              {/* Header Title */}
               <div className="text-center mb-3">
-                <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
-                  Create Account
+                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                  Create account
                 </h2>
-                <p className="text-[11px] text-slate-400 dark:text-slate-400 mt-0.5">
-                  Enter your details to register for ScamShield.
+                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                  Sign up to get started with ScamShield AI.
                 </p>
+              </div>
+
+              {/* UPPER-SIDE ROUND SHAPE PHOTO UPLOAD */}
+              <div className="flex flex-col items-center justify-center mb-4">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handlePhotoChange}
+                  className="hidden"
+                />
+                <div
+                  onClick={() => fileInputRef.current?.click()}
+                  className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full border-2 border-dashed border-blue-400/80 dark:border-blue-500/60 bg-blue-50/60 dark:bg-blue-950/40 p-1 group cursor-pointer hover:border-blue-600 transition-all shadow-xs flex items-center justify-center"
+                  title="Upload profile picture"
+                >
+                  {photoPreview ? (
+                    <img
+                      src={photoPreview}
+                      alt="Avatar Preview"
+                      className="w-full h-full rounded-full object-cover shadow-sm"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center text-blue-500 dark:text-blue-400 group-hover:scale-105 transition-transform">
+                      <User className="w-7 h-7 sm:w-8 sm:h-8 stroke-[1.75]" />
+                    </div>
+                  )}
+
+                  {/* Circular Camera Badge at bottom-right of round shape */}
+                  <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center shadow-md border-2 border-white dark:border-[#0d1424] transition-colors">
+                    <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 mt-1.5">
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    {photoFile ? photoFile.name : 'Upload photo (optional)'}
+                  </span>
+                  {photoFile && (
+                    <button
+                      type="button"
+                      onClick={handleRemovePhoto}
+                      className="text-[11px] font-medium text-red-500 hover:underline cursor-pointer"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Error Banner */}
               {error && (
-                <div className="mb-2.5 p-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs flex items-center gap-2 animate-fadeIn">
+                <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs flex items-center gap-2.5">
                   <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -362,70 +447,24 @@ export default function Register() {
 
               {/* Success Banner */}
               {successMsg && (
-                <div className="mb-2.5 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+                <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2.5">
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
-              {/* Registration Form with 100% Full-Width 44px Inputs & Compact Vertical Spacing */}
-              <form onSubmit={handleSubmit} className="space-y-2.5">
-                {/* 4. Profile Photo (Optional) Upload Box - Full width, compact */}
-                <div className="w-full flex items-center gap-3 p-2.5 rounded-2xl bg-slate-900/50 border border-slate-800/60">
-                  {photoPreview ? (
-                    <div className="relative shrink-0">
-                      <img
-                        src={photoPreview}
-                        alt="Avatar Preview"
-                        className="w-9 h-9 rounded-xl object-cover ring-2 ring-blue-500/30 shrink-0"
-                      />
-                      <button
-                        type="button"
-                        onClick={handleRemovePhoto}
-                        className="absolute -top-1 -right-1 p-0.5 rounded-full bg-red-600 text-white hover:bg-red-700 shadow-xs cursor-pointer"
-                        aria-label="Remove photo"
-                      >
-                        <X className="w-3 h-3" />
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="w-9 h-9 rounded-xl bg-blue-50 dark:bg-blue-950/80 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 border border-blue-200/60 dark:border-blue-800/60">
-                      <Upload className="w-4.5 h-4.5" />
-                    </div>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="text-[11px] font-bold text-slate-800 dark:text-slate-200 leading-tight">
-                      Profile Photo (Optional)
-                    </p>
-                    <p className="text-[10px] text-slate-400 dark:text-slate-500">
-                      JPG, PNG or WEBP under 5MB
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => fileInputRef.current?.click()}
-                      className="text-[11px] font-semibold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer leading-tight"
-                    >
-                      {photoFile ? 'Choose another image' : 'Upload photo'}
-                    </button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/jpeg,image/png,image/webp"
-                      onChange={handlePhotoChange}
-                      className="hidden"
-                    />
-                  </div>
-                </div>
-
-                {/* 5. Full Name Input - 100% full width, 44px height */}
-                <div className="w-full">
+              {/* Form */}
+              <form onSubmit={handleSubmit} className="space-y-3">
+                {/* Full Name */}
+                <div>
                   <label
                     htmlFor="register-name"
-                    className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                   >
-                    Full Name
+                    <User className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Full Name</span>
                   </label>
-                  <div className="relative w-full">
+                  <div className="relative">
                     <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       id="register-name"
@@ -436,22 +475,23 @@ export default function Register() {
                         setName(e.target.value);
                         if (error) setError('');
                       }}
-                      placeholder="Alex Morgan"
+                      placeholder="Enter your full name"
                       autoComplete="name"
-                      className="w-full h-11 pl-10 pr-4 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
+                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
                 </div>
 
-                {/* 6. Email Address Input - 100% full width, 44px height */}
-                <div className="w-full">
+                {/* Email Address */}
+                <div>
                   <label
                     htmlFor="register-email"
-                    className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                   >
-                    Email Address
+                    <Mail className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Email Address</span>
                   </label>
-                  <div className="relative w-full">
+                  <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       id="register-email"
@@ -464,20 +504,47 @@ export default function Register() {
                       }}
                       placeholder="name@example.com"
                       autoComplete="email"
-                      className="w-full h-11 pl-10 pr-4 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
+                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
                 </div>
 
-                {/* 7. Password Input - 100% full width, 44px height */}
-                <div className="w-full">
+                {/* Phone Number (Optional) */}
+                <div>
+                  <label
+                    htmlFor="register-phone"
+                    className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <Phone className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Phone Number</span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <input
+                      id="register-phone"
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Enter phone number"
+                      autoComplete="tel"
+                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Password Field with Strength Meter */}
+                <div>
                   <label
                     htmlFor="register-password"
-                    className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                   >
-                    Password (min. 6 characters)
+                    <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Password</span>
                   </label>
-                  <div className="relative w-full">
+                  <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       id="register-password"
@@ -488,9 +555,9 @@ export default function Register() {
                         setPassword(e.target.value);
                         if (error) setError('');
                       }}
-                      placeholder="••••••••"
+                      placeholder="Create a password"
                       autoComplete="new-password"
-                      className="w-full h-11 pl-10 pr-10 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
+                      className="w-full h-11 pl-10 pr-10 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                     <button
                       type="button"
@@ -501,17 +568,33 @@ export default function Register() {
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+
+                  {/* Password Strength Indicator Bar */}
+                  {password && (
+                    <div className="mt-1.5 flex items-center gap-2">
+                      <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full transition-all duration-300 ${passwordStrength.color}`}
+                          style={{ width: passwordStrength.width }}
+                        />
+                      </div>
+                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 min-w-10 text-right">
+                        {passwordStrength.label}
+                      </span>
+                    </div>
+                  )}
                 </div>
 
-                {/* 8. Confirm Password Input - 100% full width, 44px height */}
-                <div className="w-full">
+                {/* Confirm Password */}
+                <div>
                   <label
                     htmlFor="register-confirm-password"
-                    className="block text-[11px] font-semibold text-slate-700 dark:text-slate-300 mb-0.5"
+                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                   >
-                    Confirm Password
+                    <Lock className="w-3.5 h-3.5 text-slate-400" />
+                    <span>Confirm Password</span>
                   </label>
-                  <div className="relative w-full">
+                  <div className="relative">
                     <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       id="register-confirm-password"
@@ -522,9 +605,13 @@ export default function Register() {
                         setConfirmPassword(e.target.value);
                         if (error) setError('');
                       }}
-                      placeholder="••••••••"
+                      placeholder="Confirm your password"
                       autoComplete="new-password"
-                      className="w-full h-11 pl-10 pr-10 bg-slate-50/70 dark:bg-slate-900/80 hover:bg-slate-100/70 dark:hover:bg-slate-900 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs sm:text-[13px] text-slate-900 dark:text-white placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500/30 focus-visible:border-blue-500 transition-all"
+                      className={`w-full h-11 pl-10 pr-10 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${
+                        confirmPassword && password !== confirmPassword
+                          ? 'border-red-400 focus:border-red-500'
+                          : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'
+                      }`}
                     />
                     <button
                       type="button"
@@ -535,72 +622,90 @@ export default function Register() {
                       {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
+                  {confirmPassword && password !== confirmPassword && (
+                    <p className="text-[10px] text-red-500 mt-1">Passwords do not match.</p>
+                  )}
                 </div>
 
-                {/* 9. Terms Checkbox */}
+                {/* Terms of Service Checkbox */}
                 <div className="pt-0.5">
-                  <label className="flex items-start gap-2 cursor-pointer select-none text-[11px] text-slate-600 dark:text-slate-400 leading-tight">
+                  <label className="flex items-center gap-2 cursor-pointer select-none text-xs text-slate-600 dark:text-slate-400">
                     <input
                       type="checkbox"
                       checked={agreeTerms}
                       onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30 mt-0.5 shrink-0"
+                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30"
                     />
                     <span>
-                      I agree to the cybersecurity terms of service and acknowledge that analyses are used solely for threat detection.
+                      I agree to the{' '}
+                      <Link to="/about" className="text-blue-600 dark:text-blue-400 hover:underline">
+                        Terms of Service
+                      </Link>
                     </span>
                   </label>
                 </div>
 
-                {/* 10. Create Account Button - 100% full width, 44px height */}
+                {/* Primary Submit Button */}
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 mt-1 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-blue-600/20 flex items-center justify-center gap-2 cursor-pointer transition-all disabled:opacity-60"
+                  className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {loading ? (
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
-                    <span>Create Account</span>
+                    <>
+                      <span>Create Account</span>
+                      <ArrowRight className="w-4 h-4" />
+                    </>
                   )}
                 </button>
               </form>
 
-              {/* 11. OR CONTINUE WITH Divider */}
-              <div className="relative my-2.5">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-slate-100 dark:border-slate-800" />
+              {/* Guest Run Option */}
+              <div className="mt-3.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
+                  <Zap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
+                  <span>Just exploring? Try instant scan</span>
                 </div>
-                <div className="relative flex justify-center text-[9px] uppercase">
-                  <span className="bg-white dark:bg-[#0f172a] px-2.5 text-slate-400 font-semibold tracking-wider">
-                    OR CONTINUE WITH
+                <Link
+                  to="/detect"
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                >
+                  <span>Guest Mode</span>
+                  <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+
+              {/* Already have an account */}
+              <div className="text-center mt-3.5 text-xs text-slate-600 dark:text-slate-400">
+                Already have an account?{' '}
+                <Link to="/login" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
+                  Sign in
+                </Link>
+              </div>
+
+              {/* Divider */}
+              <div className="relative my-3">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+                </div>
+                <div className="relative flex justify-center text-xs">
+                  <span className="bg-white dark:bg-[#0d1424] px-3 text-slate-400 font-medium">
+                    OR
                   </span>
                 </div>
               </div>
 
-              {/* 12. Continue with Google Button - 100% full width, 44px height */}
+              {/* Google Sign-In Button */}
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                disabled={loading}
-                className="w-full h-11 flex items-center justify-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 font-semibold text-xs sm:text-sm cursor-pointer shadow-2xs transition-all"
+                className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs"
               >
-                <GoogleIcon className="w-4 h-4 shrink-0" />
+                <GoogleIcon className="w-4 h-4" />
                 <span>Continue with Google</span>
               </button>
-
-              {/* 13. Guest Scan Link */}
-              <div className="mt-2.5 text-center">
-                <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                  Just want to test?{' '}
-                  <Link
-                    to="/detect"
-                    className="font-bold text-blue-600 dark:text-blue-400 hover:underline"
-                  >
-                    Run a Guest Scan
-                  </Link>
-                </p>
-              </div>
             </div>
           </div>
         </div>

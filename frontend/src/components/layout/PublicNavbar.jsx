@@ -52,9 +52,6 @@ export default function PublicNavbar() {
           <Link to="/" className={linkClass('/')}>
             Home
           </Link>
-          <Link to="/detect" className={linkClass('/detect')}>
-            Detect
-          </Link>
           <Link to="/about" className={linkClass('/about')}>
             About
           </Link>
@@ -180,13 +177,6 @@ export default function PublicNavbar() {
             className="block px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
           >
             Home
-          </Link>
-          <Link
-            to="/detect"
-            onClick={() => setMobileMenuOpen(false)}
-            className="block px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800/60"
-          >
-            Detect Threats
           </Link>
           <Link
             to="/about"
