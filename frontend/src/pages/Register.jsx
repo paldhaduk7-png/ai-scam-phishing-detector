@@ -312,7 +312,7 @@ export default function Register() {
 
       {/* Main Centered Split-Card Layout with Fixed-Height Frame */}
       <main className="flex-1 flex items-center justify-center p-3 sm:p-5 lg:p-6 min-h-0">
-        <div className="w-full max-w-5xl bg-white dark:bg-[#0d1424] rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 shadow-xl shadow-slate-200/40 dark:shadow-none p-3 sm:p-4 flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch lg:h-[630px] xl:h-[650px] lg:max-h-[calc(100vh-100px)] overflow-hidden">
+        <div className="w-full max-w-5xl bg-white dark:bg-[#0d1424] rounded-[28px] border border-slate-200/80 dark:border-slate-800/80 shadow-xl shadow-slate-200/40 dark:shadow-none p-3 sm:p-4 flex flex-col lg:flex-row gap-5 lg:gap-6 items-stretch lg:h-[630px] xl:h-[650px] lg:max-h-[calc(100vh-80px)] overflow-hidden">
           
           {/* LEFT HERO GRADIENT CARD - Fixed / Static, never scrolls */}
           <div className="w-full lg:w-[44%] xl:w-[45%] rounded-[22px] bg-gradient-to-br from-[#0f1d3f] via-[#1d4ed8] to-[#3b82f6] p-6 lg:p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-inner shrink-0 h-full">
@@ -376,21 +376,21 @@ export default function Register() {
             </div>
           </div>
 
-          {/* RIGHT REGISTRATION FORM - ONLY this side is scrollable */}
-          <div className="flex-1 h-full overflow-y-auto px-3 sm:px-6 lg:px-7 py-2 sm:py-3 overscroll-contain">
-            <div className="max-w-md w-full mx-auto pb-4">
+          {/* RIGHT REGISTRATION FORM - Compact non-scrolling layout with 2-column inputs */}
+          <div className="flex-1 h-full overflow-y-auto px-3 sm:px-6 lg:px-7 py-1.5 sm:py-2 overscroll-contain flex flex-col justify-center">
+            <div className="max-w-lg w-full mx-auto">
               {/* Header Title */}
-              <div className="text-center mb-3">
-                <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              <div className="text-center mb-2">
+                <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
                   Create account
                 </h2>
-                <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
                   Sign up to get started with ScamShield AI.
                 </p>
               </div>
 
-              {/* UPPER-SIDE ROUND SHAPE PHOTO UPLOAD */}
-              <div className="flex flex-col items-center justify-center mb-4">
+              {/* UPPER-SIDE ROUND SHAPE PHOTO UPLOAD - Compact */}
+              <div className="flex flex-col items-center justify-center mb-2.5">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -400,7 +400,7 @@ export default function Register() {
                 />
                 <div
                   onClick={() => fileInputRef.current?.click()}
-                  className="relative w-20 h-20 sm:w-22 sm:h-22 rounded-full border-2 border-dashed border-blue-400/80 dark:border-blue-500/60 bg-blue-50/60 dark:bg-blue-950/40 p-1 group cursor-pointer hover:border-blue-600 transition-all shadow-xs flex items-center justify-center"
+                  className="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full border-2 border-dashed border-blue-400/80 dark:border-blue-500/60 bg-blue-50/60 dark:bg-blue-950/40 p-0.5 group cursor-pointer hover:border-blue-600 transition-all shadow-xs flex items-center justify-center"
                   title="Upload profile picture"
                 >
                   {photoPreview ? (
@@ -411,25 +411,25 @@ export default function Register() {
                     />
                   ) : (
                     <div className="flex flex-col items-center justify-center text-blue-500 dark:text-blue-400 group-hover:scale-105 transition-transform">
-                      <User className="w-7 h-7 sm:w-8 sm:h-8 stroke-[1.75]" />
+                      <User className="w-6 h-6 sm:w-7 sm:h-7 stroke-[1.75]" />
                     </div>
                   )}
 
-                  {/* Circular Camera Badge at bottom-right of round shape */}
-                  <div className="absolute bottom-0 right-0 w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center shadow-md border-2 border-white dark:border-[#0d1424] transition-colors">
-                    <Camera className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+                  {/* Circular Camera Badge */}
+                  <div className="absolute bottom-0 right-0 w-5 h-5 sm:w-5.5 sm:h-5.5 rounded-full bg-blue-600 group-hover:bg-blue-700 text-white flex items-center justify-center shadow-md border-2 border-white dark:border-[#0d1424] transition-colors">
+                    <Camera className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 mt-1.5">
-                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] text-slate-500 dark:text-slate-400">
                     {photoFile ? photoFile.name : 'Upload photo (optional)'}
                   </span>
                   {photoFile && (
                     <button
                       type="button"
                       onClick={handleRemovePhoto}
-                      className="text-[11px] font-medium text-red-500 hover:underline cursor-pointer"
+                      className="text-[10px] font-medium text-red-500 hover:underline cursor-pointer"
                     >
                       Remove
                     </button>
@@ -439,22 +439,22 @@ export default function Register() {
 
               {/* Error Banner */}
               {error && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs flex items-center gap-2.5">
-                  <AlertCircle className="w-4 h-4 text-red-500 shrink-0" />
+                <div className="mb-2.5 p-2 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-900/60 text-red-700 dark:text-red-300 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-3.5 h-3.5 text-red-500 shrink-0" />
                   <span>{error}</span>
                 </div>
               )}
 
               {/* Success Banner */}
               {successMsg && (
-                <div className="mb-4 p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2.5">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                <div className="mb-2.5 p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-900/60 text-emerald-700 dark:text-emerald-300 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
                   <span>{successMsg}</span>
                 </div>
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-3">
+              <form onSubmit={handleSubmit} className="space-y-2.5">
                 {/* Full Name */}
                 <div>
                   <label
@@ -465,7 +465,7 @@ export default function Register() {
                     <span>Full Name</span>
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
                     <input
                       id="register-name"
                       type="text"
@@ -477,154 +477,160 @@ export default function Register() {
                       }}
                       placeholder="Enter your full name"
                       autoComplete="name"
-                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      className="w-full h-10 pl-9 pr-3.5 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
                 </div>
 
-                {/* Email Address */}
-                <div>
-                  <label
-                    htmlFor="register-email"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-                  >
-                    <Mail className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Email Address</span>
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      id="register-email"
-                      type="email"
-                      required
-                      value={email}
-                      onChange={(e) => {
-                        setEmail(e.target.value);
-                        if (error) setError('');
-                      }}
-                      placeholder="name@example.com"
-                      autoComplete="email"
-                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Phone Number (Optional) */}
-                <div>
-                  <label
-                    htmlFor="register-phone"
-                    className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-                  >
-                    <div className="flex items-center gap-1.5">
-                      <Phone className="w-3.5 h-3.5 text-slate-400" />
-                      <span>Phone Number</span>
-                    </div>
-                    <span className="text-[10px] text-slate-400 font-normal">Optional</span>
-                  </label>
-                  <div className="relative">
-                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      id="register-phone"
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="Enter phone number"
-                      autoComplete="tel"
-                      className="w-full h-11 pl-10 pr-4 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field with Strength Meter */}
-                <div>
-                  <label
-                    htmlFor="register-password"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Password</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      id="register-password"
-                      type={showPassword ? 'text' : 'password'}
-                      required
-                      value={password}
-                      onChange={(e) => {
-                        setPassword(e.target.value);
-                        if (error) setError('');
-                      }}
-                      placeholder="Create a password"
-                      autoComplete="new-password"
-                      className="w-full h-11 pl-10 pr-10 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-md cursor-pointer"
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                {/* Email Address & Phone Number - In One Line (2-Column Grid) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  {/* Email Address */}
+                  <div>
+                    <label
+                      htmlFor="register-email"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                     >
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                      <Mail className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Email Address</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        id="register-email"
+                        type="email"
+                        required
+                        value={email}
+                        onChange={(e) => {
+                          setEmail(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="name@example.com"
+                        autoComplete="email"
+                        className="w-full h-10 pl-9 pr-3.5 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
+                    </div>
                   </div>
 
-                  {/* Password Strength Indicator Bar */}
-                  {password && (
-                    <div className="mt-1.5 flex items-center gap-2">
-                      <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full transition-all duration-300 ${passwordStrength.color}`}
-                          style={{ width: passwordStrength.width }}
-                        />
+                  {/* Phone Number (Optional) */}
+                  <div>
+                    <label
+                      htmlFor="register-phone"
+                      className="flex items-center justify-between text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                    >
+                      <div className="flex items-center gap-1.5">
+                        <Phone className="w-3.5 h-3.5 text-slate-400" />
+                        <span>Phone Number</span>
                       </div>
-                      <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 min-w-10 text-right">
-                        {passwordStrength.label}
-                      </span>
+                      <span className="text-[10px] text-slate-400 font-normal">Optional</span>
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        id="register-phone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="Phone number"
+                        autoComplete="tel"
+                        className="w-full h-10 pl-9 pr-3.5 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
                     </div>
-                  )}
+                  </div>
                 </div>
 
-                {/* Confirm Password */}
-                <div>
-                  <label
-                    htmlFor="register-confirm-password"
-                    className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
-                  >
-                    <Lock className="w-3.5 h-3.5 text-slate-400" />
-                    <span>Confirm Password</span>
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                    <input
-                      id="register-confirm-password"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      required
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (error) setError('');
-                      }}
-                      placeholder="Confirm your password"
-                      autoComplete="new-password"
-                      className={`w-full h-11 pl-10 pr-10 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${
-                        confirmPassword && password !== confirmPassword
-                          ? 'border-red-400 focus:border-red-500'
-                          : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'
-                      }`}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword((prev) => !prev)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1.5 rounded-md cursor-pointer"
-                      aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                {/* Password & Confirm Password - In One Line (2-Column Grid) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  {/* Password */}
+                  <div>
+                    <label
+                      htmlFor="register-password"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
                     >
-                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Password</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        id="register-password"
+                        type={showPassword ? 'text' : 'password'}
+                        required
+                        value={password}
+                        onChange={(e) => {
+                          setPassword(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="Create password"
+                        autoComplete="new-password"
+                        className="w-full h-10 pl-9 pr-9 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md cursor-pointer"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+
+                    {/* Password Strength Indicator Bar */}
+                    {password && (
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <div className="flex-1 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full transition-all duration-300 ${passwordStrength.color}`}
+                            style={{ width: passwordStrength.width }}
+                          />
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 min-w-8 text-right">
+                          {passwordStrength.label}
+                        </span>
+                      </div>
+                    )}
                   </div>
-                  {confirmPassword && password !== confirmPassword && (
-                    <p className="text-[10px] text-red-500 mt-1">Passwords do not match.</p>
-                  )}
+
+                  {/* Confirm Password */}
+                  <div>
+                    <label
+                      htmlFor="register-confirm-password"
+                      className="flex items-center gap-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1"
+                    >
+                      <Lock className="w-3.5 h-3.5 text-slate-400" />
+                      <span>Confirm Password</span>
+                    </label>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                      <input
+                        id="register-confirm-password"
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        required
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (error) setError('');
+                        }}
+                        placeholder="Confirm password"
+                        autoComplete="new-password"
+                        className={`w-full h-10 pl-9 pr-9 bg-[#f0f4f9] dark:bg-slate-800/70 hover:bg-slate-100 dark:hover:bg-slate-800 focus:bg-white dark:focus:bg-slate-900 border rounded-xl text-xs sm:text-sm text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/30 transition-all ${
+                          confirmPassword && password !== confirmPassword
+                            ? 'border-red-400 focus:border-red-500'
+                            : 'border-slate-200 dark:border-slate-700 focus:border-blue-500'
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1 rounded-md cursor-pointer"
+                        aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                      </button>
+                    </div>
+                    {confirmPassword && password !== confirmPassword && (
+                      <p className="text-[10px] text-red-500 mt-0.5">Passwords do not match.</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Terms of Service Checkbox */}
@@ -634,7 +640,7 @@ export default function Register() {
                       type="checkbox"
                       checked={agreeTerms}
                       onChange={(e) => setAgreeTerms(e.target.checked)}
-                      className="w-4 h-4 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30"
+                      className="w-3.5 h-3.5 rounded border-slate-300 dark:border-slate-700 text-blue-600 focus:ring-blue-500/30"
                     />
                     <span>
                       I agree to the{' '}
@@ -649,10 +655,10 @@ export default function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
+                  className="w-full h-10 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs sm:text-sm shadow-md shadow-blue-600/25 flex items-center justify-center gap-2 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   ) : (
                     <>
                       <span>Create Account</span>
@@ -663,14 +669,14 @@ export default function Register() {
               </form>
 
               {/* Guest Run Option */}
-              <div className="mt-3.5 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
+              <div className="mt-2.5 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-slate-200/80 dark:border-slate-800 flex items-center justify-between text-xs">
                 <div className="flex items-center gap-2 text-slate-600 dark:text-slate-400">
                   <Zap className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                   <span>Just exploring? Try instant scan</span>
                 </div>
                 <Link
                   to="/detect"
-                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                  className="font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 text-[11px]"
                 >
                   <span>Guest Mode</span>
                   <ArrowRight className="w-3 h-3" />
@@ -678,7 +684,7 @@ export default function Register() {
               </div>
 
               {/* Already have an account */}
-              <div className="text-center mt-3.5 text-xs text-slate-600 dark:text-slate-400">
+              <div className="text-center mt-2 text-xs text-slate-600 dark:text-slate-400">
                 Already have an account?{' '}
                 <Link to="/login" className="font-semibold text-blue-600 dark:text-blue-400 hover:underline">
                   Sign in
@@ -686,12 +692,12 @@ export default function Register() {
               </div>
 
               {/* Divider */}
-              <div className="relative my-3">
+              <div className="relative my-2">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t border-slate-200 dark:border-slate-800" />
                 </div>
-                <div className="relative flex justify-center text-xs">
-                  <span className="bg-white dark:bg-[#0d1424] px-3 text-slate-400 font-medium">
+                <div className="relative flex justify-center text-[11px]">
+                  <span className="bg-white dark:bg-[#0d1424] px-2.5 text-slate-400 font-medium">
                     OR
                   </span>
                 </div>
@@ -701,7 +707,7 @@ export default function Register() {
               <button
                 type="button"
                 onClick={handleGoogleLogin}
-                className="w-full h-11 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2.5 transition-all cursor-pointer shadow-xs"
+                className="w-full h-10 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800/80 hover:bg-slate-50 dark:hover:bg-slate-800 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-200 flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
               >
                 <GoogleIcon className="w-4 h-4" />
                 <span>Continue with Google</span>
