@@ -6,9 +6,14 @@ and secure fetching of inbox messages for scam & phishing threat analysis.
 
 import base64
 import logging
+import re
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
+try:
+    from bs4 import BeautifulSoup
+except ImportError:
+    BeautifulSoup = None
 import httpx
 
 from app.config import settings
@@ -209,34 +214,121 @@ def parse_gmail_message(message_data: Dict[str, Any]) -> Dict[str, Any]:
     }
 
 
+def _clean_html_to_text(html_content: str) -> str:
+    """
+    Converts raw HTML email content into clean, human-readable plain text.
+    Strips out style, script, head, meta, and SVG tags to ensure no CSS or HTML markup leaks into the email body.
+    Preserves links and formatting nicely for detection and user display.
+    """
+    if not html_content:
+        return ""
+    if BeautifulSoup is not None:
+        try:
+            soup = BeautifulSoup(html_content, "html.parser")
+            # Remove elements that contain code, styles, or hidden headers
+            for tag in soup(["style", "script", "head", "title", "meta", "noscript", "svg"]):
+                tag.decompose()
+
+            # Format links cleanly if anchor text exists
+            for a in soup.find_all("a", href=True):
+                href = a["href"].strip()
+                link_text = a.get_text().strip()
+                if href and not href.startswith(("mailto:", "tel:", "javascript:")):
+                    if link_text and link_text != href:
+                        a.replace_with(f"[{link_text}]({href})")
+                    elif link_text:
+                        a.replace_with(link_text)
+                    else:
+                        a.replace_with(href)
+
+            # Add newline to structural block tags
+            for block in soup(["p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "tr", "br"]):
+                block.append("\n")
+
+            raw_text = soup.get_text()
+            lines = [line.strip() for line in raw_text.splitlines()]
+            clean_lines = [line for line in lines if line]
+            return "\n\n".join(clean_lines)
+        except Exception as exc:
+            logger.warning("Error stripping HTML to plain text: %s", exc)
+
+    # Fallback regex strip
+    clean = re.sub(r"(?is)<(style|script|head).*?>.*?</\1>", "", html_content)
+    clean = re.sub(r"<[^>]+>", " ", clean)
+    return " ".join(clean.split())
+
+
+
 def _extract_body_text(payload: Dict[str, Any]) -> str:
-    """Recursively extracts plain text from MIME parts or body data."""
-    mime_type = payload.get("mimeType", "")
+    """
+    Recursively extracts clean plain text from MIME parts or body data.
+    Correctly handles multipart/alternative by picking the richest text content
+    without duplicating or leaking raw HTML/CSS into the body text.
+    """
+    mime_type = (payload.get("mimeType") or "").lower()
     body_data = payload.get("body", {}).get("data")
 
     # If this part is plain text and has data
     if mime_type == "text/plain" and body_data:
         try:
-            return base64.urlsafe_b64decode(body_data.encode("ASCII")).decode("utf-8", errors="replace")
+            decoded = base64.urlsafe_b64decode(body_data.encode("ASCII")).decode("utf-8", errors="replace")
+            # If the plain text payload somehow contains raw HTML tags, clean it
+            if "<html" in decoded.lower() or "<style" in decoded.lower() or "<div" in decoded.lower() or "<body" in decoded.lower():
+                return _clean_html_to_text(decoded)
+            return decoded.strip()
         except Exception:
             return ""
 
-    # If multipart, check subparts
+    # If this part is text/html and has data
+    if mime_type == "text/html" and body_data:
+        try:
+            decoded = base64.urlsafe_b64decode(body_data.encode("ASCII")).decode("utf-8", errors="replace")
+            return _clean_html_to_text(decoded)
+        except Exception:
+            return ""
+
     parts = payload.get("parts", [])
-    text_content = []
-    for part in parts:
-        extracted = _extract_body_text(part)
-        if extracted:
-            text_content.append(extracted)
 
-    if text_content:
-        return "\n".join(text_content)
+    # If multipart/alternative: select the richest clean text rather than concatenating
+    if mime_type == "multipart/alternative":
+        plain_text = ""
+        html_text = ""
+        for part in parts:
+            p_mime = (part.get("mimeType") or "").lower()
+            if p_mime == "text/plain":
+                plain_text = _extract_body_text(part)
+            elif p_mime == "text/html":
+                html_text = _extract_body_text(part)
+            else:
+                sub = _extract_body_text(part)
+                if not plain_text:
+                    plain_text = sub
 
-    # Fallback to text/html stripped or direct body
+        # If HTML gave rich text and plain text is just a short stub (< 150 chars, e.g. "View in browser"),
+        # prefer the cleaned HTML version which contains the actual email body
+        if html_text and (len(html_text) > len(plain_text) or len(plain_text) < 150):
+            return html_text
+        return plain_text or html_text
+
+    # For other multipart types (mixed, related, etc.), extract all subparts
+    if parts:
+        text_content = []
+        for part in parts:
+            extracted = _extract_body_text(part)
+            if extracted:
+                text_content.append(extracted)
+        if text_content:
+            return "\n\n".join(text_content)
+
+    # Fallback to direct body data
     if body_data:
         try:
-            return base64.urlsafe_b64decode(body_data.encode("ASCII")).decode("utf-8", errors="replace")
+            decoded = base64.urlsafe_b64decode(body_data.encode("ASCII")).decode("utf-8", errors="replace")
+            if "<html" in decoded.lower() or "<style" in decoded.lower() or "<div" in decoded.lower() or "<body" in decoded.lower():
+                return _clean_html_to_text(decoded)
+            return decoded.strip()
         except Exception:
             return ""
 
     return ""
+

@@ -425,7 +425,7 @@ async def _run_gmail_analysis_worker(
                 record = Detection(
                     user_id=user_id,
                     input_type="email",
-                    input_text=text_to_analyze[:5000],
+                    input_text=text_to_analyze[:20000],
                     predicted_label=result.get("predicted_label"),
                     classification=result.get("classification"),
                     score=result.get("score"),

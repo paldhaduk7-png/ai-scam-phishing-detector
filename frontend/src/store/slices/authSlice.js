@@ -10,13 +10,15 @@ export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
     try {
-      const res = await api.get('/auth/me');
+      // 4-second timeout prevents initial boot or login page from ever hanging
+      const res = await api.get('/auth/me', { timeout: 4000 });
       return res.data;
     } catch {
       return rejectWithValue('Unauthenticated');
     }
   }
 );
+
 
 /**
  * Log out user (POST /auth/logout).
