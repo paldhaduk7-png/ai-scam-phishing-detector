@@ -28,6 +28,7 @@ export default function UrlInput({
         >
           <Globe className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           <span>Web Address or Domain</span>
+          <span className="text-red-500 font-bold">*</span>
         </label>
 
         <div className="relative">

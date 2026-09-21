@@ -483,7 +483,7 @@ export default function GmailEmailSelectionModal({
 
       {/* Centered Modal Container */}
       <div
-        className="relative w-full max-w-3xl bg-[#0b1120] border border-slate-800/90 rounded-2xl sm:rounded-3xl shadow-2xl shadow-black/95 flex flex-col max-h-[90vh] z-10 overflow-hidden text-slate-200 my-auto animate-fadeIn"
+        className="relative w-full max-w-3xl bg-white dark:bg-[#0b1120] border border-slate-200 dark:border-slate-800/90 rounded-2xl sm:rounded-3xl shadow-2xl shadow-slate-400/20 dark:shadow-black/95 flex flex-col max-h-[90vh] z-10 overflow-hidden text-slate-800 dark:text-slate-200 my-auto animate-fadeIn"
         onClick={(e) => {
           e.stopPropagation();
           setShowFilterDropdown(false);
@@ -491,9 +491,9 @@ export default function GmailEmailSelectionModal({
         }}
       >
         {/* Header */}
-        <div className="p-5 sm:p-6 pb-4 flex items-start justify-between gap-4 border-b border-slate-800/80">
+        <div className="p-5 sm:p-6 pb-4 flex items-start justify-between gap-4 border-b border-slate-200/80 dark:border-slate-800/80">
           <div className="flex items-start gap-3.5">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center shrink-0 p-2 shadow-xs">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 flex items-center justify-center shrink-0 p-2 shadow-xs">
               <img
                 src="https://www.gstatic.com/images/branding/product/1x/gmail_2020q4_48dp.png"
                 alt="Gmail"
@@ -501,10 +501,10 @@ export default function GmailEmailSelectionModal({
               />
             </div>
             <div>
-              <h2 className="text-lg sm:text-xl font-bold text-white tracking-tight">
+              <h2 className="text-lg sm:text-xl font-bold text-slate-950 dark:text-white tracking-tight">
                 Choose Gmail Emails to Analyze
               </h2>
-              <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5">
                 Select the emails you want to scan with ScamShield AI
               </p>
             </div>
@@ -513,7 +513,7 @@ export default function GmailEmailSelectionModal({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-white hover:bg-slate-800/80 transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-colors cursor-pointer"
             title="Close"
           >
             <X className="w-5 h-5" />
@@ -522,16 +522,16 @@ export default function GmailEmailSelectionModal({
 
         {/* Top Account Section */}
         <div className="px-5 sm:px-6 pt-4 pb-2">
-          <div className="bg-[#121c33] border border-slate-800/90 rounded-xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
+          <div className="bg-slate-50 dark:bg-[#121c33] border border-slate-200 dark:border-slate-800/90 rounded-xl p-3 sm:p-3.5 flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full bg-purple-700/80 text-white font-bold text-sm flex items-center justify-center shrink-0 shadow-inner">
                 {userInitial}
               </div>
               <div className="min-w-0">
-                <div className="text-xs sm:text-sm font-bold text-white truncate">
+                <div className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                   {connectedEmail || 'paldhaduk18@gmail.com'}
                 </div>
-                <div className="text-[11px] text-slate-400 flex items-center gap-1.5 mt-0.5">
+                <div className="text-[11px] text-slate-500 dark:text-slate-400 flex items-center gap-1.5 mt-0.5">
                   <Lock className="w-3 h-3 text-slate-400" />
                   <span>Gmail • Read-only access</span>
                 </div>
@@ -543,7 +543,7 @@ export default function GmailEmailSelectionModal({
               onClick={() => {
                 // Reserved for future multi-account switcher
               }}
-              className="px-3 py-1.5 rounded-lg bg-[#192748] hover:bg-[#20325d] text-blue-300 text-xs font-semibold border border-blue-600/30 flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
+              className="px-3 py-1.5 rounded-lg bg-blue-50 dark:bg-[#192748] hover:bg-blue-100 dark:hover:bg-[#20325d] text-blue-700 dark:text-blue-300 text-xs font-semibold border border-blue-200 dark:border-blue-600/30 flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer"
             >
               <span>Switch Account</span>
               <ChevronDown className="w-3.5 h-3.5 opacity-80" />
@@ -561,13 +561,13 @@ export default function GmailEmailSelectionModal({
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search emails by sender, subject, or keywords..."
-              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-[#121c33] border border-slate-800 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+              className="w-full pl-9 pr-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-[#121c33] border border-slate-200 dark:border-slate-800 text-slate-900 dark:text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700 dark:hover:text-white"
               >
                 <X className="w-3 h-3" />
               </button>
@@ -585,7 +585,7 @@ export default function GmailEmailSelectionModal({
                   setShowFilterDropdown(!showFilterDropdown);
                   setShowSortDropdown(false);
                 }}
-                className="px-3 py-2 text-xs rounded-xl bg-[#121c33] border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-[#121c33] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <span>
                   {filterType === 'selected'
@@ -598,15 +598,15 @@ export default function GmailEmailSelectionModal({
               </button>
 
               {showFilterDropdown && (
-                <div className="absolute right-0 mt-1 w-36 bg-[#0f172a] border border-slate-800 rounded-xl shadow-xl py-1 z-30 text-xs">
+                <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 text-xs">
                   <button
                     type="button"
                     onClick={() => {
                       setFilterType('all');
                       setShowFilterDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      filterType === 'all' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      filterType === 'all' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     All Emails
@@ -617,8 +617,8 @@ export default function GmailEmailSelectionModal({
                       setFilterType('selected');
                       setShowFilterDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      filterType === 'selected' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      filterType === 'selected' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Selected Only
@@ -629,8 +629,8 @@ export default function GmailEmailSelectionModal({
                       setFilterType('unselected');
                       setShowFilterDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      filterType === 'unselected' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      filterType === 'unselected' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Unselected Only
@@ -648,7 +648,7 @@ export default function GmailEmailSelectionModal({
                   setShowSortDropdown(!showSortDropdown);
                   setShowFilterDropdown(false);
                 }}
-                className="px-3 py-2 text-xs rounded-xl bg-[#121c33] border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
+                className="px-3 py-2 text-xs rounded-xl bg-slate-50 dark:bg-[#121c33] border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:border-slate-300 dark:hover:border-slate-700 flex items-center gap-1.5 transition-colors cursor-pointer"
               >
                 <ArrowUpDown className="w-3.5 h-3.5 text-slate-400" />
                 <span>
@@ -662,15 +662,15 @@ export default function GmailEmailSelectionModal({
               </button>
 
               {showSortDropdown && (
-                <div className="absolute right-0 mt-1 w-36 bg-[#0f172a] border border-slate-800 rounded-xl shadow-xl py-1 z-30 text-xs">
+                <div className="absolute right-0 mt-1 w-36 bg-white dark:bg-[#0f172a] border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl py-1 z-30 text-xs">
                   <button
                     type="button"
                     onClick={() => {
                       setSortOrder('newest');
                       setShowSortDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      sortOrder === 'newest' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      sortOrder === 'newest' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Newest First
@@ -681,8 +681,8 @@ export default function GmailEmailSelectionModal({
                       setSortOrder('oldest');
                       setShowSortDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      sortOrder === 'oldest' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      sortOrder === 'oldest' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Oldest First
@@ -693,8 +693,8 @@ export default function GmailEmailSelectionModal({
                       setSortOrder('sender');
                       setShowSortDropdown(false);
                     }}
-                    className={`w-full text-left px-3 py-2 hover:bg-slate-800 ${
-                      sortOrder === 'sender' ? 'text-blue-400 font-semibold' : 'text-slate-300'
+                    className={`w-full text-left px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800 ${
+                      sortOrder === 'sender' ? 'text-blue-600 dark:text-blue-400 font-semibold' : 'text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     Sender (A-Z)
@@ -709,7 +709,7 @@ export default function GmailEmailSelectionModal({
               onClick={handleRefresh}
               disabled={loading}
               title="Refresh inbox"
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
+              className="p-2 text-slate-400 hover:text-slate-700 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             </button>
@@ -719,22 +719,22 @@ export default function GmailEmailSelectionModal({
 
         {/* Banner when all on this page are selected but not all pages */}
         {allVisibleSelected && !allPagesSelected && (
-          <div className="px-5 sm:px-6 py-2 bg-gradient-to-r from-blue-950/60 to-indigo-950/50 border-b border-blue-900/40 flex items-center justify-between gap-3 text-xs text-blue-200 animate-fadeIn">
+          <div className="px-5 sm:px-6 py-2 bg-blue-50/80 dark:bg-gradient-to-r dark:from-blue-950/60 dark:to-indigo-950/50 border-b border-blue-200/80 dark:border-blue-900/40 flex items-center justify-between gap-3 text-xs text-blue-900 dark:text-blue-200 animate-fadeIn">
             <span className="flex items-center gap-1.5 truncate">
-              <Check className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              <Check className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400 shrink-0" />
               <span>
-                All <strong className="text-white font-mono">{processedMessages.length}</strong> emails on Page {currentPage} are selected.
+                All <strong className="text-slate-900 dark:text-white font-mono">{processedMessages.length}</strong> emails on Page {currentPage} are selected.
               </span>
             </span>
             <button
               type="button"
               onClick={toggleSelectAllPages}
               disabled={isFetchingAllPages}
-              className="text-blue-400 hover:text-blue-300 font-semibold underline shrink-0 cursor-pointer transition-colors"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold underline shrink-0 cursor-pointer transition-colors"
             >
               {isFetchingAllPages ? (
                 <span className="inline-flex items-center gap-1">
-                  <Loader2 className="w-3 h-3 animate-spin text-blue-400" />
+                  <Loader2 className="w-3 h-3 animate-spin text-blue-600 dark:text-blue-400" />
                   <span>Loading all pages...</span>
                 </span>
               ) : (
@@ -745,16 +745,16 @@ export default function GmailEmailSelectionModal({
         )}
 
         {/* Scrollable Email List Container */}
-        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-2 divide-y divide-slate-800/80 min-h-[260px] max-h-[380px] sm:max-h-[420px]">
+        <div className="flex-1 overflow-y-auto px-5 sm:px-6 py-2 divide-y divide-slate-100 dark:divide-slate-800/80 min-h-[260px] max-h-[380px] sm:max-h-[420px]">
           {loading ? (
             <div className="py-16 flex flex-col items-center justify-center text-center space-y-3">
               <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
-              <p className="text-xs sm:text-sm text-slate-400">Loading inbox emails from Gmail...</p>
+              <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">Loading inbox emails from Gmail...</p>
             </div>
           ) : error ? (
             <div className="py-12 text-center space-y-3">
               <AlertCircle className="w-8 h-8 text-rose-500 mx-auto" />
-              <p className="text-xs sm:text-sm text-rose-400 max-w-md mx-auto">{error}</p>
+              <p className="text-xs sm:text-sm text-rose-600 dark:text-rose-400 max-w-md mx-auto">{error}</p>
               <button
                 type="button"
                 onClick={handleRefresh}
@@ -764,7 +764,7 @@ export default function GmailEmailSelectionModal({
               </button>
             </div>
           ) : processedMessages.length === 0 ? (
-            <div className="py-16 text-center text-xs sm:text-sm text-slate-400">
+            <div className="py-16 text-center text-xs sm:text-sm text-slate-500 dark:text-slate-400">
               {searchQuery ? 'No emails match your search filter.' : 'Your connected Gmail inbox is empty.'}
             </div>
           ) : (
@@ -780,8 +780,8 @@ export default function GmailEmailSelectionModal({
                   onClick={() => toggleSelect(msg.id)}
                   className={`flex items-start gap-3.5 py-3 px-3 rounded-xl transition-colors cursor-pointer select-none ${
                     isSelected
-                      ? 'bg-[#152342]/90 border border-blue-600/40'
-                      : 'hover:bg-[#111a2f]/60 border border-transparent'
+                      ? 'bg-blue-50/90 dark:bg-[#152342]/90 border border-blue-200 dark:border-blue-600/40'
+                      : 'hover:bg-slate-50 dark:hover:bg-[#111a2f]/60 border border-transparent'
                   }`}
                 >
                   {/* Checkbox and active dot */}
@@ -790,7 +790,7 @@ export default function GmailEmailSelectionModal({
                       className={`w-4 h-4 rounded flex items-center justify-center transition-colors ${
                         isSelected
                           ? 'bg-blue-600 text-white'
-                          : 'border border-slate-600 hover:border-slate-400 bg-slate-900/50'
+                          : 'border border-slate-300 dark:border-slate-600 hover:border-slate-400 bg-white dark:bg-slate-900/50'
                       }`}
                     >
                       {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
@@ -812,22 +812,22 @@ export default function GmailEmailSelectionModal({
                   {/* Email Content Info */}
                   <div className="min-w-0 flex-1 space-y-0.5">
                     <div className="flex items-baseline justify-between gap-2">
-                      <span className="text-xs sm:text-sm font-bold text-white truncate">
+                      <span className="text-xs sm:text-sm font-bold text-slate-900 dark:text-white truncate">
                         {sender.name}
                       </span>
                       {dateText && (
-                        <span className="text-[11px] text-slate-400 shrink-0 font-mono">
+                        <span className="text-[11px] text-slate-400 dark:text-slate-500 shrink-0 font-mono">
                           {dateText}
                         </span>
                       )}
                     </div>
 
-                    <div className="text-xs font-semibold text-slate-200 truncate">
+                    <div className="text-xs font-semibold text-slate-700 dark:text-slate-200 truncate">
                       {msg.subject || 'No Subject'}
                     </div>
 
                     {msg.snippet && (
-                      <p className="text-[11px] text-slate-400 line-clamp-1 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 line-clamp-1 leading-relaxed">
                         {msg.snippet}
                       </p>
                     )}
@@ -839,12 +839,12 @@ export default function GmailEmailSelectionModal({
         </div>
 
         {/* Pagination Controls Bar */}
-        <div className="px-5 sm:px-6 py-2.5 border-t border-slate-800/80 bg-[#0c1324] flex items-center justify-between gap-3 text-xs text-slate-400">
+        <div className="px-5 sm:px-6 py-2.5 border-t border-slate-200/80 dark:border-slate-800/80 bg-slate-50 dark:bg-[#0c1324] flex items-center justify-between gap-3 text-xs text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-2">
             <span>
-              Page <strong className="text-white font-mono">{currentPage}</strong>
+              Page <strong className="text-slate-900 dark:text-white font-mono">{currentPage}</strong>
             </span>
-            <span className="text-slate-600">•</span>
+            <span className="text-slate-400 dark:text-slate-600">•</span>
             <span>
               {processedMessages.length} {processedMessages.length === 1 ? 'email' : 'emails'} shown
             </span>
@@ -855,14 +855,14 @@ export default function GmailEmailSelectionModal({
               type="button"
               onClick={handlePrevPage}
               disabled={currentPage <= 1 || loading}
-              className="px-2.5 py-1.5 rounded-lg bg-[#131d35] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#131d35] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
               title="Previous page"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
               <span>Previous</span>
             </button>
 
-            <div className="px-2.5 py-1 rounded-md bg-[#18233f] text-blue-400 font-bold font-mono min-w-[28px] text-center border border-blue-600/30">
+            <div className="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-[#18233f] text-blue-700 dark:text-blue-400 font-bold font-mono min-w-[28px] text-center border border-blue-200 dark:border-blue-600/30">
               {currentPage}
             </div>
 
@@ -870,7 +870,7 @@ export default function GmailEmailSelectionModal({
               type="button"
               onClick={handleNextPage}
               disabled={!nextPageToken || loading}
-              className="px-2.5 py-1.5 rounded-lg bg-[#131d35] hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
+              className="px-2.5 py-1.5 rounded-lg bg-white dark:bg-[#131d35] hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1 transition-colors cursor-pointer"
               title="Next page"
             >
               <span>Next</span>
@@ -880,7 +880,7 @@ export default function GmailEmailSelectionModal({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:p-5 border-t border-slate-800/90 flex flex-col md:flex-row items-center justify-between gap-3 bg-[#0a0f1d]">
+        <div className="p-4 sm:p-5 border-t border-slate-200/80 dark:border-slate-800/90 flex flex-col md:flex-row items-center justify-between gap-3 bg-white dark:bg-[#0a0f1d]">
           {/* Two Selection Options (This Page vs All Pages) & Selection Counter */}
           <div className="flex items-center gap-2 sm:gap-3 w-full md:w-auto flex-wrap">
             {/* Option 1: Select This Page Only */}
@@ -890,8 +890,8 @@ export default function GmailEmailSelectionModal({
               disabled={processedMessages.length === 0}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border select-none disabled:opacity-40 disabled:cursor-not-allowed ${
                 allVisibleSelected
-                  ? 'bg-blue-600/25 text-blue-300 border-blue-500/60 shadow-xs'
-                  : 'bg-[#131d35] text-slate-300 hover:text-white border-slate-700/70 hover:border-slate-500'
+                  ? 'bg-blue-50 dark:bg-blue-600/25 text-blue-700 dark:text-blue-300 border-blue-300 dark:border-blue-500/60 shadow-xs'
+                  : 'bg-slate-50 dark:bg-[#131d35] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-200 dark:border-slate-700/70 hover:border-slate-300 dark:hover:border-slate-500'
               }`}
               title="Select or deselect only emails on the current page"
             >
@@ -899,7 +899,7 @@ export default function GmailEmailSelectionModal({
                 className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
                   allVisibleSelected
                     ? 'bg-blue-600 text-white'
-                    : 'border border-slate-500'
+                    : 'border border-slate-400 dark:border-slate-500'
                 }`}
               >
                 {allVisibleSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
@@ -914,8 +914,8 @@ export default function GmailEmailSelectionModal({
               disabled={allLoadedMessages.length === 0 || isFetchingAllPages}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer border select-none disabled:opacity-40 disabled:cursor-not-allowed ${
                 allPagesSelected
-                  ? 'bg-indigo-600/25 text-indigo-300 border-indigo-500/60 shadow-xs'
-                  : 'bg-[#131d35] text-slate-300 hover:text-white border-slate-700/70 hover:border-slate-500'
+                  ? 'bg-indigo-50 dark:bg-indigo-600/25 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-500/60 shadow-xs'
+                  : 'bg-slate-50 dark:bg-[#131d35] text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white border-slate-200 dark:border-slate-700/70 hover:border-slate-300 dark:hover:border-slate-500'
               }`}
               title="Select all emails across all pages (previous, current, and next)"
             >
@@ -923,7 +923,7 @@ export default function GmailEmailSelectionModal({
                 className={`w-3.5 h-3.5 rounded flex items-center justify-center transition-colors ${
                   allPagesSelected
                     ? 'bg-indigo-600 text-white'
-                    : 'border border-slate-500'
+                    : 'border border-slate-400 dark:border-slate-500'
                 }`}
               >
                 {allPagesSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
@@ -931,7 +931,7 @@ export default function GmailEmailSelectionModal({
               <span>
                 {isFetchingAllPages ? (
                   <span className="inline-flex items-center gap-1.5">
-                    <Loader2 className="w-3 h-3 animate-spin text-indigo-400" />
+                    <Loader2 className="w-3 h-3 animate-spin text-indigo-600 dark:text-indigo-400" />
                     <span>Loading all pages...</span>
                   </span>
                 ) : (
@@ -941,10 +941,10 @@ export default function GmailEmailSelectionModal({
             </button>
 
             {/* Selection Counter & Clear Action */}
-            <div className="flex items-center gap-1.5 text-xs text-slate-400 pl-1">
+            <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400 pl-1">
               <span>
                 Selected:{' '}
-                <strong className="text-blue-400 font-bold font-mono">
+                <strong className="text-blue-600 dark:text-blue-400 font-bold font-mono">
                   {selectedIds.length}
                 </strong>{' '}
                 {selectedIds.length === 1 ? 'email' : 'emails'}
@@ -953,7 +953,7 @@ export default function GmailEmailSelectionModal({
                 <button
                   type="button"
                   onClick={() => setSelectedIds([])}
-                  className="text-[11px] text-slate-400 hover:text-rose-400 underline cursor-pointer ml-1 transition-colors"
+                  className="text-[11px] text-slate-500 dark:text-slate-400 hover:text-rose-500 dark:hover:text-rose-400 underline cursor-pointer ml-1 transition-colors"
                 >
                   Clear
                 </button>
@@ -967,7 +967,7 @@ export default function GmailEmailSelectionModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 sm:flex-initial px-4 py-2 text-xs sm:text-sm font-semibold text-slate-300 bg-[#131d35] hover:bg-slate-800 hover:text-white border border-slate-700/60 rounded-xl transition-colors cursor-pointer"
+              className="flex-1 sm:flex-initial px-4 py-2 text-xs sm:text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-[#131d35] hover:bg-slate-200 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white border border-slate-200 dark:border-slate-700/60 rounded-xl transition-colors cursor-pointer"
             >
               Cancel
             </button>

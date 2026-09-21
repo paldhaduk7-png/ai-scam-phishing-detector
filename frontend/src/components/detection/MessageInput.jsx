@@ -28,6 +28,7 @@ export default function MessageInput({
           >
             <MessageSquare className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             <span>Message or SMS Content</span>
+            <span className="text-red-500 font-bold">*</span>
           </label>
           <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
             {value.length} / {maxLength} chars

@@ -55,7 +55,7 @@ export default function EmailInput({
             htmlFor="email-body-input"
             className="block text-xs sm:text-sm font-semibold text-slate-800 dark:text-slate-200"
           >
-            Email Body Content
+            Email Body Content <span className="text-red-500 font-bold">*</span>
           </label>
           <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500">
             {content.length} / {maxLength} chars
