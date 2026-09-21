@@ -203,9 +203,9 @@ export default function Home() {
 
             {/* Right Hero Product Preview Mockup */}
             <div className="lg:col-span-5 relative flex items-center justify-center">
-              <div className="w-full max-w-md bg-[#0d1424] rounded-2xl border border-slate-800/60 shadow-xl overflow-hidden transition-all duration-200">
+              <div className="w-full max-w-md bg-white dark:bg-[#0d1424] rounded-2xl border border-slate-200/80 dark:border-slate-800/60 shadow-xl overflow-hidden transition-all duration-200">
                 {/* Mockup Header Bar */}
-                <div className="px-4 py-3 border-b border-slate-800/60 bg-slate-900/60 flex items-center justify-between">
+                <div className="px-4 py-3 border-b border-slate-200/80 dark:border-slate-800/60 bg-slate-50 dark:bg-slate-900/60 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1.5">
                       <span className="w-2.5 h-2.5 rounded-full bg-red-400" />
@@ -251,30 +251,30 @@ export default function Home() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                          Package on Hold: Address Needed
+                          USPS: Package Delivery Incomplete
                         </p>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                          Follow delivery link to resolve parcel dispatch
+                          Re-confirm shipping address via http://usps-track-fee.top
                         </p>
                       </div>
                     </div>
                     <Badge status="suspicious" size="sm" className="shrink-0">
-                      Suspicious 68.5%
+                      Suspicious 64.2%
                     </Badge>
                   </div>
 
-                  {/* Alert 3: URL Safe */}
+                  {/* Alert 3: Legitimate Notification */}
                   <div className="p-3.5 rounded-xl bg-emerald-50/80 dark:bg-emerald-950/30 border border-emerald-200/70 dark:border-emerald-900/40 flex items-start justify-between gap-3">
                     <div className="flex items-start gap-2.5 min-w-0">
                       <div className="w-7 h-7 rounded-lg bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 mt-0.5">
-                        <LinkIcon className="w-4 h-4" />
+                        <CheckCircle2 className="w-4 h-4" />
                       </div>
                       <div className="min-w-0">
                         <p className="text-xs font-bold text-slate-900 dark:text-slate-100 truncate">
-                          https://www.google.com
+                          GitHub: Security alert resolved
                         </p>
                         <p className="text-[11px] text-slate-500 dark:text-slate-400 truncate">
-                          Legitimate domain with standard reputation
+                          Dependabot vulnerability patch merged into main branch.
                         </p>
                       </div>
                     </div>
@@ -285,7 +285,7 @@ export default function Home() {
                 </div>
 
                 {/* Mockup Console Footer */}
-                <div className="px-4 py-2.5 bg-slate-900/60 border-t border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500">
+                <div className="px-4 py-2.5 bg-slate-50 dark:bg-slate-900/60 border-t border-slate-200/80 dark:border-slate-800/60 flex items-center justify-between text-[11px] text-slate-500 dark:text-slate-400">
                   <span className="flex items-center gap-1.5 font-medium">
                     <ShieldCheck className="w-3.5 h-3.5 text-blue-600 dark:text-blue-400" />
                     LinearSVC + Keras Bi-LSTM
@@ -299,7 +299,7 @@ export default function Home() {
       </section>
 
       {/* Trust & Capabilities Strip */}
-      <section className="py-10 border-y border-slate-800/60 bg-[#0b101b]">
+      <section className="py-10 border-y border-slate-200/80 dark:border-slate-800/60 bg-slate-50/80 dark:bg-[#0b101b]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {trustItems.map((item, idx) => {
@@ -325,7 +325,7 @@ export default function Home() {
       </section>
 
       {/* Comprehensive Features Section */}
-      <section id="features" className="py-20 bg-[#090d16]">
+      <section id="features" className="py-20 bg-white dark:bg-[#090d16]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <Badge size="md" className="mb-3">
@@ -386,7 +386,7 @@ export default function Home() {
       </section>
 
       {/* How It Works (3-Step Visual Flow) */}
-      <section className="py-20 bg-[#0b101b] border-y border-slate-800/60">
+      <section className="py-20 bg-slate-50/80 dark:bg-[#0b101b] border-y border-slate-200/80 dark:border-slate-800/60">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-14">
             <h2 className="text-3xl font-extrabold text-slate-950 dark:text-white tracking-tight">
@@ -403,7 +403,7 @@ export default function Home() {
               return (
                 <div
                   key={idx}
-                  className="p-6 rounded-2xl bg-slate-900/60 border border-slate-800/60 flex flex-col items-start space-y-3 relative"
+                  className="p-6 rounded-2xl bg-white dark:bg-slate-900/60 border border-slate-200/80 dark:border-slate-800/60 shadow-xs dark:shadow-none flex flex-col items-start space-y-3 relative"
                 >
                   <div className="flex items-center justify-between w-full">
                     <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold text-sm shadow-xs">
@@ -475,7 +475,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-[#0b101b] border-t border-slate-800/60 text-center text-xs text-slate-500">
+      <footer className="py-8 bg-white dark:bg-[#0b101b] border-t border-slate-200/80 dark:border-slate-800/60 text-center text-xs text-slate-500 dark:text-slate-400">
         <p>&copy; {new Date().getFullYear()} ScamShield — AI Scam &amp; Phishing Detection Platform. Built for digital security and transparency.</p>
       </footer>
     </div>

@@ -193,10 +193,10 @@ export default function RecentDetections({ detections = [] }) {
                   <div
                     key={item.id || index}
                     onClick={() => navigate('/history')}
-                    className="p-3 rounded-xl border border-slate-800/60 bg-slate-900/40 space-y-2 cursor-pointer hover:border-slate-700/60 active:scale-[0.98] transition-all shadow-sm"
+                    className="p-3 rounded-xl border border-slate-200/80 dark:border-slate-800/60 bg-slate-50/70 dark:bg-slate-900/40 space-y-2 cursor-pointer hover:border-slate-300 dark:hover:border-slate-700/60 active:scale-[0.98] transition-all shadow-xs dark:shadow-sm"
                   >
                     <div className="flex items-center justify-between gap-2">
-                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-800/60 border border-slate-700/50 text-xs font-semibold text-slate-300">
+                      <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-slate-200/60 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/50 text-xs font-semibold text-slate-700 dark:text-slate-300">
                         {getTypeIcon(type)}
                         <span>{getTypeLabel(type)}</span>
                       </div>
@@ -221,7 +221,7 @@ export default function RecentDetections({ detections = [] }) {
 
                     {/* Mini risk visual bar */}
                     {risk !== null && (
-                      <div className="w-full bg-slate-100 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
+                      <div className="w-full bg-slate-200 dark:bg-slate-800 h-1 rounded-full overflow-hidden">
                         <div
                           style={{ width: `${Math.min(riskNum, 100)}%` }}
                           className={`h-full rounded-full ${
@@ -235,7 +235,7 @@ export default function RecentDetections({ detections = [] }) {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-1 border-t border-slate-800/50">
+                    <div className="flex items-center justify-between text-[10.5px] text-slate-500 pt-1 border-t border-slate-200/80 dark:border-slate-800/50">
                       <span>{formatDateTime(item)}</span>
                       <span className="inline-flex items-center gap-0.5 text-blue-600 dark:text-blue-400 font-semibold">
                         Details <ExternalLink className="w-3 h-3" />

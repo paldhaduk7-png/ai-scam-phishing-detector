@@ -152,7 +152,7 @@ export default function DetectionChart({ data = null }) {
   return (
     <Card className="flex flex-col p-4 sm:p-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-800/70">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80 dark:border-slate-800/70">
         <div>
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-sm sm:text-base font-bold text-slate-900 dark:text-white tracking-tight">
