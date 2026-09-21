@@ -68,6 +68,22 @@ def _format_user(user: User, token: Optional[str] = None) -> UserResponse:
     )
 
 
+@router.get(
+    "/check-email",
+    summary="Check if email address is already registered",
+)
+async def check_email_exists(
+    email: str,
+    db: Session = Depends(get_db),
+):
+    """
+    Checks if an email is already associated with an existing account.
+    """
+    normalized = email.strip().lower()
+    existing = db.query(User).filter(User.email == normalized).first()
+    return {"exists": existing is not None, "email": normalized}
+
+
 @router.post(
     "/register",
     response_model=UserResponse,

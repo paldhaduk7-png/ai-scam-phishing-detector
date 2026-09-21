@@ -94,6 +94,19 @@ api.interceptors.response.use(
 // ==============================================================================
 
 /**
+ * Check if an email is already registered.
+ * @param {string} email
+ * @returns {Promise<{exists: boolean, email: string}>}
+ */
+export const checkEmailExists = async (email) => {
+  if (!email || !email.includes('@')) return { exists: false };
+  const response = await api.get('/auth/check-email', {
+    params: { email: email.trim().toLowerCase() },
+  });
+  return response.data;
+};
+
+/**
  * Register a new user account.
  * @param {Object} userData - { name, email, password, confirm_password }
  * @returns {Promise<Object>} Safe user response
