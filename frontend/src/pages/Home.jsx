@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import PublicNavbar from '../components/layout/PublicNavbar';
+import Footer from '../components/layout/Footer';
 import Button from '../components/common/Button';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
@@ -475,9 +476,7 @@ export default function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="py-8 bg-white dark:bg-[#0b101b] border-t border-slate-200/80 dark:border-slate-800/60 text-center text-xs text-slate-500 dark:text-slate-400">
-        <p>&copy; {new Date().getFullYear()} ScamShield — AI Scam &amp; Phishing Detection Platform. Built for digital security and transparency.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

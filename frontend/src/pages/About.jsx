@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import PublicNavbar from '../components/layout/PublicNavbar';
+import Footer from '../components/layout/Footer';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
@@ -243,9 +244,7 @@ export default function About() {
       </main>
 
       {/* Footer */}
-      <footer className="py-6 bg-white dark:bg-[#0b101b] border-t border-slate-200/80 dark:border-slate-800 text-center text-xs text-slate-500 dark:text-slate-400">
-        <p>&copy; {new Date().getFullYear()} ScamShield — AI Scam &amp; Phishing Detection Platform.</p>
-      </footer>
+      <Footer />
     </div>
   );
 }

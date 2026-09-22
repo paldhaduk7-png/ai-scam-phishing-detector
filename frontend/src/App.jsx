@@ -15,6 +15,8 @@ const Dashboard = lazy(() => import('./pages/Dashboard'));
 const History = lazy(() => import('./pages/History'));
 const Profile = lazy(() => import('./pages/Profile'));
 const About = lazy(() => import('./pages/About'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
@@ -35,7 +37,7 @@ function PageFallback() {
 }
 
 const router = createBrowserRouter([
-  // Public Landing & About Pages
+  // Public Landing, About & Legal Pages
   {
     path: '/',
     element: <Home />,
@@ -45,6 +47,22 @@ const router = createBrowserRouter([
     element: (
       <Suspense fallback={<PageFallback />}>
         <About />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/privacy-policy',
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <PrivacyPolicy />
+      </Suspense>
+    ),
+  },
+  {
+    path: '/terms',
+    element: (
+      <Suspense fallback={<PageFallback />}>
+        <TermsOfService />
       </Suspense>
     ),
   },
