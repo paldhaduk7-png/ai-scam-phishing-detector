@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSelector } from 'react-redux';
 import {
   Lock,
   CheckCircle2,
@@ -12,6 +13,7 @@ import {
   XCircle,
   RefreshCw,
   Send,
+  Shield,
   ShieldAlert,
 } from 'lucide-react';
 import {
@@ -53,11 +55,22 @@ export default function GmailImportCard({
   autoOpenModal = false,
   onModalStateChange,
 }) {
+  const { user } = useSelector((state) => state.auth);
+  const isAdmin = Boolean(
+    user?.role?.toUpperCase() === 'ADMIN' ||
+    user?.email?.toLowerCase() === 'paldhadu7@gmail.com' ||
+    user?.email?.toLowerCase() === 'paldhaduk7@gmail.com'
+  );
+
   // Permission & Approval state: NOT_REQUESTED | PENDING | APPROVED | REJECTED | REVOKED
-  const [accessStatus, setAccessStatus] = useState('NOT_REQUESTED');
+  // Administrators are always automatically APPROVED with full unrestricted access
+  const [accessStatus, setAccessStatus] = useState(isAdmin ? 'APPROVED' : 'NOT_REQUESTED');
   const [accessData, setAccessData] = useState(null);
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  // Effective status: always APPROVED for administrators
+  const effectiveStatus = isAdmin ? 'APPROVED' : accessStatus;
 
   // Active OAuth connection state
   const [isConnected, setIsConnected] = useState(false);
@@ -76,12 +89,12 @@ export default function GmailImportCard({
     try {
       // 1. Check user Gmail access permission status
       const accessRes = await getGmailAccessStatus();
-      const currentAccess = accessRes?.gmail_access_status || 'NOT_REQUESTED';
+      const currentAccess = isAdmin ? 'APPROVED' : (accessRes?.gmail_access_status || 'NOT_REQUESTED');
       setAccessStatus(currentAccess);
       setAccessData(accessRes);
 
-      // 2. If approved, check if Gmail OAuth token is currently active
-      if (currentAccess === 'APPROVED') {
+      // 2. If approved (or admin), check if Gmail OAuth token is currently active
+      if (isAdmin || currentAccess === 'APPROVED') {
         const connRes = await getGmailStatus();
         if (connRes?.connected) {
           setIsConnected(true);
@@ -96,13 +109,24 @@ export default function GmailImportCard({
       }
     } catch {
       // Fallback
-      setAccessStatus('NOT_REQUESTED');
-      setIsConnected(false);
+      if (isAdmin) {
+        setAccessStatus('APPROVED');
+        try {
+          const connRes = await getGmailStatus();
+          setIsConnected(Boolean(connRes?.connected));
+          setConnectedEmail(connRes?.email || null);
+        } catch {
+          setIsConnected(false);
+        }
+      } else {
+        setAccessStatus('NOT_REQUESTED');
+        setIsConnected(false);
+      }
     } finally {
       setLoadingStatus(false);
       setRefreshing(false);
     }
-  }, []);
+  }, [isAdmin]);
 
   useEffect(() => {
     loadStatuses();
@@ -110,11 +134,11 @@ export default function GmailImportCard({
 
   // Handle external trigger to open modal (e.g. after OAuth return)
   useEffect(() => {
-    if (autoOpenModal && accessStatus === 'APPROVED' && isConnected) {
+    if (autoOpenModal && effectiveStatus === 'APPROVED' && isConnected) {
       setIsSelectionModalOpen(true);
       onModalStateChange?.(true);
     }
-  }, [autoOpenModal, accessStatus, isConnected, onModalStateChange]);
+  }, [autoOpenModal, effectiveStatus, isConnected, onModalStateChange]);
 
   const handleConnect = () => {
     if (onConnect) {
@@ -179,7 +203,7 @@ export default function GmailImportCard({
   // ============================================================================
   // STATE 1: APPROVED & CONNECTED -> Active Inbox View
   // ============================================================================
-  if (accessStatus === 'APPROVED' && isConnected) {
+  if (effectiveStatus === 'APPROVED' && isConnected) {
     return (
       <>
         <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b111e] shadow-xs space-y-5 animate-fadeIn">
@@ -199,9 +223,16 @@ export default function GmailImportCard({
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                     Connected ✓
                   </span>
-                  <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/40 px-2 py-0.5 rounded-full font-mono">
-                    Approved
-                  </span>
+                  {isAdmin ? (
+                    <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-950/60 border border-purple-200/60 dark:border-purple-800/40 px-2.5 py-0.5 rounded-full font-mono">
+                      <Shield className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                      Admin Privileges
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center text-[10px] font-semibold text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/60 border border-blue-200/60 dark:border-blue-800/40 px-2 py-0.5 rounded-full font-mono">
+                      Approved
+                    </span>
+                  )}
                 </div>
                 <div className="text-xs sm:text-sm font-semibold text-slate-900 dark:text-white mt-1 flex items-center gap-1.5">
                   <span className="text-slate-500 dark:text-slate-400 font-normal">Active Account:</span>
@@ -271,49 +302,78 @@ export default function GmailImportCard({
   // ============================================================================
   // STATE 2: APPROVED & NOT CONNECTED -> Show Approved Status + Connect Gmail
   // ============================================================================
-  if (accessStatus === 'APPROVED' && !isConnected) {
+  if (effectiveStatus === 'APPROVED' && !isConnected) {
     const approvedList = accessData?.approved_emails || [];
     return (
       <>
         <div className="border border-slate-200/80 dark:border-slate-800/80 rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#0b111e] shadow-xs space-y-5 animate-fadeIn">
           {/* Header */}
           <div className="flex items-start gap-3.5 sm:gap-4">
-            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40 flex items-center justify-center shrink-0 p-2.5 shadow-2xs">
-              <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+            <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-2xl ${
+              isAdmin
+                ? 'bg-purple-50 dark:bg-purple-950/40 border border-purple-200/60 dark:border-purple-800/40'
+                : 'bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/60 dark:border-emerald-800/40'
+            } flex items-center justify-center shrink-0 p-2.5 shadow-2xs`}>
+              {isAdmin ? (
+                <Shield className="w-7 h-7 text-purple-600 dark:text-purple-400" />
+              ) : (
+                <CheckCircle2 className="w-7 h-7 text-emerald-600 dark:text-emerald-400" />
+              )}
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-mono">
-                  Status: Approved ✓
-                </span>
+                {isAdmin ? (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-purple-700 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20 px-2.5 py-0.5 rounded-full font-mono">
+                    <Shield className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                    Admin Full Access ✓
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-full font-mono">
+                    Status: Approved ✓
+                  </span>
+                )}
               </div>
               <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white tracking-tight mt-1">
-                Gmail Access Approved
+                {isAdmin ? 'Gmail Threat Analysis (Admin)' : 'Gmail Access Approved'}
               </h3>
               <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-0.5 leading-relaxed">
-                Your request has been approved by the administrator. You can now connect your approved Gmail account.
+                {isAdmin
+                  ? 'As an administrator, you have full unrestricted access to connect and analyze any Gmail account without requesting approval.'
+                  : 'Your request has been approved by the administrator. You can now connect your approved Gmail account.'}
               </p>
             </div>
           </div>
 
-          {/* Approved Emails Display */}
-          {approvedList.length > 0 && (
-            <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#070b13] border border-slate-200/80 dark:border-slate-800/80 space-y-2">
-              <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">
-                Approved Gmail Address{approvedList.length > 1 ? 'es' : ''}:
-              </span>
-              <div className="flex flex-wrap gap-2">
-                {approvedList.map((em, idx) => (
-                  <span
-                    key={idx}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60"
-                  >
-                    <Mail className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>{em}</span>
-                  </span>
-                ))}
+          {/* Admin authorization status or Approved Emails Display */}
+          {isAdmin ? (
+            <div className="p-3.5 sm:p-4 rounded-xl bg-purple-50/60 dark:bg-purple-950/20 border border-purple-200/60 dark:border-purple-800/40 space-y-1">
+              <div className="flex items-center gap-2 text-xs font-bold text-purple-900 dark:text-purple-300">
+                <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                <span>All Gmail Accounts Authorized</span>
               </div>
+              <p className="text-[11px] text-slate-600 dark:text-slate-400">
+                Administrators possess full platform access and can connect any Gmail address directly without submitting an access request.
+              </p>
             </div>
+          ) : (
+            approvedList.length > 0 && (
+              <div className="p-3.5 sm:p-4 rounded-xl bg-slate-50 dark:bg-[#070b13] border border-slate-200/80 dark:border-slate-800/80 space-y-2">
+                <span className="text-[11px] uppercase font-bold tracking-wider text-slate-400 dark:text-slate-500">
+                  Approved Gmail Address{approvedList.length > 1 ? 'es' : ''}:
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {approvedList.map((em, idx) => (
+                    <span
+                      key={idx}
+                      className="inline-flex items-center gap-1.5 px-2.5 py-1 text-xs font-mono font-medium rounded-lg bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60"
+                    >
+                      <Mail className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                      <span>{em}</span>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )
           )}
 
           {/* Security Information */}

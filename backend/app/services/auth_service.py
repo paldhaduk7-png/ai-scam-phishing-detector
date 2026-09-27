@@ -145,10 +145,19 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
             detail="Your account has been deactivated. Please contact the administrator.",
         )
 
-    # Ensure admin role is persisted in DB for designated administrative accounts
-    if user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+    # Ensure admin role and approved access are persisted in DB for designated administrative accounts or admin role
+    is_admin = (getattr(user, "role", "USER") or "USER").upper() == "ADMIN" or (
+        user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com")
+    )
+    if is_admin:
+        changed = False
         if getattr(user, "role", "USER") != "ADMIN":
             user.role = "ADMIN"
+            changed = True
+        if getattr(user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+            user.gmail_access_status = "APPROVED"
+            changed = True
+        if changed:
             db.commit()
             db.refresh(user)
 

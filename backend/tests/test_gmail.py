@@ -38,8 +38,8 @@ def test_gmail_connect_requires_auth():
 
 
 def test_gmail_connect_authenticated():
-    """Authenticated users receive a state cookie and are redirected to Google."""
-    mock_user = User(id=123, name="Test Gmail", email="test@example.com")
+    """Authenticated admin users receive a state cookie and are redirected to Google."""
+    mock_user = User(id=123, name="Test Gmail", email="paldhadu7@gmail.com", role="ADMIN", gmail_access_status="APPROVED")
     from app.services.auth_service import get_current_user
 
     app.dependency_overrides[get_current_user] = lambda: mock_user
@@ -95,7 +95,11 @@ def test_gmail_callback_success():
         "expires_in": 3600,
     }
 
-    with patch("app.routers.gmail.exchange_gmail_code_for_tokens", new=AsyncMock(return_value=mock_tokens)):
+    mock_db_user = User(id=user_id, name="Callback User", email="paldhadu7@gmail.com", role="ADMIN", gmail_access_status="APPROVED")
+
+    with patch("app.routers.gmail.exchange_gmail_code_for_tokens", new=AsyncMock(return_value=mock_tokens)), \
+         patch("app.routers.gmail.get_gmail_profile", new=AsyncMock(return_value={"emailAddress": "admin_test@gmail.com"})), \
+         patch("sqlalchemy.orm.Query.first", return_value=mock_db_user):
         response = client.get(
             f"/api/v1/gmail/callback?code=mock_code_123&state={state}",
             cookies={"gmail_oauth_state": state},
@@ -145,7 +149,7 @@ def test_gmail_analysis_job_lifecycle():
     from app.routers.gmail import _GMAIL_USER_TOKENS, _GMAIL_JOBS, _USER_ACTIVE_JOBS
 
     user_id = 888
-    mock_user = User(id=user_id, name="Job Tester", email="job_tester@example.com")
+    mock_user = User(id=user_id, name="Job Tester", email="paldhadu7@gmail.com", role="ADMIN", gmail_access_status="APPROVED")
     _GMAIL_USER_TOKENS[user_id] = {
         "access_token": "mock_token",
         "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -194,7 +198,7 @@ def test_gmail_selective_analysis():
     from app.routers.gmail import _GMAIL_USER_TOKENS, _USER_ACTIVE_JOBS
 
     user_id = 777
-    mock_user = User(id=user_id, name="Selective Tester", email="selective@example.com")
+    mock_user = User(id=user_id, name="Selective Tester", email="paldhadu7@gmail.com", role="ADMIN", gmail_access_status="APPROVED")
     _GMAIL_USER_TOKENS[user_id] = {
         "access_token": "mock_token_selective",
         "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -230,7 +234,7 @@ def test_gmail_list_messages_pagination():
     from app.routers.gmail import _GMAIL_USER_TOKENS
 
     user_id = 888
-    mock_user = User(id=user_id, name="Pagination Tester", email="pagination@example.com")
+    mock_user = User(id=user_id, name="Pagination Tester", email="paldhadu7@gmail.com", role="ADMIN", gmail_access_status="APPROVED")
     _GMAIL_USER_TOKENS[user_id] = {
         "access_token": "mock_token_pagination",
         "expires_at": datetime.now(timezone.utc) + timedelta(hours=1),
@@ -271,6 +275,41 @@ def test_gmail_list_messages_pagination():
                 query=None,
                 page_token="token_page_1",
             )
+    finally:
+        app.dependency_overrides.pop(get_current_user, None)
+
+
+def test_admin_has_full_gmail_access_without_request():
+    """Ensures administrators have full APPROVED access automatically without needing request/approval."""
+    from app.services.auth_service import get_current_user
+
+    admin_user = User(
+        id=555,
+        name="Super Admin",
+        email="admin@example.com",
+        role="ADMIN",
+        gmail_access_status="NOT_REQUESTED",  # even if DB says NOT_REQUESTED
+    )
+
+    app.dependency_overrides[get_current_user] = lambda: admin_user
+    try:
+        # 1. Access status endpoint automatically yields APPROVED
+        resp = client.get("/api/v1/gmail/access-status")
+        assert resp.status_code == 200
+        data = resp.json()
+        assert data["gmail_access_status"] == "APPROVED"
+
+        # 2. Submitting request-access as admin immediately returns APPROVED without pending state
+        req_resp = client.post("/api/v1/gmail/request-access", json={"emails": ["admin@example.com"]})
+        assert req_resp.status_code == 200
+        assert req_resp.json()["gmail_access_status"] == "APPROVED"
+
+        # 3. Initiating Gmail OAuth connect succeeds without needing approval
+        with patch("app.routers.gmail.settings.google_client_id", "mock-id"), \
+             patch("app.routers.gmail.settings.google_client_secret", "mock-secret"):
+            conn_resp = client.get("/api/v1/gmail/connect", follow_redirects=False)
+            assert conn_resp.status_code == 303
+            assert "accounts.google.com" in conn_resp.headers["location"]
     finally:
         app.dependency_overrides.pop(get_current_user, None)
 
