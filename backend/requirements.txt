@@ -10,7 +10,8 @@ tensorflow>=2.15.0
 pytest>=8.0.0
 httpx>=0.27.0
 SQLAlchemy
-psycopg2-binary
+psycopg[binary]>=3.1.18
+psycopg2-binary>=2.9.9
 python-dotenv
 bcrypt>=4.2.0
 pyjwt>=2.9.0
