@@ -89,15 +89,21 @@ def _format_admin_user(user: User, db: Session) -> AdminUserItem:
 
     days_remaining = _calculate_days_remaining(user.deleted_at) if user.account_status == "SOFT_DELETED" else None
 
+    user_role = getattr(user, "role", "USER") or "USER"
+    if user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+        user_role = "ADMIN"
+    is_admin = str(user_role).upper() == "ADMIN"
+    effective_gmail_status = "APPROVED" if is_admin else (getattr(user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED")
+
     return AdminUserItem(
         id=user.id,
         name=user.name,
         email=user.email,
-        role=getattr(user, "role", "USER") or "USER",
+        role=user_role,
         account_status=getattr(user, "account_status", "ACTIVE") or "ACTIVE",
-        gmail_access_status=getattr(user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED",
+        gmail_access_status=effective_gmail_status,
         requested_emails=requested_emails,
-        approved_emails=approved_emails,
+        approved_emails=approved_emails if approved_emails else (["* (All accounts authorized)"] if is_admin else []),
         request_date=request_date,
         approval_date=approval_date,
         created_at=user.created_at.isoformat() if user.created_at else "",
@@ -511,6 +517,13 @@ def revoke_user_gmail_access(
     if not target_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found.")
 
+    target_role = getattr(target_user, "role", "USER") or "USER"
+    if str(target_role).upper() == "ADMIN" or (target_user.email and target_user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot revoke or restrict access for administrator accounts. Administrators have full system access.",
+        )
+
     prev_status = getattr(target_user, "gmail_access_status", "APPROVED")
     revoke_note = payload.reason.strip() if payload and payload.reason else "Access revoked by administrator from user management."
 
@@ -687,6 +700,13 @@ def reset_user_gmail_access(
     target_user = db.query(User).filter(User.id == user_id).first()
     if not target_user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User account not found.")
+
+    target_role = getattr(target_user, "role", "USER") or "USER"
+    if str(target_role).upper() == "ADMIN" or (target_user.email and target_user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com")):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot reset access for administrator accounts. Administrators have full system access.",
+        )
 
     prev_status = getattr(target_user, "gmail_access_status", "NOT_REQUESTED")
     reset_note = payload.reason.strip() if payload and payload.reason else "Access state reset to NOT_REQUESTED by administrator."

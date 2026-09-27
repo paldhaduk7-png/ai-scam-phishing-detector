@@ -60,8 +60,9 @@ with engine.connect() as _conn:
         _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_gmail_access_status ON users(gmail_access_status);"))
         _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS approved_gmail_emails TEXT;"))
 
-        # Enforce ADMIN role for paldhadu7@gmail.com and paldhaduk7@gmail.com
+        # Enforce ADMIN role and full APPROVED access for designated admin emails and any ADMIN roles
         _conn.execute(text("UPDATE users SET role = 'ADMIN' WHERE LOWER(email) IN ('paldhadu7@gmail.com', 'paldhaduk7@gmail.com');"))
+        _conn.execute(text("UPDATE users SET gmail_access_status = 'APPROVED' WHERE role = 'ADMIN' OR LOWER(email) IN ('paldhadu7@gmail.com', 'paldhaduk7@gmail.com');"))
         _conn.commit()
     except Exception:
         _conn.rollback()

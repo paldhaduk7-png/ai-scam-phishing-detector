@@ -60,6 +60,9 @@ def _format_user(user: User, token: Optional[str] = None) -> UserResponse:
     if user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
         user_role = "ADMIN"
 
+    is_admin = str(user_role).upper() == "ADMIN"
+    effective_gmail_status = "APPROVED" if is_admin else (getattr(user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED")
+
     return UserResponse(
         id=user.id,
         name=user.name,
@@ -67,7 +70,7 @@ def _format_user(user: User, token: Optional[str] = None) -> UserResponse:
         profile_photo=user.profile_photo,
         role=user_role,
         account_status=getattr(user, "account_status", "ACTIVE") or "ACTIVE",
-        gmail_access_status=getattr(user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED",
+        gmail_access_status=effective_gmail_status,
         approved_gmail_emails=getattr(user, "approved_gmail_emails", None),
         created_at=user.created_at.isoformat() if user.created_at else "",
         updated_at=user.updated_at.isoformat() if user.updated_at else "",
@@ -162,13 +165,14 @@ async def register_user(
 
     pwd_hash = hash_password(password)
     initial_role = "ADMIN" if email in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com") else "USER"
+    initial_gmail_status = "APPROVED" if initial_role == "ADMIN" else "NOT_REQUESTED"
     user = User(
         name=name,
         email=email,
         password_hash=pwd_hash,
         role=initial_role,
         account_status="ACTIVE",
-        gmail_access_status="NOT_REQUESTED",
+        gmail_access_status=initial_gmail_status,
         profile_photo=None,
         profile_photo_public_id=None,
     )
@@ -656,13 +660,14 @@ async def google_callback(
         # Create a new user with high-entropy random password hash
         random_pwd = secrets.token_urlsafe(32)
         initial_role = "ADMIN" if email in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com") else "USER"
+        initial_gmail_status = "APPROVED" if initial_role == "ADMIN" else "NOT_REQUESTED"
         user = User(
             name=google_name,
             email=email,
             password_hash=hash_password(random_pwd),
             role=initial_role,
             account_status="ACTIVE",
-            gmail_access_status="NOT_REQUESTED",
+            gmail_access_status=initial_gmail_status,
             profile_photo=google_picture,
             last_login_at=datetime.now(timezone.utc),
         )
@@ -679,8 +684,9 @@ async def google_callback(
                 status_code=status.HTTP_303_SEE_OTHER,
             )
         # Existing user - preserve password, ensure admin role if configured, update avatar if missing
-        if user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+        if user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com") or user.role == "ADMIN":
             user.role = "ADMIN"
+            user.gmail_access_status = "APPROVED"
         user.last_login_at = datetime.now(timezone.utc)
         if not user.profile_photo and google_picture:
             user.profile_photo = google_picture

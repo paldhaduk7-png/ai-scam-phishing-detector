@@ -129,6 +129,17 @@ def _format_request_item(req: GmailAccessRequest, db: Session) -> GmailAccessReq
     )
 
 
+def is_admin_user(user: Optional[User]) -> bool:
+    """Returns True if the user has an ADMIN role or is a configured administrator account."""
+    if not user:
+        return False
+    user_role = getattr(user, "role", "USER") or "USER"
+    if str(user_role).upper() == "ADMIN":
+        return True
+    email = getattr(user, "email", "") or ""
+    return str(email).lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com")
+
+
 @router.get(
     "/access-status",
     response_model=GmailAccessStatusResponse,
@@ -138,7 +149,7 @@ def get_user_gmail_access_status(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> GmailAccessStatusResponse:
-    """Returns authenticated user's current Gmail access status, requested addresses, and history."""
+    """Returns authenticated user's current Gmail access status, requested addresses, and history. Administrators always have full APPROVED access."""
     latest_req = (
         db.query(GmailAccessRequest)
         .filter(GmailAccessRequest.user_id == current_user.id)
@@ -183,10 +194,13 @@ def get_user_gmail_access_status(
         for h in history_records
     ]
 
+    admin_access = is_admin_user(current_user)
+    effective_status = "APPROVED" if admin_access else (getattr(current_user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED")
+
     return GmailAccessStatusResponse(
-        gmail_access_status=getattr(current_user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED",
+        gmail_access_status=effective_status,
         requested_emails=requested_emails,
-        approved_emails=approved_emails,
+        approved_emails=approved_emails if approved_emails else (["* (All accounts authorized for Admin)"] if admin_access else []),
         latest_request=_format_request_item(latest_req, db) if latest_req else None,
         history=formatted_history,
     )
@@ -204,8 +218,11 @@ def submit_gmail_access_request(
 ) -> GmailAccessStatusResponse:
     """
     Submits a Gmail access approval request for one or multiple Gmail accounts.
-    Validates format, trims whitespace, removes duplicates, and prevents empty submission.
+    Administrators possess unrestricted full access to all features and do not need approval.
     """
+    if is_admin_user(current_user):
+        return get_user_gmail_access_status(current_user=current_user, db=db)
+
     if not payload.emails or len(payload.emails) == 0:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -301,8 +318,8 @@ def gmail_connect(
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    # Backend access check: only APPROVED users may initiate Gmail OAuth
-    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+    # Backend access check: regular users must have APPROVED status; admins always have full access
+    if not is_admin_user(current_user) and getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
         logger.warning("Unapproved user id=%s attempted Gmail OAuth connect (status=%s)", current_user.id, current_user.gmail_access_status)
         return RedirectResponse(
             url=f"{settings.frontend_url}/detect?tab=email&gmail_error={quote_plus('Gmail analysis requires administrator approval before you can connect an account.')}",
@@ -404,7 +421,7 @@ async def gmail_callback(
         response.delete_cookie(key="gmail_oauth_state", path="/")
         return response
 
-    if getattr(user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+    if not is_admin_user(user) and getattr(user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
         logger.warning("Unapproved Gmail OAuth callback rejected for user id=%s", user_id)
         response = RedirectResponse(
             url=f"{settings.frontend_url}/detect?tab=email&gmail_error={quote_plus('Gmail analysis requires administrator approval before you can connect an account.')}",
@@ -444,8 +461,8 @@ async def gmail_callback(
     except Exception as prof_err:
         logger.warning("Could not fetch Gmail profile email during callback: %s", prof_err)
 
-    # Verify that the authenticated Gmail account matches the user's approved Gmail address(es)
-    if user.approved_gmail_emails and gmail_email:
+    # Verify that the authenticated Gmail account matches the user's approved Gmail address(es) (regular users only)
+    if not is_admin_user(user) and user.approved_gmail_emails and gmail_email:
         try:
             approved_list = json.loads(user.approved_gmail_emails)
         except Exception:
@@ -720,8 +737,8 @@ async def start_gmail_analysis(
     If message_ids is provided, only those specific emails are analyzed.
     Includes multiple-job protection: returns existing job if one is already running.
     """
-    # Verify user approval before starting Gmail analysis
-    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+    # Verify user approval before starting Gmail analysis (admins always have full access)
+    if not is_admin_user(current_user) and getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Gmail analysis requires administrator approval before connecting an account.",
@@ -874,7 +891,7 @@ async def list_messages(
     Accepts pageToken and maxResults, returning nextPageToken for subsequent pages.
     Returns preview metadata (id, snippet, subject, from, date) for each email.
     """
-    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+    if not is_admin_user(current_user) and getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Gmail analysis requires administrator approval before connecting an account.",
@@ -972,7 +989,7 @@ async def get_message_detail(
     """
     Fetches full subject, sender, date, and body content for a specific email.
     """
-    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+    if not is_admin_user(current_user) and getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Gmail analysis requires administrator approval before connecting an account.",
