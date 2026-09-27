@@ -379,5 +379,169 @@ export const cancelGmailAnalysis = async (jobId) => {
   return response.data;
 };
 
+// ==============================================================================
+// Gmail Access Request Endpoints (User Side)
+// ==============================================================================
+
+/**
+ * Fetch authenticated user's current Gmail access status, requested addresses, and history.
+ */
+export const getGmailAccessStatus = async () => {
+  const response = await api.get('/gmail/access-status', { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Submit request to administrator for Gmail analysis access with one or more Gmail addresses.
+ * @param {Array<string>} emails
+ */
+export const requestGmailAccess = async (emails) => {
+  const response = await api.post('/gmail/request-access', { emails }, { withCredentials: true });
+  return response.data;
+};
+
+// ==============================================================================
+// Administrator User Management & Review Endpoints (Admin Side)
+// ==============================================================================
+
+/**
+ * Fetch real-time administrator dashboard summary statistics directly from database.
+ */
+export const getAdminStats = async () => {
+  const response = await api.get('/admin/stats', { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * List all users with filtering, search, and pagination.
+ */
+export const getAdminUsers = async (params = {}) => {
+  const response = await api.get('/admin/users', { params, withCredentials: true });
+  return response.data;
+};
+
+/**
+ * List soft-deleted users in trash with remaining days calculation.
+ */
+export const getAdminDeletedUsers = async (params = {}) => {
+  const response = await api.get('/admin/deleted-users', { params, withCredentials: true });
+  return response.data;
+};
+
+/**
+ * List submitted Gmail access requests.
+ */
+export const getAdminGmailRequests = async (params = {}) => {
+  const response = await api.get('/admin/gmail-requests', { params, withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Approve a Gmail access request.
+ */
+export const approveAdminGmailRequest = async (requestId) => {
+  const response = await api.post(`/admin/gmail-requests/${requestId}/approve`, {}, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Reject a Gmail access request with optional reason.
+ */
+export const rejectAdminGmailRequest = async (requestId, payload = {}) => {
+  const response = await api.post(`/admin/gmail-requests/${requestId}/reject`, payload, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Revoke previously approved Gmail access by Request ID.
+ */
+export const revokeAdminGmailRequest = async (requestId, payload = {}) => {
+  const response = await api.post(`/admin/gmail-requests/${requestId}/revoke`, payload, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Directly revoke approved Gmail access for a specific user by User ID.
+ */
+export const revokeUserGmailAccess = async (userId, payload = {}) => {
+  const response = await api.post(`/admin/users/${userId}/revoke-gmail`, payload, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Directly grant/approve Gmail access for a specific user manually.
+ */
+export const grantUserGmailAccess = async (userId, payload = {}) => {
+  const response = await api.post(`/admin/users/${userId}/grant-gmail`, payload, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Reset a user's Gmail access state back to NOT_REQUESTED.
+ */
+export const resetUserGmailAccess = async (userId, payload = {}) => {
+  const response = await api.post(`/admin/users/${userId}/reset-gmail`, payload, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Get chronological Gmail access history for a specific user.
+ */
+export const getUserGmailHistory = async (userId) => {
+  const response = await api.get(`/admin/users/${userId}/gmail-history`, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Soft-delete a user and block application access immediately.
+ */
+export const softDeleteUser = async (userId) => {
+  const response = await api.post(`/admin/users/${userId}/soft-delete`, {}, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Restore a soft-deleted user.
+ */
+export const restoreUser = async (userId) => {
+  const response = await api.post(`/admin/users/${userId}/restore`, {}, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * Permanently delete a user from database.
+ */
+export const permanentDeleteUser = async (userId) => {
+  const response = await api.delete(`/admin/users/${userId}/permanent-delete`, { withCredentials: true });
+  return response.data;
+};
+
+/**
+ * List system and administrative audit logs.
+ */
+export const getAdminAuditLogs = async (params = {}) => {
+  const response = await api.get('/admin/audit-logs', { params, withCredentials: true });
+  return response.data;
+};
+
+// Also attach to default axios instance for dual compatibility
+api.getGmailAccessStatus = getGmailAccessStatus;
+api.requestGmailAccess = requestGmailAccess;
+api.getAdminStats = getAdminStats;
+api.getAdminUsers = getAdminUsers;
+api.getAdminDeletedUsers = getAdminDeletedUsers;
+api.getAdminGmailRequests = getAdminGmailRequests;
+api.approveAdminGmailRequest = approveAdminGmailRequest;
+api.rejectAdminGmailRequest = rejectAdminGmailRequest;
+api.revokeAdminGmailRequest = revokeAdminGmailRequest;
+api.revokeUserGmailAccess = revokeUserGmailAccess;
+api.grantUserGmailAccess = grantUserGmailAccess;
+api.resetUserGmailAccess = resetUserGmailAccess;
+api.getUserGmailHistory = getUserGmailHistory;
+api.softDeleteUser = softDeleteUser;
+api.restoreUser = restoreUser;
+api.permanentDeleteUser = permanentDeleteUser;
+api.getAdminAuditLogs = getAdminAuditLogs;
+
 export default api;
 

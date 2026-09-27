@@ -3,7 +3,7 @@ Pydantic API Schemas Module for AI Scam & Phishing Detector API.
 Contains request and response data validation models for API endpoints.
 """
 
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
@@ -197,8 +197,13 @@ class UserResponse(BaseModel):
     name: str
     email: str
     profile_photo: Optional[str] = None
+    role: str = "USER"
+    account_status: str = "ACTIVE"
+    gmail_access_status: str = "NOT_REQUESTED"
+    approved_gmail_emails: Optional[str] = None
     created_at: str
     updated_at: str
+    last_login_at: Optional[str] = None
     access_token: Optional[str] = None
     token_type: Optional[str] = "bearer"
 
@@ -341,4 +346,128 @@ class GmailStartAnalysisRequest(BaseModel):
         default=None,
         description="Optional list of specific Gmail message IDs to analyze.",
     )
+
+
+# ==============================================================================
+# Gmail Access Request & Admin User Management Schemas
+# ==============================================================================
+
+class GmailAccessRequestCreate(BaseModel):
+    emails: list[str] = Field(..., min_length=1, description="List of Gmail email addresses to request access for")
+
+
+class GmailAccessRequestItem(BaseModel):
+    id: int
+    user_id: int
+    user_name: str
+    user_email: str
+    requested_emails: list[str]
+    requested_count: int
+    status: str
+    requested_at: str
+    reviewed_at: Optional[str] = None
+    reviewed_by: Optional[int] = None
+    reviewer_name: Optional[str] = None
+    admin_note: Optional[str] = None
+    rejection_reason: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GmailAccessHistoryItem(BaseModel):
+    id: int
+    user_id: int
+    action: str
+    previous_status: Optional[str] = None
+    new_status: str
+    gmail_addresses: Optional[str] = None
+    performed_by: Optional[int] = None
+    performed_by_name: Optional[str] = None
+    admin_note: Optional[str] = None
+    timestamp: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class GmailAccessStatusResponse(BaseModel):
+    gmail_access_status: str
+    requested_emails: list[str] = []
+    approved_emails: list[str] = []
+    latest_request: Optional[GmailAccessRequestItem] = None
+    history: list[GmailAccessHistoryItem] = []
+
+
+class GmailReviewRequest(BaseModel):
+    reason: Optional[str] = Field(default=None, description="Optional admin rejection reason or note")
+    note: Optional[str] = Field(default=None, description="Optional admin internal note")
+
+
+class GmailManualGrantRequest(BaseModel):
+    emails: Optional[list[str]] = Field(default=None, description="List of Gmail addresses authorized for user")
+    note: Optional[str] = Field(default=None, description="Optional admin internal note or reason")
+
+
+
+class AdminStatsResponse(BaseModel):
+    active_users: int
+    pending_requests: int
+    admin_users: int
+    standard_users: int
+    deleted_users: int
+
+
+class AdminUserItem(BaseModel):
+    id: int
+    name: str
+    email: str
+    role: str
+    account_status: str
+    gmail_access_status: str
+    requested_emails: list[str] = []
+    approved_emails: list[str] = []
+    request_date: Optional[str] = None
+    approval_date: Optional[str] = None
+    created_at: str
+    last_login_at: Optional[str] = None
+    deleted_at: Optional[str] = None
+    deleted_by: Optional[int] = None
+    deleted_by_name: Optional[str] = None
+    days_remaining: Optional[int] = None
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AdminUsersListResponse(BaseModel):
+    users: list[AdminUserItem]
+    total: int
+    page: int
+    totalPages: int
+
+
+class AdminGmailRequestsResponse(BaseModel):
+    requests: list[GmailAccessRequestItem]
+    total: int
+    page: int
+    totalPages: int
+
+
+class AuditLogItem(BaseModel):
+    id: int
+    action: str
+    target_user_id: Optional[int] = None
+    target_user_email: Optional[str] = None
+    admin_id: Optional[int] = None
+    admin_email: Optional[str] = None
+    details: Optional[str] = None
+    timestamp: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AuditLogsResponse(BaseModel):
+    logs: list[AuditLogItem]
+    total: int
+    page: int
+    totalPages: int
+
 

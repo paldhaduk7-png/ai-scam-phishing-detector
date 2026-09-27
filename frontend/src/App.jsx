@@ -7,6 +7,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext';
 import AppLayout from './components/layout/AppLayout';
 import ProtectedRoute from './components/common/ProtectedRoute';
 import GuestRoute from './components/common/GuestRoute';
+import AdminRoute from './components/common/AdminRoute';
 import Home from './pages/Home';
 
 // Lazy-loaded secondary route pages
@@ -20,6 +21,7 @@ const TermsOfService = lazy(() => import('./pages/TermsOfService'));
 const Login = lazy(() => import('./pages/Login'));
 const Register = lazy(() => import('./pages/Register'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 
 function PageFallback() {
   return (
@@ -168,6 +170,19 @@ const router = createBrowserRouter([
                 <Profile />
               </Suspense>
             ),
+          },
+          {
+            element: <AdminRoute />,
+            children: [
+              {
+                path: 'admin',
+                element: (
+                  <Suspense fallback={<PageFallback />}>
+                    <AdminDashboard />
+                  </Suspense>
+                ),
+              },
+            ],
           },
         ],
       },

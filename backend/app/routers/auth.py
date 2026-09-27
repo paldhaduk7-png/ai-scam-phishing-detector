@@ -56,13 +56,22 @@ router = APIRouter(prefix="/api/v1/auth", tags=["Authentication"])
 
 def _format_user(user: User, token: Optional[str] = None) -> UserResponse:
     """Formats SQLAlchemy User model into safe UserResponse schema with optional Bearer token."""
+    user_role = getattr(user, "role", "USER") or "USER"
+    if user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+        user_role = "ADMIN"
+
     return UserResponse(
         id=user.id,
         name=user.name,
         email=user.email,
         profile_photo=user.profile_photo,
+        role=user_role,
+        account_status=getattr(user, "account_status", "ACTIVE") or "ACTIVE",
+        gmail_access_status=getattr(user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED",
+        approved_gmail_emails=getattr(user, "approved_gmail_emails", None),
         created_at=user.created_at.isoformat() if user.created_at else "",
         updated_at=user.updated_at.isoformat() if user.updated_at else "",
+        last_login_at=user.last_login_at.isoformat() if getattr(user, "last_login_at", None) else None,
         access_token=token,
         token_type="bearer" if token else None,
     )
@@ -152,10 +161,14 @@ async def register_user(
         )
 
     pwd_hash = hash_password(password)
+    initial_role = "ADMIN" if email in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com") else "USER"
     user = User(
         name=name,
         email=email,
         password_hash=pwd_hash,
+        role=initial_role,
+        account_status="ACTIVE",
+        gmail_access_status="NOT_REQUESTED",
         profile_photo=None,
         profile_photo_public_id=None,
     )
@@ -177,7 +190,7 @@ async def register_user(
         except Exception as exc:
             logger.warning("Cloudinary upload failed during registration for user %s: %s", user.id, exc)
 
-    logger.info("Registered new user with id=%s email=%s", user.id, user.email)
+    logger.info("Registered new user with id=%s email=%s role=%s", user.id, user.email, user.role)
     return _format_user(user)
 
 
@@ -202,10 +215,26 @@ def login_user(
             detail="Invalid email or password.",
         )
 
+    # Enforce soft-delete account block immediately
+    if getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated. Please contact the administrator.",
+        )
+
+    # Ensure admin role for configured admin accounts
+    if user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+        user.role = "ADMIN"
+
+    # Record login timestamp
+    user.last_login_at = datetime.now(timezone.utc)
+    db.commit()
+    db.refresh(user)
+
     token = create_access_token(user.id)
     set_auth_cookie(response, token)
 
-    logger.info("User logged in id=%s email=%s", user.id, user.email)
+    logger.info("User logged in id=%s email=%s role=%s", user.id, user.email, user.role)
     return _format_user(user, token=token)
 
 
@@ -626,23 +655,38 @@ async def google_callback(
     if not user:
         # Create a new user with high-entropy random password hash
         random_pwd = secrets.token_urlsafe(32)
+        initial_role = "ADMIN" if email in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com") else "USER"
         user = User(
             name=google_name,
             email=email,
             password_hash=hash_password(random_pwd),
+            role=initial_role,
+            account_status="ACTIVE",
+            gmail_access_status="NOT_REQUESTED",
             profile_photo=google_picture,
+            last_login_at=datetime.now(timezone.utc),
         )
         db.add(user)
         db.commit()
         db.refresh(user)
-        logger.info("Registered new user via Google OAuth id=%s email=%s", user.id, user.email)
+        logger.info("Registered new user via Google OAuth id=%s email=%s role=%s", user.id, user.email, user.role)
     else:
-        # Existing user - preserve password, optionally update avatar if missing
+        # Check if user account was soft-deleted
+        if getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+            logger.warning("Blocked login for deactivated Google user email=%s", email)
+            return RedirectResponse(
+                url=f"{settings.frontend_url}/login?error={quote_plus('Your account has been deactivated. Please contact the administrator.')}",
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
+        # Existing user - preserve password, ensure admin role if configured, update avatar if missing
+        if user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+            user.role = "ADMIN"
+        user.last_login_at = datetime.now(timezone.utc)
         if not user.profile_photo and google_picture:
             user.profile_photo = google_picture
-            db.commit()
-            db.refresh(user)
-        logger.info("Authenticated existing user via Google OAuth id=%s email=%s", user.id, user.email)
+        db.commit()
+        db.refresh(user)
+        logger.info("Authenticated existing user via Google OAuth id=%s email=%s role=%s", user.id, user.email, user.role)
 
     # 7. Issue ScamShield JWT token
     token = create_access_token(user.id)
@@ -712,6 +756,12 @@ def exchange_google_code(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="User account associated with this session was not found.",
+        )
+
+    if getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated. Please contact the administrator.",
         )
 
     token = create_access_token(user.id)

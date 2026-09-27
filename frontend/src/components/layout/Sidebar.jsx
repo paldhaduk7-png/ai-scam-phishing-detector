@@ -27,7 +27,7 @@ export default function Sidebar({ isOpen, onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
-  const { isAuthenticated } = useSelector((state) => state.auth);
+  const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { isDark, toggleTheme } = useTheme();
 
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -35,6 +35,12 @@ export default function Sidebar({ isOpen, onClose }) {
   const [isHistoryExpanded, setIsHistoryExpanded] = useState(true);
 
   const isHistoryActive = location.pathname.startsWith('/history');
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      (user?.role?.toUpperCase() === 'ADMIN' ||
+        user?.email?.toLowerCase() === 'paldhadu7@gmail.com' ||
+        user?.email?.toLowerCase() === 'paldhaduk7@gmail.com')
+  );
 
   const historySubItems = [
     { name: 'Email History', path: '/history/email', icon: Mail },
@@ -235,6 +241,36 @@ export default function Sidebar({ isOpen, onClose }) {
                 </>
               )}
             </NavLink>
+          )}
+
+          {/* Admin Dashboard */}
+          {isAdmin && (
+            <div className="pt-2">
+              <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-rose-500 dark:text-rose-400">
+                Administration
+              </p>
+              <NavLink
+                to="/admin"
+                onClick={onClose}
+                className={({ isActive }) =>
+                  `relative flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 ${
+                    isActive
+                      ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/30 shadow-2xs font-semibold'
+                      : 'text-slate-600 dark:text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/5'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span className="absolute left-1 top-1/2 -translate-y-1/2 w-1 h-5 rounded-full bg-rose-600 dark:bg-rose-400" />
+                    )}
+                    <Shield className={`w-4.5 h-4.5 shrink-0 ${isActive ? 'text-rose-600 dark:text-rose-400' : 'text-slate-400 dark:text-slate-500'}`} />
+                    <span className="truncate">Admin Dashboard</span>
+                  </>
+                )}
+              </NavLink>
+            </div>
           )}
 
         </nav>

@@ -25,6 +25,13 @@ export default function TopHeader({ onToggleSidebar, title: _title }) {
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { isDark, toggleTheme } = useTheme();
 
+  const isAdmin = Boolean(
+    isAuthenticated &&
+      (user?.role?.toUpperCase() === 'ADMIN' ||
+        user?.email?.toLowerCase() === 'paldhadu7@gmail.com' ||
+        user?.email?.toLowerCase() === 'paldhaduk7@gmail.com')
+  );
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -205,6 +212,16 @@ export default function TopHeader({ onToggleSidebar, title: _title }) {
                         <Settings className="w-4 h-4 text-slate-500" />
                         <span>Account Settings</span>
                       </Link>
+                      {isAdmin && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setMenuOpen(false)}
+                          className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 dark:text-rose-400 bg-rose-50/70 dark:bg-rose-950/30 hover:bg-rose-100 dark:hover:bg-rose-950/50 transition-colors"
+                        >
+                          <Shield className="w-4 h-4 text-rose-500" />
+                          <span>Admin Console</span>
+                        </Link>
+                      )}
                     </div>
 
                     {/* Sign Out */}

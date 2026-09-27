@@ -16,7 +16,9 @@ Provides authenticated endpoints for:
 
 import asyncio
 from datetime import datetime, timedelta, timezone
+import json
 import logging
+import re
 import secrets
 from typing import Any, Dict, List, Optional
 from urllib.parse import quote_plus
@@ -24,12 +26,19 @@ from urllib.parse import quote_plus
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response, status
 from fastapi.responses import RedirectResponse
 import httpx
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 from app.config import settings
 from app.database import SessionLocal, get_db
-from app.models import Detection, User
-from app.schemas import GmailStartAnalysisRequest
+from app.models import AuditLog, Detection, GmailAccessHistory, GmailAccessRequest, User
+from app.schemas import (
+    GmailAccessHistoryItem,
+    GmailAccessRequestCreate,
+    GmailAccessRequestItem,
+    GmailAccessStatusResponse,
+    GmailStartAnalysisRequest,
+)
 from app.services.auth_service import get_current_user
 from app.services.gmail_service import (
     build_gmail_authorization_url,
@@ -94,10 +103,186 @@ def _clean_expired_tokens() -> None:
         _GMAIL_USER_TOKENS.pop(k, None)
 
 
+def _format_request_item(req: GmailAccessRequest, db: Session) -> GmailAccessRequestItem:
+    try:
+        parsed_emails = json.loads(req.requested_emails) if req.requested_emails else []
+    except Exception:
+        parsed_emails = [e.strip() for e in req.requested_emails.split(",") if e.strip()]
+
+    user = req.user or db.query(User).filter(User.id == req.user_id).first()
+    reviewer = req.reviewer or (db.query(User).filter(User.id == req.reviewed_by).first() if req.reviewed_by else None)
+
+    return GmailAccessRequestItem(
+        id=req.id,
+        user_id=req.user_id,
+        user_name=user.name if user else "Unknown User",
+        user_email=user.email if user else "",
+        requested_emails=parsed_emails,
+        requested_count=len(parsed_emails),
+        status=req.status,
+        requested_at=req.requested_at.isoformat() if req.requested_at else "",
+        reviewed_at=req.reviewed_at.isoformat() if req.reviewed_at else None,
+        reviewed_by=req.reviewed_by,
+        reviewer_name=reviewer.name if reviewer else None,
+        admin_note=req.admin_note,
+        rejection_reason=req.rejection_reason,
+    )
+
+
+@router.get(
+    "/access-status",
+    response_model=GmailAccessStatusResponse,
+    summary="Get user's Gmail access request status and history",
+)
+def get_user_gmail_access_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> GmailAccessStatusResponse:
+    """Returns authenticated user's current Gmail access status, requested addresses, and history."""
+    latest_req = (
+        db.query(GmailAccessRequest)
+        .filter(GmailAccessRequest.user_id == current_user.id)
+        .order_by(desc(GmailAccessRequest.requested_at))
+        .first()
+    )
+
+    requested_emails: List[str] = []
+    if latest_req and latest_req.requested_emails:
+        try:
+            requested_emails = json.loads(latest_req.requested_emails)
+        except Exception:
+            requested_emails = [e.strip() for e in latest_req.requested_emails.split(",") if e.strip()]
+
+    approved_emails: List[str] = []
+    if current_user.approved_gmail_emails:
+        try:
+            approved_emails = json.loads(current_user.approved_gmail_emails)
+        except Exception:
+            approved_emails = [e.strip() for e in current_user.approved_gmail_emails.split(",") if e.strip()]
+
+    history_records = (
+        db.query(GmailAccessHistory)
+        .filter(GmailAccessHistory.user_id == current_user.id)
+        .order_by(desc(GmailAccessHistory.timestamp))
+        .all()
+    )
+
+    formatted_history = [
+        GmailAccessHistoryItem(
+            id=h.id,
+            user_id=h.user_id,
+            action=h.action,
+            previous_status=h.previous_status,
+            new_status=h.new_status,
+            gmail_addresses=h.gmail_addresses,
+            performed_by=h.performed_by,
+            performed_by_name=h.performed_by_name,
+            admin_note=h.admin_note,
+            timestamp=h.timestamp.isoformat() if h.timestamp else "",
+        )
+        for h in history_records
+    ]
+
+    return GmailAccessStatusResponse(
+        gmail_access_status=getattr(current_user, "gmail_access_status", "NOT_REQUESTED") or "NOT_REQUESTED",
+        requested_emails=requested_emails,
+        approved_emails=approved_emails,
+        latest_request=_format_request_item(latest_req, db) if latest_req else None,
+        history=formatted_history,
+    )
+
+
+@router.post(
+    "/request-access",
+    response_model=GmailAccessStatusResponse,
+    summary="Submit request to administrator for Gmail analysis access",
+)
+def submit_gmail_access_request(
+    payload: GmailAccessRequestCreate,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> GmailAccessStatusResponse:
+    """
+    Submits a Gmail access approval request for one or multiple Gmail accounts.
+    Validates format, trims whitespace, removes duplicates, and prevents empty submission.
+    """
+    if not payload.emails or len(payload.emails) == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide at least one Gmail address.",
+        )
+
+    email_regex = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+    clean_emails = []
+    seen = set()
+
+    for raw in payload.emails:
+        cleaned = (raw or "").strip().lower()
+        if not cleaned:
+            continue
+        if not email_regex.match(cleaned):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"'{cleaned}' is not a valid email address.",
+            )
+        if cleaned not in seen:
+            seen.add(cleaned)
+            clean_emails.append(cleaned)
+
+    if not clean_emails:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Please provide at least one valid, non-empty email address.",
+        )
+
+    prev_status = getattr(current_user, "gmail_access_status", "NOT_REQUESTED")
+    action_type = "REQUESTED_AGAIN" if prev_status in ("REJECTED", "REVOKED") else "REQUESTED"
+
+    # Update user's gmail_access_status
+    current_user.gmail_access_status = "PENDING"
+
+    # Create new access request record
+    req = GmailAccessRequest(
+        user_id=current_user.id,
+        requested_emails=json.dumps(clean_emails),
+        status="PENDING",
+        requested_at=datetime.now(timezone.utc),
+    )
+    db.add(req)
+
+    # Create audit history record
+    hist = GmailAccessHistory(
+        user_id=current_user.id,
+        action=action_type,
+        previous_status=prev_status,
+        new_status="PENDING",
+        gmail_addresses=", ".join(clean_emails),
+        performed_by=current_user.id,
+        performed_by_name=current_user.name,
+        timestamp=datetime.now(timezone.utc),
+    )
+    db.add(hist)
+
+    # Create system audit log
+    audit = AuditLog(
+        action="GMAIL_ACCESS_REQUESTED",
+        target_user_id=current_user.id,
+        target_user_email=current_user.email,
+        details=f"Requested Gmail access for {len(clean_emails)} account(s): {', '.join(clean_emails)}",
+        timestamp=datetime.now(timezone.utc),
+    )
+    db.add(audit)
+    db.commit()
+    db.refresh(current_user)
+
+    logger.info("User id=%s (%s) submitted Gmail access request for: %s", current_user.id, current_user.email, clean_emails)
+    return get_user_gmail_access_status(current_user=current_user, db=db)
+
+
 @router.get(
     "/connect",
     summary="Initiate Gmail OAuth 2.0 connection",
-    description="Requires authenticated ScamShield session. Generates state and redirects to Google OAuth consent screen for read-only Gmail access.",
+    description="Requires authenticated ScamShield session with APPROVED Gmail access status. Generates state and redirects to Google OAuth consent screen for read-only Gmail access.",
 )
 def gmail_connect(
     current_user: User = Depends(get_current_user),
@@ -105,10 +290,25 @@ def gmail_connect(
     """
     Initiates Gmail OAuth 2.0 flow:
     1. Validates server Google OAuth credentials.
-    2. Generates a secure CSRF state token bound to current_user.id.
-    3. Sets an HTTP-only state cookie.
-    4. Redirects the user to Google OAuth consent screen.
+    2. Enforces backend approval: user must have APPROVED gmail_access_status.
+    3. Generates a secure CSRF state token bound to current_user.id.
+    4. Sets an HTTP-only state cookie.
+    5. Redirects the user to Google OAuth consent screen.
     """
+    if getattr(current_user, "account_status", "ACTIVE") == "SOFT_DELETED":
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Your account has been deactivated. Please contact the administrator.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # Backend access check: only APPROVED users may initiate Gmail OAuth
+    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+        logger.warning("Unapproved user id=%s attempted Gmail OAuth connect (status=%s)", current_user.id, current_user.gmail_access_status)
+        return RedirectResponse(
+            url=f"{settings.frontend_url}/detect?tab=email&gmail_error={quote_plus('Gmail analysis requires administrator approval before you can connect an account.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
     if not settings.google_client_id or not settings.google_client_secret:
         logger.error("Google OAuth is not configured on the backend server")
         return RedirectResponse(
@@ -148,14 +348,16 @@ async def gmail_callback(
     code: Optional[str] = None,
     state: Optional[str] = None,
     error: Optional[str] = None,
+    db: Session = Depends(get_db),
 ) -> RedirectResponse:
     """
     Handles Gmail OAuth 2.0 callback:
     1. Checks for provider error or user cancellation.
     2. Validates state cookie and resolves the bound ScamShield user.
-    3. Exchanges authorization code for Gmail access and refresh tokens.
-    4. Stores tokens in temporary server-side storage (never in URL or cookies).
-    5. Redirects to frontend with success or error query parameter.
+    3. Verifies user approval status and verifies connected email is in approved list.
+    4. Exchanges authorization code for Gmail access and refresh tokens.
+    5. Stores tokens in temporary server-side storage (never in URL or cookies).
+    6. Redirects to frontend with success or error query parameter.
     """
     if error:
         logger.warning("Gmail OAuth denied or error: %s", error)
@@ -193,6 +395,23 @@ async def gmail_callback(
         return response
 
     user_id = state_record["user_id"]
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user or getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+        response = RedirectResponse(
+            url=f"{settings.frontend_url}/login?error={quote_plus('Your account has been deactivated. Please contact the administrator.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+        response.delete_cookie(key="gmail_oauth_state", path="/")
+        return response
+
+    if getattr(user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+        logger.warning("Unapproved Gmail OAuth callback rejected for user id=%s", user_id)
+        response = RedirectResponse(
+            url=f"{settings.frontend_url}/detect?tab=email&gmail_error={quote_plus('Gmail analysis requires administrator approval before you can connect an account.')}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+        response.delete_cookie(key="gmail_oauth_state", path="/")
+        return response
 
     if not code:
         logger.warning("Gmail OAuth callback missing authorization code")
@@ -224,6 +443,23 @@ async def gmail_callback(
         gmail_email = profile.get("emailAddress")
     except Exception as prof_err:
         logger.warning("Could not fetch Gmail profile email during callback: %s", prof_err)
+
+    # Verify that the authenticated Gmail account matches the user's approved Gmail address(es)
+    if user.approved_gmail_emails and gmail_email:
+        try:
+            approved_list = json.loads(user.approved_gmail_emails)
+        except Exception:
+            approved_list = [e.strip() for e in user.approved_gmail_emails.split(",") if e.strip()]
+
+        normalized_approved = [e.strip().lower() for e in approved_list if isinstance(e, str)]
+        if gmail_email.strip().lower() not in normalized_approved:
+            logger.warning("Connected Gmail email %s not in user %s approved list: %s", gmail_email, user.id, normalized_approved)
+            response = RedirectResponse(
+                url=f"{settings.frontend_url}/detect?tab=email&gmail_error={quote_plus(f'The connected Gmail address ({gmail_email}) was not approved by the administrator.')}",
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
+            response.delete_cookie(key="gmail_oauth_state", path="/")
+            return response
 
     _GMAIL_USER_TOKENS[user_id] = {
         "access_token": access_token,
@@ -484,6 +720,13 @@ async def start_gmail_analysis(
     If message_ids is provided, only those specific emails are analyzed.
     Includes multiple-job protection: returns existing job if one is already running.
     """
+    # Verify user approval before starting Gmail analysis
+    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Gmail analysis requires administrator approval before connecting an account.",
+        )
+
     _clean_expired_tokens()
     token_data = _GMAIL_USER_TOKENS.get(current_user.id)
     if not token_data:
@@ -631,6 +874,12 @@ async def list_messages(
     Accepts pageToken and maxResults, returning nextPageToken for subsequent pages.
     Returns preview metadata (id, snippet, subject, from, date) for each email.
     """
+    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Gmail analysis requires administrator approval before connecting an account.",
+        )
+
     _clean_expired_tokens()
     token_data = _GMAIL_USER_TOKENS.get(current_user.id)
     if not token_data:
@@ -723,6 +972,12 @@ async def get_message_detail(
     """
     Fetches full subject, sender, date, and body content for a specific email.
     """
+    if getattr(current_user, "gmail_access_status", "NOT_REQUESTED") != "APPROVED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Gmail analysis requires administrator approval before connecting an account.",
+        )
+
     _clean_expired_tokens()
     token_data = _GMAIL_USER_TOKENS.get(current_user.id)
     if not token_data:

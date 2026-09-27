@@ -47,6 +47,21 @@ with engine.connect() as _conn:
         _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_detections_source ON detections(source);"))
         _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS sender VARCHAR(255);"))
         _conn.execute(text("ALTER TABLE detections ADD COLUMN IF NOT EXISTS subject VARCHAR(500);"))
+
+        # Users table enhancements: role, account_status, deleted_at, deleted_by, last_login_at, gmail_access_status, approved_gmail_emails
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(50) DEFAULT 'USER';"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_role ON users(role);"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS account_status VARCHAR(50) DEFAULT 'ACTIVE';"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_account_status ON users(account_status);"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMP WITH TIME ZONE;"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS deleted_by INTEGER;"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE;"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS gmail_access_status VARCHAR(50) DEFAULT 'NOT_REQUESTED';"))
+        _conn.execute(text("CREATE INDEX IF NOT EXISTS ix_users_gmail_access_status ON users(gmail_access_status);"))
+        _conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS approved_gmail_emails TEXT;"))
+
+        # Enforce ADMIN role for paldhadu7@gmail.com and paldhaduk7@gmail.com
+        _conn.execute(text("UPDATE users SET role = 'ADMIN' WHERE LOWER(email) IN ('paldhadu7@gmail.com', 'paldhaduk7@gmail.com');"))
         _conn.commit()
     except Exception:
-        _conn.rollback()
+        _conn.rollback()

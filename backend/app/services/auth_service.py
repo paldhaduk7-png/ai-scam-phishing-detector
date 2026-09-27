@@ -138,7 +138,39 @@ def get_current_user(request: Request, db: Session = Depends(get_db)) -> User:
             detail="User account not found.",
         )
 
+    # Enforce soft-deletion check: block any deactivated account immediately
+    if getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account has been deactivated. Please contact the administrator.",
+        )
+
+    # Ensure admin role is persisted in DB for designated administrative accounts
+    if user.email and user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com"):
+        if getattr(user, "role", "USER") != "ADMIN":
+            user.role = "ADMIN"
+            db.commit()
+            db.refresh(user)
+
     return user
+
+
+def get_current_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    """
+    FastAPI dependency for administrator endpoints.
+    Strictly verifies that the authenticated user possesses the 'ADMIN' role in PostgreSQL.
+    Raises HTTP 403 Forbidden for standard user accounts.
+    """
+    user_role = getattr(current_user, "role", "USER") or "USER"
+    is_admin = user_role.upper() == "ADMIN" or (
+        current_user.email and current_user.email.lower() in ("paldhadu7@gmail.com", "paldhaduk7@gmail.com")
+    )
+    if not is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied. Administrator privileges required.",
+        )
+    return current_user
 
 
 def get_optional_current_user(request: Request, db: Session = Depends(get_db)) -> Optional[User]:
@@ -161,7 +193,11 @@ def get_optional_current_user(request: Request, db: Session = Depends(get_db)) -
         return None
 
     try:
-        return db.query(User).filter(User.id == user_id).first()
+        user = db.query(User).filter(User.id == user_id).first()
+        if user and getattr(user, "account_status", "ACTIVE") == "SOFT_DELETED":
+            return None
+        return user
     except Exception as exc:
         logger.warning("Optional user lookup error: %s", exc)
         return None
+

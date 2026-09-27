@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 from app.config import settings
 from app.database import get_db
 from app.models import Detection, User
+from app.routers import admin as admin_router
 from app.routers import auth as auth_router
 from app.routers import detections as detections_router
 from app.routers import gmail as gmail_router
@@ -118,6 +119,7 @@ app.add_middleware(
 app.include_router(auth_router.router)
 app.include_router(detections_router.router)
 app.include_router(gmail_router.router)
+app.include_router(admin_router.router)
 
 
 @app.exception_handler(Exception)
